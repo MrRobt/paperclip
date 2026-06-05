@@ -4,6 +4,7 @@ import {
   findHighPriorityAssignmentConflicts,
   normalizeRecoveryGroupKey,
   scoreCompletionEvidence,
+  shouldRefreshProductivityReview,
   summarizeLatestCompletionEvidence,
 } from "./dispatch-gates.js";
 
@@ -99,5 +100,21 @@ describe("dispatch gates", () => {
 
     expect(best.commentId).toBe("comment-2");
     expect(best.status).toBe("ready_for_review");
+  });
+
+  it("生产力复审在冷却窗口内拒绝刷新并给出下次允许时间", () => {
+    const decision = shouldRefreshProductivityReview({
+      now: new Date("2026-06-05T10:05:00.000Z"),
+      lastRefreshAt: "2026-06-05T10:00:00.000Z",
+      refreshIntervalMs: 20 * 60 * 1000,
+      refreshCommentCount: 0,
+      maxRefreshComments: 3,
+    });
+
+    expect(decision).toEqual({
+      allowed: false,
+      reason: "refresh_cooldown",
+      nextAllowedAt: new Date("2026-06-05T10:20:00.000Z"),
+    });
   });
 });
