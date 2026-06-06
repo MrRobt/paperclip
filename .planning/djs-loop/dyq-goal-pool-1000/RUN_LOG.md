@@ -467,3 +467,18 @@
 - 浏览器验证：真实浏览器完成登录尝试，控制台无 JS Error；端口代理/新 Vite 冷启动导致未拿到 Claw 首页截图，证据已写入本轮 browser-verification-note，下一轮优先补截图。
 - 提交：Web `037b6fecd feat(小龙虾总览): 展示端侧运行状态入口`；PokeClaw `501a1d5 fix(端云冒烟): 修复设备令牌请求头`。
 - 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round34-20260607-web-poke-visible-status/`。
+
+
+## 第35轮｜2026-06-07 02:18 +0800｜B/A泳道端侧闭环可浏览证据
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作，非空巡检。
+- 前置检查：已执行 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒仓库 `git status --short`；DYQ 大仓库用 `-uno` 避免状态超时；本轮只提交 PokeClaw 2 个文件，Paperclip 仅追加状态和证据。
+- 已读规则：PokeClaw `CLAUDE.md`、`README.md`、`QA_CHECKLIST.md`；DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md` 与 testing/security/git 规则；凭证只确认来源，未写明文密码或令牌。
+- 任务类型：B泳道/PokeClaw 为泳道内串行，增强端侧本地闭环证据包；A泳道/DYQ 为并发可跑健康复核；Paperclip 状态目录为集成串行记录。
+- TDD证据：先运行脚本并断言 `operator-dashboard.html` 必须存在，RED 失败；随后实现 HTML 看板并重新跑脚本，GREEN 通过。
+- 真实产出：PokeClaw 本地闭环证据包新增 `operator-dashboard.html`，运营可直接用浏览器查看 P1/P2 端侧状态卡、六类执行结果和安全边界；`operator-status.json` 同步写入 HTML 看板路径，便于后续 Web/云端读取。
+- 浏览器验证：真实浏览器打开本地 HTML，页面标题、状态卡、六类结果表和安全边界均可读；当前 `adbOnlineCount=0`，明确显示 `no_online_device`，不伪装真机验收。
+- 验证结果：`bash -n scripts/dyq28-local-loop-evidence.sh` 通过；`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq35-html-dashboard/20260607-round35` 通过；HTML/JSON 内容断言通过；`git diff --check` 通过；DYQ 48080 健康 HTTP 200/status UP。
+- 提交：PokeClaw `fa64905 feat(端侧闭环): 新增PokeClaw浏览器运营看板`。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round35-20260607-pokeclaw-html-dashboard/`。
+- 阻塞：ADB 当前无在线设备，仍无法补真机截图/真机执行闭环；不阻塞本轮本地浏览器看板验收。
+- 下一步：优先把 `operatorDashboardHtml/operator-status.json` 接入 Web/Claw 概览的真实读取或补前端真浏览器截图；若 ADB/ReDroid 上线，则转 P2 真机运行标记与截图证据。

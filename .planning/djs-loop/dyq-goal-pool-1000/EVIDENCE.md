@@ -452,3 +452,21 @@
 - Web验证：`pnpm exec vue-tsc --noEmit` 180 秒超时；真实浏览器登录链路无 JS Error，但 5188 端口浏览器沙箱不可达、80 新 Vite 冷启动未监听，未取得截图。
 - 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round34-20260607-web-poke-visible-status/`。
 - 提交：Web `037b6fecd feat(小龙虾总览): 展示端侧运行状态入口`；PokeClaw `501a1d5 fix(端云冒烟): 修复设备令牌请求头`。
+
+
+## 第35轮证据｜2026-06-07 02:18 +0800
+- PokeClaw 提交：`fa64905 feat(端侧闭环): 新增PokeClaw浏览器运营看板`。
+- 改动文件：
+  - `/mnt/e/code/PokeClaw/scripts/dyq28-local-loop-evidence.sh`
+  - `/mnt/e/code/PokeClaw/QA_CHECKLIST.md`
+- 业务产出：PokeClaw 端侧本地闭环证据包新增 `operator-dashboard.html`，运营/验收可直接浏览端侧状态卡、六类执行结果和安全边界；`operator-status.json` 新增 `operatorDashboardHtml` 字段供云端/Web 读取。
+- TDD：RED 命令先断言 `operator-dashboard.html` 必须存在并失败；GREEN 后同一断言通过。
+- 验证命令：
+  - `/mnt/e/code/PokeClaw`：`bash -n scripts/dyq28-local-loop-evidence.sh`：通过。
+  - `/mnt/e/code/PokeClaw`：`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq35-html-dashboard/20260607-round35`：通过，脚本内 Gradle 目标测试通过。
+  - `/mnt/e/code/PokeClaw`：Python 断言 HTML 包含“PokeClaw 端侧闭环运营看板”“P1/P2 端侧闭环可验收”“不自动发送微信、短信、私信或评论”，JSON `status=PASS` 且 `operatorDashboardHtml` 指向 HTML：通过。
+  - 真实浏览器：打开 `file:///mnt/e/code/PokeClaw/artifacts/dyq35-html-dashboard/20260607-round35/operator-dashboard.html`，可见状态卡、六类结果表、安全边界。
+  - `/mnt/e/code/dyq`：`curl http://127.0.0.1:48080/admin-api/actuator/health`：HTTP 200，`status=UP`。
+  - `/mnt/e/code/PokeClaw`：`git diff --check`：通过。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round35-20260607-pokeclaw-html-dashboard/`，包含 `summary.md`、`operator-dashboard.md`、`operator-dashboard.html`、`operator-status.json`、`run.log`、`adb.log`、`gradle-test.log`、`summary.safe.json`。
+- 关键结果：`deviceStatus=no_online_device`、`adbOnlineCount=0`；未执行真实微信、短信、私信、评论、关注、点赞；未写生产数据。

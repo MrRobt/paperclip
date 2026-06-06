@@ -5,7 +5,7 @@ STATUS: IN_PROGRESS
 ## 状态机
 
 当前状态：IN_PROGRESS
-当前轮次：32 / 1000
+当前轮次：35 / 1000
 
 ## 阶段计划
 
@@ -99,3 +99,11 @@ STATUS: IN_PROGRESS
 - [x] B泳道/PokeClaw：修复端云冒烟脚本真实令牌请求头，Mock 闭环回归通过。
 - [x] A泳道/DYQ：复核 48080 健康 HTTP 200/status UP。
 - [ ] 下一轮：优先修正前端开发服务端口代理/冷启动问题，补 `/claw/home` 真浏览器截图；若浏览器仍阻塞，转 C2/P2 将 operator-status 接入真实后端读取接口。
+
+
+### 第35轮完成项
+- [x] B泳道/PokeClaw：端侧本地闭环证据包新增可浏览 `operator-dashboard.html`。
+- [x] B泳道/PokeClaw：`operator-status.json` 新增 `operatorDashboardHtml`，为 Web/云端读取端侧证据入口做准备。
+- [x] A泳道/DYQ：复核 48080 健康 HTTP 200/status UP。
+- [x] 集成：PokeClaw 已本地提交，Paperclip 状态文档和证据目录已更新。
+- [ ] 下一轮：把 HTML/JSON 证据入口接入 Web/Claw 概览真实读取或补前端真浏览器截图；若 ADB/ReDroid 上线则补 P2 真机截图证据。
