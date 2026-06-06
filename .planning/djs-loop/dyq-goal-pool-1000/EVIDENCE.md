@@ -470,3 +470,19 @@
   - `/mnt/e/code/PokeClaw`：`git diff --check`：通过。
 - 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round35-20260607-pokeclaw-html-dashboard/`，包含 `summary.md`、`operator-dashboard.md`、`operator-dashboard.html`、`operator-status.json`、`run.log`、`adb.log`、`gradle-test.log`、`summary.safe.json`。
 - 关键结果：`deviceStatus=no_online_device`、`adbOnlineCount=0`；未执行真实微信、短信、私信、评论、关注、点赞；未写生产数据。
+
+
+## 第36轮证据｜2026-06-07 02:40 +0800
+- 目标：PokeClaw `operator-status.json` → Web/Claw 总览运行态卡消费契约。
+- 改动文件：
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/overview.ts`
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/overview.test.ts`
+  - `/mnt/e/code/PokeClaw/scripts/dyq28-local-loop-evidence.sh`
+- RED证据：`pnpm vitest run src/api/claw/overview.test.ts` 首次失败，原因是缺少 `mapPokeClawOperatorStatusToRuntimeChecks`。
+- GREEN验证：`pnpm vitest run src/api/claw/overview.test.ts` 通过 8 项。
+- PokeClaw 验证：`bash -n scripts/dyq28-local-loop-evidence.sh` 通过；`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq36-cloud-overview-status/20260607-round36` 通过。
+- JSON断言：`operator-status.json` 中 `status=PASS`、`adbOnlineCount=0`、`cloudOverviewSummary.runtimeChecks` 含“设备在线/端侧契约/状态来源/可浏览看板”。
+- 浏览器证据：真实浏览器打开 `operator-dashboard.html`，可见 `PASS · P1/P2 端侧闭环可验收`、`no_online_device`、六类结果表和安全边界；记录见 `browser-verification-note.md`。
+- DYQ健康：48080 `/admin-api/actuator/health` 返回 HTTP 200、状态 UP。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round36-20260607-cloud-overview-status`。
+- 安全判定：本轮不触发真实微信、短信、私信、评论，不写生产数据；测试凭证只确认来源，未记录明文密码或完整令牌。

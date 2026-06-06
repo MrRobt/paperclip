@@ -482,3 +482,18 @@
 - 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round35-20260607-pokeclaw-html-dashboard/`。
 - 阻塞：ADB 当前无在线设备，仍无法补真机截图/真机执行闭环；不阻塞本轮本地浏览器看板验收。
 - 下一步：优先把 `operatorDashboardHtml/operator-status.json` 接入 Web/Claw 概览的真实读取或补前端真浏览器截图；若 ADB/ReDroid 上线，则转 P2 真机运行标记与截图证据。
+
+
+## 第36轮｜2026-06-07 02:40 +0800｜A/B泳道端侧证据接入云端总览契约
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作，非空巡检。
+- 前置检查：已执行 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒仓库 `git status --short`；DYQ 大仓库用 `-uno` 避免状态超时；本轮只改 Web `src/api/claw/overview.ts`、`src/api/claw/overview.test.ts` 与 PokeClaw `scripts/dyq28-local-loop-evidence.sh`，未覆盖其它既有改动。
+- 已读规则：DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md`，Web `.claude/CLAUDE.md`，PokeClaw 脚本与既有证据入口；凭证仅确认来源，未写明文密码或令牌。
+- 任务类型：A泳道/Web 为泳道内串行，把 PokeClaw `operator-status.json` 归一化为 Claw 总览运行态；B泳道/PokeClaw 为泳道内串行，在证据 JSON 中输出 `cloudOverviewSummary`；DYQ 健康复核为并发可跑。
+- TDD证据：先补 Web 测试要求 `mapPokeClawOperatorStatusToRuntimeChecks`，RED 失败；实现归一化函数后 GREEN 通过。
+- 真实产出：Claw 总览现在有可复用函数消费 PokeClaw `operator-status.json`，可展示设备在线数、端侧契约、状态来源和可浏览看板；PokeClaw 证据包同步输出云端总览可直接读取的 `cloudOverviewSummary.runtimeChecks`。
+- 浏览器验证：真实浏览器打开第36轮 PokeClaw `operator-dashboard.html`，标题、状态卡、六类结果表和安全边界均可读；当前 `adbOnlineCount=0`，明确显示 `no_online_device`。
+- 验证结果：Web `pnpm vitest run src/api/claw/overview.test.ts` 8项通过；Web `git diff --check` 通过（LF 格式）；PokeClaw `bash -n` 通过；PokeClaw 证据脚本通过并生成 `operator-status.json`；JSON 断言 `cloudOverviewSummary.runtimeChecks` 通过；DYQ 48080 健康 HTTP 200/status UP。
+- 提交：待提交。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round36-20260607-cloud-overview-status/`。
+- 阻塞：Web 本地 Vite 5196 端口 40 秒内未监听，未拿到 Claw 首页最新截图；不阻塞本轮云端总览契约和 PokeClaw HTML 可浏览证据。
+- 下一步：把 Web Claw 首页从静态 mock 进一步替换为后端/证据文件真实读取接口，或解决前端 dev server 冷启动后补 Claw 首页截图。

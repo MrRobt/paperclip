@@ -5,7 +5,7 @@ STATUS: IN_PROGRESS
 ## 状态机
 
 当前状态：IN_PROGRESS
-当前轮次：35 / 1000
+当前轮次：36 / 1000
 
 ## 阶段计划
 
@@ -107,3 +107,5 @@ STATUS: IN_PROGRESS
 - [x] A泳道/DYQ：复核 48080 健康 HTTP 200/status UP。
 - [x] 集成：PokeClaw 已本地提交，Paperclip 状态文档和证据目录已更新。
 - [ ] 下一轮：把 HTML/JSON 证据入口接入 Web/Claw 概览真实读取或补前端真浏览器截图；若 ADB/ReDroid 上线则补 P2 真机截图证据。
+
+- 第36轮（2026-06-07 02:40）：A/B泳道推进完成；Web 新增 PokeClaw operator-status.json 归一化函数，Claw 总览可消费“设备在线/端侧契约/状态来源/可浏览看板”；PokeClaw 证据包新增 cloudOverviewSummary.runtimeChecks。下一轮优先把 Web mock 替换为后端/证据文件真实读取接口，或补 Claw 首页真浏览器截图。
