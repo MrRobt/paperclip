@@ -120,6 +120,27 @@ import { parseIssueExecutionWorkspaceSettings } from "../services/execution-work
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
+
+type ChineseOperatorErrorPayload = {
+  error: string;
+  operation: string;
+  reason: string;
+  suggestion: string;
+  errorCode: number | string;
+  details?: unknown;
+};
+
+function chineseOperatorError(input: ChineseOperatorErrorPayload): ChineseOperatorErrorPayload {
+  return {
+    error: input.error,
+    operation: input.operation,
+    reason: input.reason,
+    suggestion: input.suggestion,
+    errorCode: input.errorCode,
+    ...(input.details === undefined ? {} : { details: input.details }),
+  };
+}
+
 const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
@@ -1685,15 +1706,19 @@ export function issueRoutes(
 
     const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.companyId, issue.id);
     if (activePauseHold) {
-      res.status(409).json({
+      res.status(409).json(chineseOperatorError({
         error: "Issue follow-up blocked by active subtree pause hold",
+        operation: "评论恢复意图未执行",
+        reason: "当前事项所在子树存在有效暂停保持。",
+        suggestion: "先解除子树暂停保持，或由主控确认后重新发起恢复。",
+        errorCode: 409,
         details: {
           issueId: issue.id,
           holdId: activePauseHold.holdId,
           rootIssueId: activePauseHold.rootIssueId,
           mode: activePauseHold.mode,
         },
-      });
+      }));
       return false;
     }
 
@@ -4118,7 +4143,19 @@ export function issueRoutes(
         ? (await svc.getDependencyReadiness(existing.id)).unresolvedBlockerCount > 0
         : false;
     if (resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers) {
-      res.status(409).json({ error: "Issue follow-up blocked by unresolved blockers" });
+      const readiness = await svc.getDependencyReadiness(existing.id);
+      res.status(409).json(chineseOperatorError({
+        error: "Issue follow-up blocked by unresolved blockers",
+        operation: "评论恢复意图未执行",
+        reason: "当前事项存在未解决的强阻塞。",
+        suggestion: "先处理阻塞项；如果只是补充证据或说明，请改用评论补充而不要请求恢复。",
+        errorCode: 409,
+        details: {
+          issueId: existing.id,
+          unresolvedBlockerIssueIds: readiness.unresolvedBlockerIssueIds,
+          blockerPolicy: "strong_blocker",
+        },
+      }));
       return;
     }
     let interruptedRunId: string | null = null;

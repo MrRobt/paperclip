@@ -1234,6 +1234,39 @@ describe.sequential("issue comment reopen routes", () => {
     );
   });
 
+  it("returns structured Chinese error fields when PATCH resume crosses strong blockers", async () => {
+    mockIssueService.getById.mockResolvedValue(makeIssue("blocked"));
+    mockIssueService.getDependencyReadiness.mockResolvedValue({
+      issueId: "11111111-1111-4111-8111-111111111111",
+      blockerIssueIds: ["99999999-9999-4999-8999-999999999999"],
+      unresolvedBlockerIssueIds: ["99999999-9999-4999-8999-999999999999"],
+      unresolvedBlockerCount: 1,
+      allBlockersDone: false,
+      isDependencyReady: false,
+    });
+
+    const res = await request(await installActor(createApp()))
+      .patch("/api/issues/11111111-1111-4111-8111-111111111111")
+      .send({ comment: "请恢复执行", resume: true });
+
+    expect(res.status).toBe(409);
+    expect(res.body).toMatchObject({
+      error: "Issue follow-up blocked by unresolved blockers",
+      operation: "评论恢复意图未执行",
+      reason: "当前事项存在未解决的强阻塞。",
+      suggestion: "先处理阻塞项；如果只是补充证据或说明，请改用评论补充而不要请求恢复。",
+      errorCode: 409,
+      details: {
+        issueId: "11111111-1111-4111-8111-111111111111",
+        unresolvedBlockerIssueIds: ["99999999-9999-4999-8999-999999999999"],
+        blockerPolicy: "strong_blocker",
+      },
+    });
+    expect(mockIssueService.update).not.toHaveBeenCalled();
+    expect(mockIssueService.addComment).not.toHaveBeenCalled();
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
+  });
+
   it("rejects explicit agent resume intent from a non-assignee", async () => {
     mockIssueService.getById.mockResolvedValue(makeIssue("done"));
 

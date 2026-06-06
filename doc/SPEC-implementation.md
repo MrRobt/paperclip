@@ -482,6 +482,37 @@ V1 non-terminal liveness rule:
 
 Detailed ownership, execution, blocker, active-run watchdog, crash-recovery, and non-terminal liveness semantics are documented in `doc/execution-semantics.md`.
 
+## 8.2.1 Auditable Delivery Direction
+
+The accepted next direction is **Auditable Agent Delivery V1** (see `doc/plans/2026-06-06-auditable-agent-delivery.md`). V1 issue status remains the platform workflow status, but the product must not treat it as sufficient proof of delivery. The implementation should progressively expose these separate state slices:
+
+- **Platform state**: current issue workflow status (`backlog`, `todo`, `in_progress`, `in_review`, `blocked`, `done`, `cancelled`).
+- **Process state**: whether the assigned runtime is queued, running, idle, stale, failed, or crashed.
+- **Output state**: whether the run has no output, activity-only output, partial output, a commit, an artifact, or another inspectable work product.
+- **Verification state**: whether delivery is unverified, evidence-attached, verified, or rejected.
+
+Completion and recovery rules should move toward evidence-first semantics:
+
+- comments are audit context and communication, not sufficient completion evidence by themselves;
+- completion should bind to first-class evidence such as commits, verification commands, logs, screenshots, API responses, artifacts, or approved work products;
+- strong blockers prevent resume/checkouts/execution wakeups but must still allow supplemental comments and evidence writes unless a separate security policy forbids the write;
+- weak blockers should stop automatic execution while allowing supervisor-confirmed continuation;
+- hint blockers should annotate risk without stopping execution;
+- supervisor workflows should be able to summarize stuck work, identify the next owner, batch wake/reset/model-switch actions, and produce Chinese short reports.
+
+Default agent handoff and completion output should use the Chinese six-part template:
+
+```md
+【结论】
+【改动文件】
+【验证结果】
+【残留风险】
+【下一步】
+【证据】
+```
+
+Server errors that are intended for operators should prefer structured Chinese fields: `operation`, `reason`, `suggestion`, and `errorCode`, while preserving the existing `error` field for compatibility.
+
 ## 8.3 Approval Status
 
 - `pending -> approved | rejected | cancelled`
