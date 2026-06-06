@@ -1697,19 +1697,9 @@ export function issueRoutes(
       return false;
     }
 
-    if (issue.status === "blocked") {
-      const readiness = await svc.getDependencyReadiness(issue.id);
-      if (readiness.unresolvedBlockerCount > 0) {
-        res.status(409).json({
-          error: "Issue follow-up blocked by unresolved blockers",
-          details: {
-            issueId: issue.id,
-            unresolvedBlockerIssueIds: readiness.unresolvedBlockerIssueIds,
-          },
-        });
-        return false;
-      }
-    }
+    // Unresolved blockers are evaluated by the concrete mutation route. Comment-only
+    // follow-ups may still be recorded as supplemental evidence while the strong
+    // blocker prevents resume/state transition semantics.
 
     if (req.actor.type !== "agent") return true;
 
@@ -5794,10 +5784,10 @@ export function issueRoutes(
       isBlocked && effectiveMoveToTodoRequested
         ? (await svc.getDependencyReadiness(issue.id)).unresolvedBlockerCount > 0
         : false;
-    if (resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers) {
-      res.status(409).json({ error: "Issue follow-up blocked by unresolved blockers" });
-      return;
-    }
+    const resumeSuppressedByStrongBlocker = resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers;
+    // Strong blockers must prevent state transitions/wakeups, but they should not swallow the
+    // operator or agent's supplemental comment. Persist the comment as the audit trail and
+    // mark the attempted resume as suppressed in activity metadata.
     let reopened = false;
     let reopenFromStatus: string | null = null;
     let interruptedRunId: string | null = null;
@@ -5915,6 +5905,13 @@ export function issueRoutes(
         identifier: currentIssue.identifier,
         issueTitle: currentIssue.title,
         ...(resumeRequested === true ? { resumeIntent: true, followUpRequested: true } : {}),
+        ...(resumeSuppressedByStrongBlocker
+          ? {
+              resumeSuppressed: true,
+              resumeSuppressedReason: "strong_blocker_unresolved",
+              blockerPolicy: "strong_blocker",
+            }
+          : {}),
         ...(reopened ? { reopened: true, reopenedFrom: reopenFromStatus, source: "comment" } : {}),
         ...(scheduledRetrySupersededByComment
           ? {
@@ -5952,7 +5949,7 @@ export function issueRoutes(
       trigger: "comment",
       actor,
       statusChanged: reopened || scheduledRetrySupersededByComment,
-      resumeRequested: resumeRequested === true,
+      resumeRequested: resumeRequested === true && !resumeSuppressedByStrongBlocker,
       reopened,
       blockedToTodoRecovery: reopened && reopenFromStatus === "blocked" && currentIssue.status === "todo",
     });
@@ -5963,7 +5960,7 @@ export function issueRoutes(
       const assigneeId = currentIssue.assigneeAgentId;
       const actorIsAgent = actor.actorType === "agent";
       const selfComment = actorIsAgent && actor.actorId === assigneeId;
-      const skipWake = selfComment || isClosed;
+      const skipWake = selfComment || isClosed || resumeSuppressedByStrongBlocker;
       if (assigneeId && (reopened || !skipWake)) {
         if (reopened) {
           wakeups.set(assigneeId, {

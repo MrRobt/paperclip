@@ -1,5 +1,25 @@
 const BASE = "/api";
 
+function formatChineseApiError(status: number, body: unknown): string {
+  const record = body && typeof body === "object" ? body as Record<string, unknown> : null;
+  const rawError = typeof record?.["error"] === "string" ? record["error"] : null;
+  const operation = typeof record?.["operation"] === "string" ? record["operation"] : null;
+  const reason = typeof record?.["reason"] === "string" ? record["reason"] : rawError;
+  const suggestion = typeof record?.["suggestion"] === "string"
+    ? record["suggestion"]
+    : "请保留当前草稿，检查事项状态、阻塞项或权限后重试。";
+  const code = typeof record?.["errorCode"] === "string" || typeof record?.["errorCode"] === "number"
+    ? record["errorCode"]
+    : status;
+
+  return [
+    `操作失败：${operation ?? rawError ?? "请求未完成"}。`,
+    `原因：${reason ?? `服务器返回 ${status}。`}`,
+    `建议：${suggestion}`,
+    `错误码：${code}`,
+  ].join("\n");
+}
+
 export class ApiError extends Error {
   status: number;
   body: unknown;
@@ -27,7 +47,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     const errorBody = await res.json().catch(() => null);
     throw new ApiError(
-      (errorBody as { error?: string } | null)?.error ?? `Request failed: ${res.status}`,
+      formatChineseApiError(res.status, errorBody),
       res.status,
       errorBody,
     );

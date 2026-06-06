@@ -1194,6 +1194,46 @@ describe.sequential("issue comment reopen routes", () => {
     );
   });
 
+  it("persists resume comments on blocked issues without crossing strong blockers", async () => {
+    mockIssueService.getById.mockResolvedValue(makeIssue("blocked"));
+    mockIssueService.getDependencyReadiness.mockResolvedValue({
+      issueId: "11111111-1111-4111-8111-111111111111",
+      blockerIssueIds: ["99999999-9999-4999-8999-999999999999"],
+      unresolvedBlockerIssueIds: ["99999999-9999-4999-8999-999999999999"],
+      unresolvedBlockerCount: 1,
+      allBlockersDone: false,
+      isDependencyReady: false,
+    });
+
+    const res = await request(await installActor(createApp()))
+      .post("/api/issues/11111111-1111-4111-8111-111111111111/comments")
+      .send({ body: "补充验收日志，但先不要恢复执行", resume: true });
+
+    expect(res.status).toBe(201);
+    expect(mockIssueService.addComment).toHaveBeenCalledWith(
+      "11111111-1111-4111-8111-111111111111",
+      "补充验收日志，但先不要恢复执行",
+      expect.objectContaining({ userId: "local-board" }),
+      expect.objectContaining({ authorType: "user" }),
+    );
+    expect(mockIssueService.update).not.toHaveBeenCalled();
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
+    expect(mockLogActivity).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        action: "issue.comment_added",
+        details: expect.objectContaining({
+          commentId: "comment-1",
+          resumeIntent: true,
+          followUpRequested: true,
+          resumeSuppressed: true,
+          resumeSuppressedReason: "strong_blocker_unresolved",
+          blockerPolicy: "strong_blocker",
+        }),
+      }),
+    );
+  });
+
   it("rejects explicit agent resume intent from a non-assignee", async () => {
     mockIssueService.getById.mockResolvedValue(makeIssue("done"));
 
