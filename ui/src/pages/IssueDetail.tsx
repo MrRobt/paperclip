@@ -80,6 +80,7 @@ import { IssueScheduledRetryCard } from "../components/IssueScheduledRetryCard";
 import { IssueProperties } from "../components/IssueProperties";
 import { IssueRunLedger } from "../components/IssueRunLedger";
 import { IssueWorkspaceCard } from "../components/IssueWorkspaceCard";
+import { IssueDeliveryStateCard } from "../components/IssueDeliveryStateCard";
 import type { MentionOption } from "../components/MarkdownEditor";
 import { ImageGalleryModal } from "../components/ImageGalleryModal";
 import { ScrollToBottom } from "../components/ScrollToBottom";
@@ -3626,6 +3627,8 @@ export function IssueDetail() {
             </Popover>
           </div>
         </div>
+
+        <IssueDeliveryStateCard state={issue.deliveryState} />
 
         <InlineEditor
           value={issue.title}
