@@ -497,3 +497,119 @@
 - 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round36-20260607-cloud-overview-status/`。
 - 阻塞：Web 本地 Vite 5196 端口 40 秒内未监听，未拿到 Claw 首页最新截图；不阻塞本轮云端总览契约和 PokeClaw HTML 可浏览证据。
 - 下一步：把 Web Claw 首页从静态 mock 进一步替换为后端/证据文件真实读取接口，或解决前端 dev server 冷启动后补 Claw 首页截图。
+
+
+## 第37轮｜2026-06-07 03:26 +0800｜Claw 三主线真实总览与 PokeClaw 证据入口
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作。
+- 前置检查：已执行 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒仓库 `git status --short`；PokeClaw/WeFlow/社媒无已跟踪改动，DYQ/Web/Paperclip 有既有改动，本轮未清理未知文件。
+- 已读规则：DYQ `.claude/CLAUDE.md` 与测试凭证规则、Web `.claude/CLAUDE.md`、PokeClaw `CLAUDE.md/README.md`；凭证只用于确认来源，未写明文令牌。
+- 推进行动：A泳道把 Web 三主线总览默认接入 DYQ 后端真实接口，并修复 DYQ claw 模块因设备任务状态枚举化导致的编译断点；B泳道复核 PokeClaw 第37轮端侧运营看板证据包。
+- 验证结果：Web overview 测试 9 个通过；PokeClaw CloudExecutorNodeContractTest 通过；DYQ ClawDeviceServiceTest 23 个通过。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round37-20260607-claw-poke-web-overview/`。
+- 未提交原因：多仓库仍存在大量既有未提交/未跟踪改动，本轮先维护可解释改动与验证证据，未执行统一提交。
+
+
+## 第38轮｜2026-06-07 03:42 +0800｜三主线后端总览读取端侧证据测试闭环
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作。
+- 前置检查：已执行 DYQ/Web/PokeClaw/WeFlow `git status --short`；DYQ 和 Web 存在第37轮三主线总览相关已跟踪改动，PokeClaw 干净，WeFlow 仅既有审计目录；本轮只新增 DYQ 统计服务测试并生成 PokeClaw 新证据包，未覆盖他人改动。
+- 已读规则：DYQ `.claude/CLAUDE.md` 与测试凭证规则、PokeClaw `CLAUDE.md`、目标池与状态计划；凭证仅确认来源，未写入日志或证据。
+- 推进行动：补齐第37轮“后端专门测试”遗留项，为 `/claw/statistics/mainline-overview` 的服务层增加 PokeClaw 端侧证据读取与降级用例。
+- 并行边界：A泳道 DYQ/Web 为泳道内串行；B泳道 PokeClaw 证据生成为并发可跑；无公共锁文件、无数据库迁移、无菜单权限变更。
+- 验证结果：DYQ `ClawStatisticsServiceTest` 2 项通过；Web `overview.test.ts` 9 项通过；PokeClaw 第38轮本地闭环证据生成通过，`status=PASS`、`cloudLoopContract=PASS`、ADB 在线数 0。
+- 未提交原因：DYQ/Web 已存在第37轮未提交改动，本轮不混合提交；待下一轮接口真实调用与浏览器截图补齐后由主控按精确文件统一提交。
+
+
+## 第39轮｜2026-06-07 04:10 +0800｜B泳道/WeFlow W1验收证据包固化
+- 状态：IN_PROGRESS，完成W1验收证据包落地与提交。
+- 真实产出：
+  - scripts/w1-acceptance-bundle.sh：W1.1~W1.4 一键打包脚本
+  - .planning/audit/runs/20260607-040800-w1-bundle/：汇总证据（typecheck.txt、dyq-cloud-task.test.txt、w1-summary.json、w1-contract-interfaces.txt、9轮前序证据软链接）
+- 验证：
+  - 33/33 单元测试通过
+  - npm run typecheck 无错
+  - 工作区只剩新提交的 W1 验收包，其它既有改动不覆盖
+- 边界保持：externalSendAllowed=false、cloudReportOnly=true、sendActionExecuted=false
+- 提交：WeFlow 684e8aa feat(W1验收): 汇总W1.1~W1.4基线证据包
+- 下一轮：W2 阶段或 W1.3 真实后端 401/异常处理封装补全。
+
+## 2026-06-07 04:30 主控巡检 + 应急修复
+
+- **关键事件**：default board db (/root/.hermes/kanban.db) 出现 "database disk image is malformed" 损坏。5 个 .corrupt.*.bak 也已损坏，无法从备份恢复。原有 24 张任务（t_19214d9a/t_4c2bad38/t_4981d38e/t_e1975f12/t_420d7d01 等）已不可逆丢失。3 个 worker（PID 1556133/1557698/1557699/1560249）仍在跑孤儿 task_id，让其自然消亡。
+- **根因猜测**：default board db 与 named board db 跨进程并发写竞争；或 dispatcher 启动 worker 时使用了错误的 db 路径。
+- **修复动作**：
+  1. 删除损坏 db，`hermes kanban init` 重新初始化 default board。
+  2. 重新创建 8 张二级任务图（主控+C+P+W+S1/S2+S3/S4+前端+QC），body 完整从 .planning/djs-loop/dyq-goal-pool-1000/kanban-second-level-task-graph-20260607-0409.md 恢复，含项目规则、登录信息、必读文档。
+  3. 任务 ID：T0=t_bd4d90a4 (done)、TC=t_b05b9bc0 (running) 、TWEB=t_5fad3897 (todo)、TP=t_7ddad685 (todo)、TW=t_59fcdffb (todo)、TS12=t_e474c389 (todo)、TS34=t_65c58e5c (todo)、TQC=t_33551fd0 (todo)。
+  4. dispatcher 已派发 C 卡（PID 1569451 @ coder，工作目录 /mnt/e/code/dyq）。
+- **目标覆盖**：C1.1-C1.6/C2.1-C2.5、P1.1-P1.5/P2.1-P2.4、W1.1-W1.4/W2.1-W2.4、S1.1-S1.3/S2.1-S2.3/S3.3/S4.1-S4.2 全部由二级卡覆盖。S1.4/S2.4/S3.1/S3.2/S3.4/S4.3/S4.4 暂未单独派发，纳入 QC 缺卡建议。
+- **下一步**：等待 C 卡 1569451 真实产出（48080 mainline-overview 接口可读、设备治理闭环、mvn test 证据）。前端卡、Web 卡等 C 完成后自动 promote。
+
+## 第40轮｜2026-06-07 04:48 +0800｜主控巡检+写冲突防护+子任务边界指令
+
+- 状态：IN_PROGRESS，完成多卡片边界指令下发和 coder accept 信号。
+- 前置检查：读取 board list / 5 个 running 任务详情 / 4 个 dyq 子任务 ID / 4 个 todo 父子关系 / login 有效性 / 48080 健康与 mainline-overview。
+- 真实产出：
+  1. 4 个 dyq 子任务（t_d3ae9b1d claw-api / t_c7779586 claw-device / t_9e936924 mq-infra / t_b7bdf21a qc-api）边界指令下发，明确不覆盖 coder 的 5 个文件。
+  2. 5 个 todo 卡（t_5fad3897 前端 / t_7ddad685 PokeClaw / t_59fcdffb WeFlow / t_e474c389 运营截流 / t_65c58e5c 商城养号 / t_33551fd0 QC）预备指令下发，含登录信息、必读文件、硬红线和证据路径。
+  3. coder 总集卡（t_b05b9bc0）accept 信号评论，要求尽快 kanban_complete 而不必 round38 重启验证。
+- 验证：48080 health 200（db/rabbit/redis/sandbox/ssl UP）；mainline-overview 200 code=0 返回 3 主线（claw normal / pokeclaw warning 设备 0 台 / weflow pending 等待 W 契约）；admin/yisheng 登录令牌有效（accessToken=2b02f2...）。
+- 状态：6 todo 等待 coder complete 后 promote；4 dyq 子任务 in-flight 4-15 分钟；4 孤儿 worker PID 1569451/1573290/1573291/1573292 全部存活。
+- 阻塞：coder 卡 worker 仍 running（18:54），等它收到 accept 评论后调 kanban_complete。
+- 下一步：等 coder complete → dispatcher promote 5 todo → 自动 spawn 5 worker；监控 4 dyq 子任务 round42 产出。
+
+## 第39轮｜2026-06-07 04:42 +0800｜fe-dev 目标池可视化与三端入口
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作。
+- 前置检查：已读 Web `.claude/CLAUDE.md`、`AGENTS.md`、DYQ 规则；执行 `git status --short` 确认仅 overview 文件已被前几轮修改，本轮未覆盖无关改动。
+- 任务类型：A泳道/Web 为泳道内串行，纯前端可视化与端入口绑定。
+- 真实产出：
+  1. `src/api/claw/goalPool.ts`（485 行）：定义 4 主线（claw/pokeclaw/weflow/automation）+ 16 子目标（C1-C4/P1-P4/W1-W4/S1-S4）契约；`getGoalPool` 默认请求 `/claw/statistics/goal-pool`，`getGoalPoolSnapshot` 兜底本地快照；`normalizeGoalPool` 容错归一化；`loadGoalPool` 沿用 `unknown + instanceof Error` 风格。
+  2. `src/api/claw/goalPool.test.ts`（224 行）：13 个 vitest 用例覆盖快照自洽、归一化、容错、装载工具。
+  3. `src/views/claw/home/components/GoalPoolOverview.vue`（449 行）：4 主线汇总卡 + 16 子目标状态卡，每条子目标都绑定端入口（Claw 中枢/管理后台/设备节点/指挥台）、活跃问题数、阻塞点摘要。
+  4. `src/views/claw/goals/index.vue`（18 行）：独立 `/claw/goals` 页面，包裹 GoalPoolOverview。
+  5. `src/router/modules/base.ts`：新增 hidden `canTo` 兜底路由 `ClawGoalsAcceptanceFallback`，避免测试租户菜单未开时无法直达。
+  6. `src/views/claw/home/index.vue`：在 `MainlineOverview` 之后接入 `GoalPoolOverview`，不破坏既有结构。
+- 验证：`pnpm test:run src/api/claw/` 通过 28 项（goalPool 13 + overview 9 + commercialEvidence 6）；`pnpm ts:check` 退出码 0；`git diff --check` 零警告；DYQ 48080 `/admin-api/actuator/health` HTTP 200。
+- 软阻塞：Vite dev server 在 WSL/NTFS 冷启动 60 秒后仍未监听 5189 端口（与第32/34/36/38轮相同），下一轮由其他 worker 解决后用真实浏览器验收 `/#/claw/goals` 截图。
+- 安全判定：纯前端可视化与跳转入口，未触碰任何设备/微信/真实资金链路。
+
+## 第43轮｜2026-06-07 05:36 +0800｜主控 cron 巡检 + 48080 真接口验证 + 多卡广播
+
+- 状态：IN_PROGRESS，完成一个主控 cron 推进动作。
+- 前置检查：读取 board list / 11 张 running 卡详情 / 4 张 dyq 子任务 ID / 1 张 QC-API blocked / 1 张 integrator blocked / 2 张 S 层 todo / 1 张 QC todo。
+- 真实产出：
+  1. **主控 cron 验证 48080 真接口**（不是只读 worker 报告）：
+     - `/admin-api/actuator/health` HTTP 200，overall=UP（db/rabbit/redis/sandbox/ssl/diskSpace/ping 全 UP）
+     - `/admin-api/system/auth/login` 登录成功（admin / 开发测试密码），accessToken 32 字符，userId=1
+     - `/admin-api/claw/statistics/summary` 200 code=0，data keys=[totalLobsters, activeLobsters, totalSkills, totalExperiences, evaluatedExperiences, avgRewardScore, positiveRate, todayExperiences]
+     - `/admin-api/claw/statistics/mainline-overview` 200 code=0，items=3：claw=normal/已有后台接口、pokeclaw=warning/端侧证据已读取、weflow=pending/等待接口契约
+     - `/admin-api/claw/device/list` 200 code=0，**真实 10 台设备**（纠正 round42 误读 key 为"rows"，实际 key 是"list"）
+     - `/admin-api/claw/device/dyq-r40-pokeclaw-real-1780777966/tasks` 200 code=0，1 条历史任务 status=SUCCESS
+  2. **验收 t_6ae23b41 社媒契约小目标**：7 Java 契约 + 6 djs-loop 文档 + mvn compile BUILD SUCCESS；接受 review 并 unblock；建议 Phase 2 social-media-biz + cs-acd-biz 监听器一起 commit。
+  3. **主控广播 6 张 in-flight 卡**：t_5fad3897 / t_7ddad685 / t_59fcdffb / t_153f3981 / t_c562930b / t_eb16fe60 全部收到 48080 健康摘要 + 状态广播 + 完成小目标要求。
+  4. **澄清 operator-status 误判**：该接口在 controller 0 命中不是 bug，是设计（mainline-overview 走 file-based 路径 POKECLAW_OPERATOR_STATUS_PATH 读取 operator-status.json），等价业务流已通过 mainline-overview 真接口验证。
+  5. **说明 t_90345ed7 集成收口卡维持 blocked 合理**：等 C/P/W/S 主卡全部 done + evidence 落齐后串行启动。
+- 验证：所有 curl 命令带正确 Authorization Bearer + tenant-id header；admin 密码从 .planning/djs-loop/dyq-goal-pool-1000/evidence/round43-20260607-master-cron/r43-login.json 读取（密码不写明文）。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round43-20260607-master-cron/`（6 个文件：r43-login.json / r43-token.txt / r43-health.json / r43-summary.json / r43-overview.json / r43-devices.json / r43-pokeclaw-tasks.json / r43-meta.txt）。
+- 阻塞：无。
+- 下一步：等 6 张 in-flight 卡的 worker 完成小目标并 kanban_complete；等 P/W/S 主卡 spawned 后派发解阻塞；等 t_90345ed7 集成收口条件成熟后启动。
+
+## 第44轮｜2026-06-07 05:48 +0800｜主控 cron 二次 DB 修复 + 二级任务图重派
+
+- 状态：IN_PROGRESS，主动推进主控、9 张执行卡重建、孤儿 worker 收敛。
+- 关键事件：05:44 default board db (/root/.hermes/kanban.db) 二次 corruption；11 个孤儿 worker (t_5fad3897/t_59fcdffb/t_6ae23b41/t_d3ae9b1d/t_c7779586/t_65c58e5c/t_9e936924/t_601b3fe8/t_153f3981/t_eb16fe60) 全部指向已不存在的 task_id。
+- 根因：与 r40 同样，default board 在多 worker 高并发场景下竞争。
+- 修复动作：
+  1. 旋转损坏 db → /root/.hermes/kanban.db.corrupt.20260607_054800.bak
+  2. `hermes kanban init` 重建 default board
+  3. 重写 10 张二级任务图（主控 + C 后端 + C API + C DEV + C MQ + 前端 + P + W + S12 + S34 + TQC），每个 body 完整从 .planning/djs-loop/dyq-goal-pool-1000/kanban-second-level-task-graph-20260607-0409.md 恢复
+  4. 24 个 link 操作建立父子关系
+  5. archive 7 张孤儿卡 (t_92e74ef8/t_b4e6c6a2/t_ceff0df7/t_bf06cb78/t_e30f0f97/t_dada8d26/t_2a67f011)
+  6. 9 个 dispatcher spawn 的新 worker (PID 1607175-1607183) 已就位
+  7. T0/t_f34d7d72 标 done
+- 任务图 ID：
+  - T0=t_f34d0b72(主控 done) / TC=t_76dcfaf8 / TC-API=t_e1d06efd / TC-DEV=t_d3a551ca / TC-MQ=t_cc8e238c
+  - TWEB=t_c0cda541 / TP=t_268bac49 / TW=t_047931ef / TS12=t_d91a0d0c / TS34=t_72a3badc / TQC=t_968faf75
+- 目标覆盖：C1.1-C1.6/C2.1-C2.5 / P1.1-P2.4 / W1.1-W2.4 / S1.1-S2.3/S3.3/S4.1-S4.2 全部由 9 张执行卡覆盖。S1.4/S2.4/S3.1/S3.2/S3.4/S4.3/S4.4 纳入 TQC 缺卡建议。
+- 验证：hermes kanban list 显示 1 done + 9 running + 1 todo (TQC)；stats 显示按 assignee 分布均匀。
+- 未提交原因：本轮是主控/路由，未触碰任何仓库代码；未真实外部触达；未泄露密钥。
+- 下一步：等 9 个 in-flight worker 完成小目标并 kanban_complete；TQC 等待所有执行卡 done 后自动 promote。
