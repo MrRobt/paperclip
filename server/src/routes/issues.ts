@@ -141,6 +141,26 @@ function chineseOperatorError(input: ChineseOperatorErrorPayload): ChineseOperat
   };
 }
 
+const COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES = new Set([
+  "artifact",
+  "branch",
+  "commit",
+  "document",
+  "preview_url",
+  "pull_request",
+]);
+const NON_COMPLETION_EVIDENCE_WORK_PRODUCT_STATUSES = new Set([
+  "archived",
+  "changes_requested",
+  "draft",
+  "failed",
+]);
+
+function isCompletionEvidenceWorkProduct(workProduct: { type: string; status: string }) {
+  return COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES.has(workProduct.type)
+    && !NON_COMPLETION_EVIDENCE_WORK_PRODUCT_STATUSES.has(workProduct.status);
+}
+
 const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
@@ -4158,6 +4178,27 @@ export function issueRoutes(
       }));
       return;
     }
+
+    if (existing.status !== "done" && updateFields.status === "done") {
+      const workProducts = await workProductsSvc.listForIssue(existing.id);
+      const evidenceWorkProducts = workProducts.filter(isCompletionEvidenceWorkProduct);
+      if (evidenceWorkProducts.length === 0) {
+        res.status(409).json(chineseOperatorError({
+          error: "Issue completion requires evidence",
+          operation: "事项未标记完成",
+          reason: "当前事项没有可复验的交付证据。",
+          suggestion: "请先上传或关联提交、命令输出、日志、截图、接口响应、文档或其他 work product，再将事项标记为完成。",
+          errorCode: 409,
+          details: {
+            issueId: existing.id,
+            requiredEvidenceKinds: ["commit", "command", "log", "screenshot", "api_response", "artifact", "document"],
+            acceptedWorkProductTypes: Array.from(COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES),
+          },
+        }));
+        return;
+      }
+    }
+
     let interruptedRunId: string | null = null;
     const closedExecutionWorkspace = await getClosedIssueExecutionWorkspace(existing);
     const isAgentWorkUpdate =

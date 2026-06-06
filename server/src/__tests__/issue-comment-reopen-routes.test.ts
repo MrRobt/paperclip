@@ -75,6 +75,9 @@ const mockIssueRecoveryActionService = vi.hoisted(() => ({
 const mockIssueTreeControlService = vi.hoisted(() => ({
   getActivePauseHoldGate: vi.fn(async () => null),
 }));
+const mockWorkProductService = vi.hoisted(() => ({
+  listForIssue: vi.fn(),
+}));
 
 vi.mock("@paperclipai/shared/telemetry", () => ({
   trackAgentTaskCompleted: vi.fn(),
@@ -151,7 +154,7 @@ vi.mock("../services/index.js", () => ({
   logActivity: mockLogActivity,
   projectService: () => ({}),
   routineService: () => mockRoutineService,
-  workProductService: () => ({}),
+  workProductService: () => mockWorkProductService,
 }));
 
 function createApp() {
@@ -249,6 +252,7 @@ describe.sequential("issue comment reopen routes", () => {
     mockRoutineService.syncRunStatusForIssue.mockReset();
     mockIssueRecoveryActionService.getActiveForIssue.mockReset();
     mockIssueTreeControlService.getActivePauseHoldGate.mockReset();
+    mockWorkProductService.listForIssue.mockReset();
     mockTxInsertValues.mockReset();
     mockTxInsert.mockReset();
     mockDbSelect.mockReset();
@@ -286,6 +290,14 @@ describe.sequential("issue comment reopen routes", () => {
     mockRoutineService.syncRunStatusForIssue.mockResolvedValue(undefined);
     mockIssueRecoveryActionService.getActiveForIssue.mockResolvedValue(null);
     mockIssueTreeControlService.getActivePauseHoldGate.mockResolvedValue(null);
+    mockWorkProductService.listForIssue.mockResolvedValue([
+      {
+        id: "work-product-1",
+        type: "commit",
+        status: "active",
+        title: "Verification commit",
+      },
+    ]);
     mockIssueService.addComment.mockResolvedValue({
       id: "comment-1",
       issueId: "11111111-1111-4111-8111-111111111111",
@@ -1423,6 +1435,61 @@ describe.sequential("issue comment reopen routes", () => {
 
     expect(res.status).toBe(200);
     expect(mockHeartbeatService.cancelRun).not.toHaveBeenCalled();
+  });
+
+  it("rejects marking an issue done without completion evidence", async () => {
+    mockIssueService.getById.mockResolvedValue(makeIssue("in_progress"));
+    mockWorkProductService.listForIssue.mockResolvedValue([]);
+
+    const res = await request(await installActor(createApp()))
+      .patch("/api/issues/11111111-1111-4111-8111-111111111111")
+      .send({ status: "done" });
+
+    expect(res.status).toBe(409);
+    expect(res.body).toMatchObject({
+      error: "Issue completion requires evidence",
+      operation: "事项未标记完成",
+      reason: "当前事项没有可复验的交付证据。",
+      suggestion: "请先上传或关联提交、命令输出、日志、截图、接口响应、文档或其他 work product，再将事项标记为完成。",
+      errorCode: 409,
+      details: {
+        issueId: "11111111-1111-4111-8111-111111111111",
+        requiredEvidenceKinds: ["commit", "command", "log", "screenshot", "api_response", "artifact", "document"],
+      },
+    });
+    expect(mockIssueService.update).not.toHaveBeenCalled();
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
+  });
+
+  it("allows marking an issue done when completion evidence is attached", async () => {
+    const issue = makeIssue("in_progress");
+    mockIssueService.getById.mockResolvedValue(issue);
+    mockWorkProductService.listForIssue.mockResolvedValue([
+      {
+        id: "work-product-commit",
+        type: "commit",
+        status: "active",
+        title: "Commit evidence",
+      },
+    ]);
+    mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
+      ...issue,
+      ...patch,
+    }));
+
+    const res = await request(await installActor(createApp()))
+      .patch("/api/issues/11111111-1111-4111-8111-111111111111")
+      .send({ status: "done" });
+
+    expect(res.status).toBe(200);
+    expect(mockIssueService.update).toHaveBeenCalledWith(
+      "11111111-1111-4111-8111-111111111111",
+      expect.objectContaining({
+        status: "done",
+        actorAgentId: null,
+        actorUserId: "local-board",
+      }),
+    );
   });
 
   it("writes decision ids into executionState and inserts the decision inside the transaction", async () => {
