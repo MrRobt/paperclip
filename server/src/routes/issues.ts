@@ -103,6 +103,11 @@ import { executionWorkspaceService as executionWorkspaceServiceDirect } from "..
 import { feedbackService } from "../services/feedback.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { readAcceptedPlanConfirmationTarget } from "../services/issues.js";
+import {
+  COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES,
+  deriveIssueDeliveryState,
+  isCompletionEvidenceWorkProduct,
+} from "../services/issue-delivery-state.js";
 import { environmentService } from "../services/environments.js";
 import { redactSensitiveText } from "../redaction.js";
 import {
@@ -139,26 +144,6 @@ function chineseOperatorError(input: ChineseOperatorErrorPayload): ChineseOperat
     errorCode: input.errorCode,
     ...(input.details === undefined ? {} : { details: input.details }),
   };
-}
-
-const COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES = new Set([
-  "artifact",
-  "branch",
-  "commit",
-  "document",
-  "preview_url",
-  "pull_request",
-]);
-const NON_COMPLETION_EVIDENCE_WORK_PRODUCT_STATUSES = new Set([
-  "archived",
-  "changes_requested",
-  "draft",
-  "failed",
-]);
-
-function isCompletionEvidenceWorkProduct(workProduct: { type: string; status: string }) {
-  return COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES.has(workProduct.type)
-    && !NON_COMPLETION_EVIDENCE_WORK_PRODUCT_STATUSES.has(workProduct.status);
 }
 
 const updateIssueRouteSchema = updateIssueSchema.extend({
@@ -2411,6 +2396,7 @@ export function issueRoutes(
       ? await executionWorkspacesSvc.getById(issue.executionWorkspaceId)
       : null;
     const workProducts = await workProductsSvc.listForIssue(issue.id);
+    const deliveryState = deriveIssueDeliveryState(issue, workProducts);
     res.json({
       ...issue,
       goalId: goal?.id ?? issue.goalId,
@@ -2430,6 +2416,7 @@ export function issueRoutes(
       mentionedProjects,
       currentExecutionWorkspace,
       workProducts,
+      deliveryState,
     });
   });
 
