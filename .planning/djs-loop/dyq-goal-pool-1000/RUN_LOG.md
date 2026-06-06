@@ -443,3 +443,27 @@
 - PokeClaw 提交：`c177e4b feat(端侧运营状态): 新增PokeClaw机器可读闭环状态`。
 - 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round31-20260607-pokeclaw-operator-status/`。
 - 下一步：A泳道回到后端/Web，优先把 `operator-status.json` 接入 Claw 概览/设备治理入口，形成云端可见的 PokeClaw 设备状态卡。
+
+## 第32轮：PokeClaw 状态接入 Claw 云端总览
+
+- 时间：2026-06-07 01:18 +0800
+- 仓库状态：已执行六仓库 `git status --short`；后端状态命令使用 `-uno` 避免大仓库超时；Web 本轮开始前已有 `src/api/claw/overview.ts` 修改和 `src/api/claw/overview.test.ts` 未跟踪文件，本轮未覆盖无关改动。
+- 已读上下文：DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md`（仅确认凭证来源并脱敏，未使用明文）、Web `.claude/CLAUDE.md`、PokeClaw `CLAUDE.md`。
+- 任务类型：A泳道 Web 为泳道内串行；B泳道 PokeClaw 证据复核为并发可跑；Paperclip 状态目录为集成串行记录；未触碰数据库迁移、权限菜单、锁文件。
+- 推进动作：在 Claw 首页“三主线统一只读总览”增加 PokeClaw 端侧运行状态卡，展示 `设备在线=0台`、`端侧契约=通过`、`状态来源=operator-status.json` 和“接入真机或 ReDroid”的下一步动作。
+- B泳道证据：重新运行 PokeClaw 本地闭环入口，生成第32轮 `operator-status.json`，结果 `status=PASS`、`cloudLoopContract=PASS`、`adbOnlineCount=0`、`deviceStatus=no_online_device`。
+- 验证结果：Web 概览测试 7 项通过；Web diff 空白检查通过；DYQ 48080 健康 HTTP 200/status UP；`vue-tsc` 180 秒超时软阻塞；真实浏览器已启动到 `http://127.0.0.1:81/#/claw/home`，无脚本错误但停留骨架屏，未获得最终截图。
+- 提交：未提交；Web 仓库有轮前未提交同域改动，避免混提。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round32-20260607-pokeclaw-web-status/`。
+- 下一步：补 Web 页面稳定截图/登录后可视化证据，或把 `operator-status.json` 从静态快照替换为后端真实读取接口。
+
+## 第34轮｜2026-06-07 02:00 +0800｜A/B泳道可见状态与端云冒烟修复
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作，非空巡检。
+- 前置检查：已执行 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒仓库 `git status --short`；本轮只提交 Web 3 个 Claw 总览文件与 PokeClaw 1 个冒烟脚本文件，未覆盖其它既有改动。
+- 已读规则：DYQ `.claude/CLAUDE.md`、Web `.claude/CLAUDE.md`、PokeClaw `.claude/CLAUDE.md`、WeFlow `AGENTS.md`、DYQ 测试凭证文件；凭证仅用于浏览器登录验证，日志/证据不写明文密码和令牌。
+- 任务类型：A泳道/Web 为泳道内串行，补 Claw 验收兜底路由与端侧运行状态卡；B泳道/PokeClaw 为泳道内串行，修复端云冒烟脚本令牌头。
+- 真实产出：Web Claw 首页三主线总览新增 PokeClaw 端侧运行状态卡，并提供 hidden/canTo 验收直达路由；PokeClaw 冒烟脚本恢复真实设备令牌 Authorization 头。
+- 验证结果：PokeClaw `bash -n` 通过；Mock register/heartbeat/pending/result/异常链路通过，任务 `460323b2-a388-418b-ab61-8f87f5ec7dab` 回传成功；DYQ 48080 健康 HTTP 200/status UP。
+- 浏览器验证：真实浏览器完成登录尝试，控制台无 JS Error；端口代理/新 Vite 冷启动导致未拿到 Claw 首页截图，证据已写入本轮 browser-verification-note，下一轮优先补截图。
+- 提交：Web `037b6fecd feat(小龙虾总览): 展示端侧运行状态入口`；PokeClaw `501a1d5 fix(端云冒烟): 修复设备令牌请求头`。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round34-20260607-web-poke-visible-status/`。

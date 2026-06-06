@@ -425,3 +425,30 @@
   - `python3 ... operator-status.json`：断言 `status=PASS`、`cloudLoopContract=PASS`、`nextOperatorAction` 非空。
 - 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round31-20260607-pokeclaw-operator-status/`。
 - 关键结果：`deviceStatus=no_online_device`、`adbOnlineCount=0`，未伪装真机验收；脚本安全边界继续声明不自动发送微信、短信、私信或评论，不写真实生产数据。
+
+## 第32轮证据｜2026-06-07 01:18 +0800
+
+- 业务产出：Claw 首页三主线总览新增 PokeClaw 端侧运行状态卡，把端侧本地闭环 `operator-status.json` 映射成云端可见的设备在线数、端侧契约、状态来源和下一步动作。
+- 改动文件：
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/overview.ts`
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/overview.test.ts`
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/views/claw/home/components/MainlineOverview.vue`
+- 验证命令：
+  - `/mnt/e/code/ai-ui-admin-vue3aa`：`pnpm test:run src/api/claw/overview.test.ts -- --runInBand`，7 项通过。
+  - `/mnt/e/code/ai-ui-admin-vue3aa`：`git -c core.whitespace=trailing-space,cr-at-eol diff --check -- ...`，通过。
+  - `/mnt/e/code/PokeClaw`：`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq32-operator-status-web-card/20260607-round32`，通过。
+  - `/mnt/e/code/dyq`：`/admin-api/actuator/health` HTTP 200，状态 UP。
+- 软阻塞：`pnpm ts:check` 180 秒超时，未返回类型错误；真实浏览器页面无脚本错误但停留骨架屏，未能完成截图。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round32-20260607-pokeclaw-web-status/`。
+- 提交：未提交，原因是 Web 仓库轮前已有同域未提交改动，避免混入他人上下文。
+
+
+## 第34轮证据｜2026-06-07 02:00 +0800
+- 改动文件：`/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/overview.ts`、`/mnt/e/code/ai-ui-admin-vue3aa/src/router/modules/base.ts`、`/mnt/e/code/ai-ui-admin-vue3aa/src/views/claw/home/components/MainlineOverview.vue`、`/mnt/e/code/PokeClaw/scripts/dyq3-endcloud-smoke.sh`。
+- Web产出：Claw 三主线总览展示“端侧运行状态”区块；PokeClaw 卡片可见 `设备在线=0台`、`端侧契约=通过`、`状态来源=operator-status.json`；新增 `/claw/home` 等 hidden/canTo 兜底路由用于验收直达。
+- PokeClaw产出：冒烟脚本 Authorization 请求头恢复使用真实设备令牌，日志与汇报仍只写脱敏结果。
+- 验证：`bash -n scripts/dyq3-endcloud-smoke.sh` 通过；`MOCK_PORT=18434 USE_MOCK_BACKEND=1 bash scripts/dyq3-endcloud-smoke.sh artifacts/dyq3-smoke/20260607-round34-auth-header-mock` 通过，register/heartbeat/pending/result/异常链路均可见。
+- DYQ健康：`curl http://127.0.0.1:48080/admin-api/actuator/health` 返回 HTTP 200，`status=UP`。
+- Web验证：`pnpm exec vue-tsc --noEmit` 180 秒超时；真实浏览器登录链路无 JS Error，但 5188 端口浏览器沙箱不可达、80 新 Vite 冷启动未监听，未取得截图。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round34-20260607-web-poke-visible-status/`。
+- 提交：Web `037b6fecd feat(小龙虾总览): 展示端侧运行状态入口`；PokeClaw `501a1d5 fix(端云冒烟): 修复设备令牌请求头`。

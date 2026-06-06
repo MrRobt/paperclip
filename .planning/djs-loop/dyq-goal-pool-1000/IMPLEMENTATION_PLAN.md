@@ -5,7 +5,7 @@ STATUS: IN_PROGRESS
 ## 状态机
 
 当前状态：IN_PROGRESS
-当前轮次：31 / 1000
+当前轮次：32 / 1000
 
 ## 阶段计划
 
@@ -84,3 +84,18 @@ STATUS: IN_PROGRESS
 - [ ] 下一轮：若 ADB 真机上线，补真机安装/运行标记/截图证据；否则继续推进 PokeClaw 真实接口调用或 S1 真实 CDP 输出到 DYQ→WeFlow 闭环。
 
 - 第31轮（2026-06-07 00:45）：P1/P2 PokeClaw 新增机器可读 `operator-status.json`，本地闭环证据可被云端主控/看板直接消费；PokeClaw 提交 `c177e4b`。下一轮优先 A泳道，把该状态接入 Claw 概览/设备治理入口，形成云端可见设备状态卡。
+
+
+### 第32轮完成项
+- [x] A泳道/Web：Claw 首页三主线总览新增 PokeClaw 端侧运行状态卡。
+- [x] B泳道/PokeClaw：复跑本地闭环证据，生成第32轮 `operator-status.json`，确认端侧契约 PASS 且 ADB 在线数为 0。
+- [x] A泳道/DYQ：复核 48080 健康 HTTP 200/status UP。
+- [ ] 下一轮：优先补 Web 页面稳定截图/登录后真浏览器验收；若前端环境仍骨架屏，则把 `operator-status.json` 接入后端真实读取接口或设备治理页面。
+
+
+### 第34轮完成项
+- [x] A泳道/Web：Claw 首页三主线总览补 PokeClaw 端侧运行状态卡，运营可看到设备在线、端侧契约、状态来源。
+- [x] A泳道/Web：新增 hidden/canTo 验收兜底路由，避免测试租户菜单未开时无法直达 `/claw/home`。
+- [x] B泳道/PokeClaw：修复端云冒烟脚本真实令牌请求头，Mock 闭环回归通过。
+- [x] A泳道/DYQ：复核 48080 健康 HTTP 200/status UP。
+- [ ] 下一轮：优先修正前端开发服务端口代理/冷启动问题，补 `/claw/home` 真浏览器截图；若浏览器仍阻塞，转 C2/P2 将 operator-status 接入真实后端读取接口。

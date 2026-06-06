@@ -1,0 +1,3 @@
+200
+status=UP
+components=db,diskSpace,ping,rabbit,redis,sandbox,ssl
