@@ -269,3 +269,159 @@
   - 断网异常有原始输出证据
 - 语法和格式：`bash -n`、`git diff --check` 均通过。
 
+
+
+## 本次会话第2轮证据｜累计第22轮｜2026-06-06 22:23:11 +0800
+- 改动文件：`/mnt/e/code/PokeClaw/scripts/dyq3-endcloud-smoke.sh`、`/mnt/e/code/PokeClaw/QA_CHECKLIST.md`。
+- PokeClaw 提交：`ce98749 fix(端云冒烟): 修复令牌头真实请求`。
+- 语法与空白验证：`bash -n scripts/dyq3-endcloud-smoke.sh && git diff --check -- scripts/dyq3-endcloud-smoke.sh QA_CHECKLIST.md`，结果通过。
+- Mock 验证命令：`MOCK_PORT=18420 USE_MOCK_BACKEND=1 bash scripts/dyq3-endcloud-smoke.sh artifacts/dyq3-smoke/20260606-djs-loop-round2-token-header-mock`。
+- Mock 结果：通过；证据 `/mnt/e/code/PokeClaw/artifacts/dyq3-smoke/20260606-djs-loop-round2-token-header-mock/summary.md`；任务 `8f8de9f8-779c-405c-b3f6-7add05ca79a4` 已回传。
+- 真实 48080 验证命令：从 `/mnt/e/code/dyq/.claude/rules/testing-credentials.md` 读取测试密码后执行 `ADMIN_SEED_TASK=1 USE_MOCK_BACKEND=0 DYQ_BASE_URL=http://127.0.0.1:48080 HEALTH_PATH=/admin-api/actuator/health DEVICE_ID=pokeclaw-djs-round2-real ...`；未记录明文密码或完整令牌。
+- 真实结果：通过；健康、register、heartbeat、admin_login、admin_execute、pending、result 均通过；任务 `bacf45a8f43e46fe9b9e67c9ef54b065` 已完成下发、领取和结果回传；无令牌/坏令牌均返回 HTTP 401 与业务码 401。
+- WeFlow 复核：`node tests/wechat-control.verify.cjs` 通过，输出 `wechat control verification passed`；安全边界未执行真实微信发送。
+
+
+## 本次会话第3轮 / 累计第23轮（2026-06-06 22:40）
+
+状态：VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒→WeFlow）：社媒自动化控制台人工确认草稿新增 `businessScenario` 场景归类，S2 高意向私信线索默认归入 `S2截流获客`，只读总览新增 `场景 <名称> <数量>`，运营人员可在不触发外部发送的前提下区分 S1/S2/S3/S4 草稿来源。
+- A 泳道（DYQ 后端）：复核主后端 `48080` 健康端点，HTTP 200 且状态 `UP`，可继续承接设备注册、心跳、任务下发链路。
+
+验证：
+- `/mnt/d/work/code/social-media-web-automation`：`npm test -- --test-name-pattern='控制台只读总览|S2.2 私信线索转 WeFlow 承接契约'` 通过，实际覆盖 108 项，0 失败。
+- `/mnt/d/work/code/social-media-web-automation`：`npm run typecheck` 通过。
+- `/mnt/d/work/code/social-media-web-automation`：`git diff --check` 通过。
+- DYQ 48080：`curl http://127.0.0.1:48080/admin-api/actuator/health` 返回 HTTP 200，状态 `UP`。
+
+提交：
+- 社媒仓库本地提交：`094bda0 feat(场景归类): 人工确认队列展示业务场景统计`。
+
+阻塞：
+- 无强阻塞；未做真实外部私信发送，继续保持人工确认安全边界。
+
+下一步：
+- 把 S1 直播间/热点线索也接入同一业务场景归类，或补真实控制台截图证据。
+
+## 本次会话第4轮证据｜累计第24轮｜2026-06-06 22:45 +0800
+- 目标：S1 直播间/热点线索 → 人工确认评论草稿 → 只读控制台场景归类。
+- 改动文件：
+  - `/mnt/d/work/code/social-media-web-automation/src/operations/live-room-lead-handoff.ts`
+  - `/mnt/d/work/code/social-media-web-automation/tests/live-room-lead-handoff.test.ts`
+- RED证据：首次运行 `npm test -- --test-name-pattern='S1直播间/热点线索人工确认草稿'` 失败，原因是缺少 `src/operations/live-room-lead-handoff.ts`。
+- GREEN验证：实现后 `npm test -- --test-name-pattern='S1直播间/热点线索人工确认草稿'` 通过，累计 111 项通过、0 失败。
+- 类型验证：`npm run typecheck` 通过。
+- 空白验证：`git diff --check -- src/operations/live-room-lead-handoff.ts tests/live-room-lead-handoff.test.ts` 通过。
+- 安全判定：只生成 `comment` 类型人工确认草稿，业务场景为 `S1直播间截流`；`reviewNote` 明确仅生成草稿、不自动评论、不私信、不关注、不点赞、不绕过登录或风控。
+- 提交：社媒仓库本地提交 `9658a71 feat(直播截流): 接入S1人工确认草稿`。
+- A 泳道补充验证：DYQ 48080 健康端点返回 HTTP 200、状态 `UP`。
+
+
+## 本次会话第5轮证据｜累计第25轮｜2026-06-06 23:03 +0800
+- 目标：S1 小红书只读详情 → 直播间/热点线索 → 人工确认评论草稿 → 控制台只读总览。
+- 改动文件：
+  - `/mnt/d/work/code/social-media-web-automation/src/operations/live-room-lead-handoff.ts`
+  - `/mnt/d/work/code/social-media-web-automation/tests/live-room-lead-handoff.test.ts`
+- RED证据：新增测试后首次运行失败，原因是缺少 `enqueueXiaohongshuLiveLeadDetailsToConfirmationQueue` 导出。
+- GREEN验证：`npm test -- --test-name-pattern=小红书只读详情批量灌入|S1直播间/热点线索人工确认草稿` 通过 114 项，0 失败。
+- 类型验证：`npm run typecheck` 通过。
+- 空白验证：`git diff --check -- src/operations/live-room-lead-handoff.ts tests/live-room-lead-handoff.test.ts` 通过。
+- 控制台可见证据：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round25-20260606-s1-xhs-dashboard/dashboard.txt`，显示 S1 直播间截流评论草稿 1 条、高风险 1 条、仅展示人工复制处理。
+- DYQ 健康证据：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round25-20260606-s1-xhs-dashboard/dyq-health.json`，HTTP 200、状态 UP。
+- 安全判定：只读详情触发人工接管时自动跳过；高意向项只生成评论草稿并进入人工确认队列；未执行真实外部评论、私信、关注、点赞。
+- 提交：社媒仓库本地提交 `b77ab9b feat(直播截流): 接入小红书只读详情队列`。
+
+
+## 第26轮证据｜2026-06-06 23:15 +0800
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round26-20260606-s1-dyq-weflow-live/`。
+- 证据脚本：`run_s1_xhs_to_weflow_live.py`；脚本只读取测试凭证来源文件，不打印密码、管理后台令牌或设备令牌。
+- 社媒草稿：`s1-confirmation-draft.safe.json`，业务场景 `S1直播间截流`，平台 `xiaohongshu`，风险 `high`，仅人工确认。
+- DYQ 下发种子：`s1-dyq-weflow-task-seed.safe.json`，`taskType=wechat.message.prepare_text`，`externalActionAllowed=false`，`requiresHumanConfirmation=true`。
+- 真实闭环输出：`live-summary.safe.json`。
+- 验证命令与结果：
+  - `python3 -m py_compile .../run_s1_xhs_to_weflow_live.py`：通过。
+  - `npm test -- --test-name-pattern='小红书只读详情批量灌入|S1直播间/热点线索人工确认草稿'`：通过 114 项，0 失败。
+  - `python3 run_s1_xhs_to_weflow_live.py`：通过，`passed=true`。
+- 真实摘要：DYQ 48080 health HTTP 200、状态 UP；register/heartbeat/adminLogin/adminExecute/pendingToSafeDraftResult 均 HTTP 200、业务码 0；任务 `7365f8dc4def4af8a6baa99d6d8e841a` 已完成下发、领取和结果回传。
+- 安全判定：WeFlow 草稿 `status=prepared`、`commandType=wechat.message.prepare_text`、`requiresHumanConfirmation=true`、`sendActionExecuted=false`、`manualTakeoverRequired=true`；未执行真实微信发送、评论、私信、关注、点赞。
+
+## 第27轮证据｜2026-06-06 23:28 +0800
+- 改动文件：
+  - `/mnt/d/work/code/social-media-web-automation/src/operations/live-room-lead-handoff.ts`
+  - `/mnt/d/work/code/social-media-web-automation/tests/live-room-lead-handoff.test.ts`
+  - `/mnt/d/work/code/social-media-web-automation/src/index.ts`
+- 业务能力：小红书只读搜索结果卡片可转入 S1「直播间截流」人工确认评论草稿；高意向项入队，低意向项跳过；触发登录/验证码/风控人工接管时不生成草稿。
+- 公共入口：直播截流承接能力已从社媒包入口导出，便于后续控制台、DYQ 或 WeFlow 链路复用。
+- 验证命令与结果：
+  - `npm run typecheck`：通过。
+  - `npm test -- --test-name-pattern='小红书搜索结果'`：通过 116 项，0 失败。
+  - `git diff --check`：通过。
+  - `/mnt/d/work/code/WeFlow` 中 `python3 scripts/test_weflow_dyq_safe_draft.py`：通过 8 项，0 失败。
+- 安全判定：只读采集到人工确认队列，不自动评论、不私信、不点赞、不关注；遇到人工接管信号直接短路。
+- 提交：社媒仓库本地提交 `e42a9ca feat(直播截流): 接入小红书搜索结果草稿`。
+
+
+## 第28轮证据｜2026-06-07 00:08 +0800
+- PokeClaw 提交：`da814df feat(端侧闭环证据): 新增PokeClaw本地样例验收入口`。
+- 改动文件：
+  - `/mnt/e/code/PokeClaw/scripts/dyq28-local-loop-evidence.sh`
+  - `/mnt/e/code/PokeClaw/app/src/test/java/io/agents/pokeclaw/cloudnode/CloudExecutorNodeContractTest.kt`
+  - `/mnt/e/code/PokeClaw/QA_CHECKLIST.md`
+- 业务能力：新增 P1/P2 端侧本地闭环证据生成入口，输出 summary、Gradle 目标测试日志、ADB 环境记录；覆盖成功执行、可重试失败、不可重试失败、执行超时、权限缺失、离线缓存六类端侧结果。
+- 验证命令：
+  - `bash -n scripts/dyq28-local-loop-evidence.sh`：通过。
+  - `./scripts/dyq28-local-loop-evidence.sh artifacts/dyq28-local-loop/20260606-round28-local-loop-v5`：通过。
+  - 脚本内执行 `./gradlew :app:testDebugUnitTest --tests io.agents.pokeclaw.cloudnode.CloudExecutorNodeContractTest`：通过，`BUILD SUCCESSFUL in 27s`。
+  - `git diff --check`：通过。
+- 证据目录：`/mnt/e/code/PokeClaw/artifacts/dyq28-local-loop/20260606-round28-local-loop-v5/`，包含 `summary.md`、`gradle-test.log`、`adb.log`、`run.log`。
+- ADB 状态：`adb devices -l` 当前无在线设备；不阻塞本地闭环证据生成，但仍阻塞真机截图/真机执行闭环。
+
+
+## 第29轮证据｜2026-06-07 00:21 +0800
+- 社媒提交：`c2c4c71 feat(直播截流): 新增小红书搜索草稿预览入口`。
+- 改动文件：
+  - `/mnt/d/work/code/social-media-web-automation/examples/s1-xiaohongshu-search-preview.ts`
+  - `/mnt/d/work/code/social-media-web-automation/package.json`
+- 业务能力：新增 S1 小红书只读搜索结果预览入口，可从搜索提取 JSON 或内置样例生成 `S1直播间截流` 人工确认评论草稿面板，展示待人工复制内容和结构化摘要。
+- 验证命令与结果：
+  - `npm run s1:xhs-search-preview`：通过，生成 1 条高意向评论草稿、跳过 1 条低意向搜索卡片。
+  - `npm test -- --test-name-pattern="小红书搜索结果"`：通过 116 项，0 失败。
+  - `npm run typecheck`：通过。
+  - `git diff --check -- package.json examples/s1-xiaohongshu-search-preview.ts`：通过。
+  - `/mnt/d/work/code/WeFlow` 中 `python3 scripts/test_weflow_dyq_safe_draft.py`：通过 8 项。
+  - `/mnt/e/code/dyq` 健康检查：`/admin-api/actuator/health` HTTP 200，状态 UP。
+- 证据文件：`preview.txt`、`test-xhs-search.txt`、`typecheck.txt`、`weflow-safe-draft.txt`、`dyq-health.txt`、`summary.safe.json`。
+- 安全判定：本轮未执行真实评论、私信、关注、点赞；未绕过登录、验证码或风控；仅生成人工确认草稿预览。
+
+
+## 第30轮证据｜2026-06-07 00:32 +0800
+- PokeClaw 提交：`4117a12 feat(端侧闭环): 新增PokeClaw运营看板证据`。
+- 改动文件：
+  - `/mnt/e/code/PokeClaw/scripts/dyq28-local-loop-evidence.sh`
+  - `/mnt/e/code/PokeClaw/QA_CHECKLIST.md`
+- 业务能力：PokeClaw 本地闭环证据包新增运营可读看板 `operator-dashboard.md`，将成功执行、可重试失败、不可重试失败、执行超时、权限缺失、离线缓存六类端侧结果转为运营含义和下一步动作。
+- 验证命令与结果：
+  - `bash -n scripts/dyq28-local-loop-evidence.sh`：通过。
+  - `./scripts/dyq28-local-loop-evidence.sh artifacts/dyq30-local-loop-dashboard/20260607-round30`：通过。
+  - 脚本内执行 `./gradlew :app:testDebugUnitTest --tests io.agents.pokeclaw.cloudnode.CloudExecutorNodeContractTest`：通过。
+  - Python 内容断言：`operator-dashboard.md` 包含“PokeClaw 端侧闭环运营看板”“六类端侧结果”“安全边界”。
+  - `/mnt/e/code/dyq` 健康检查：`/admin-api/actuator/health` HTTP 200，状态 UP。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round30-20260607-pokeclaw-dashboard/`，包含 `summary.md`、`operator-dashboard.md`、`run.log`、`adb.log`、`gradle-test.log`。
+- ADB 状态：当前无在线设备，真机截图/真机执行闭环待后续补齐；本轮本地运营看板验收不受影响。
+- 安全判定：脚本不自动发送微信、短信、私信或评论；不写真实生产数据。
+
+## 第31轮证据｜2026-06-07 00:45 +0800
+
+- PokeClaw 提交：`c177e4b feat(端侧运营状态): 新增PokeClaw机器可读闭环状态`。
+- 改动文件：
+  - `/mnt/e/code/PokeClaw/scripts/dyq28-local-loop-evidence.sh`
+  - `/mnt/e/code/PokeClaw/QA_CHECKLIST.md`
+- 业务产出：PokeClaw 端侧本地闭环证据包新增 `operator-status.json`，云端主控/看板可直接读取端侧是否有在线设备、端侧契约是否通过、下一步运营动作和安全边界。
+- 验证命令：
+  - `bash -n scripts/dyq28-local-loop-evidence.sh`：通过。
+  - `./scripts/dyq28-local-loop-evidence.sh artifacts/dyq31-operator-status/20260607-round31`：通过。
+  - `python3 ... operator-status.json`：断言 `status=PASS`、`cloudLoopContract=PASS`、`nextOperatorAction` 非空。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round31-20260607-pokeclaw-operator-status/`。
+- 关键结果：`deviceStatus=no_online_device`、`adbOnlineCount=0`，未伪装真机验收；脚本安全边界继续声明不自动发送微信、短信、私信或评论，不写真实生产数据。

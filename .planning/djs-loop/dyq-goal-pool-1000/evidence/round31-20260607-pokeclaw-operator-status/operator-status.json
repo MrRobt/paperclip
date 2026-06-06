@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "goal": "P1/P2 PokeClaw端侧闭环",
+  "deviceStatus": "no_online_device",
+  "adbOnlineCount": 0,
+  "cloudLoopContract": "PASS",
+  "operatorDashboard": "artifacts/dyq31-operator-status/20260607-round31/operator-dashboard.md",
+  "nextOperatorAction": "先接入真机或ReDroid，再执行真实任务领取",
+  "safetyBoundary": [
+    "不自动发送微信、短信、私信或评论",
+    "不写真实生产数据",
+    "无在线设备时只生成本地样例证据，不伪装真机验收"
+  ]
+}

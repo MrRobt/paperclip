@@ -256,3 +256,190 @@
 - 本轮仅新增/修改自有文件：DYQ 后端脚本、PokeClaw 冒烟脚本、Paperclip djs-loop 状态文档。
 - 未提交：当前多个仓库存在大量历史未跟踪/他人改动，本轮先不混合提交，避免把无关文件带入提交。
 
+
+
+## 本次会话第2轮｜累计第22轮｜2026-06-06 22:23:11 +0800｜P1真实端云冒烟令牌头修复 + W2控制契约复核
+- 状态：IN_PROGRESS，完成一个最小可验证推进动作，覆盖 PokeClaw 与 WeFlow 两个仓库。
+- 前置检查：已执行六仓库 `git status --short`；PokeClaw 本轮仅修改 `scripts/dyq3-endcloud-smoke.sh` 与 `QA_CHECKLIST.md`；WeFlow 仅存在既有未跟踪审计目录，本轮只跑验证不覆盖。
+- 已读规则：DYQ `.claude/CLAUDE.md` 与 `.claude/rules/testing-credentials.md`、PokeClaw `CLAUDE.md`、WeFlow `AGENTS.md`；测试凭证仅用于真实 48080 验证，日志/证据不写明文密码或完整令牌。
+- 推进行动：修复 PokeClaw 端云冒烟脚本里 `Authorization` 请求头被脱敏占位符写入请求的问题；真实请求携带完整设备令牌/管理后台令牌，但输出仍脱敏。
+- PokeClaw 验证：`bash -n scripts/dyq3-endcloud-smoke.sh` 通过；Mock 端云闭环通过；真实 48080 `ADMIN_SEED_TASK=1` 通过，任务 `bacf45a8f43e46fe9b9e67c9ef54b065` 完成管理后台下发、pending 拉取、result 签名回传，无令牌/坏令牌均返回 401。
+- WeFlow 验证：`node tests/wechat-control.verify.cjs` 通过，微信控制状态、回复服务、HTTP 路由契约均通过；未触发真实微信发送。
+- 提交：PokeClaw 本地提交 `ce98749 fix(端云冒烟): 修复令牌头真实请求`。
+- 下一步：转向 S1 直播间/热点线索任务种子接入，或补真实控制台/桌面运行标记截图证据。
+
+
+## 本次会话第3轮 / 累计第23轮（2026-06-06 22:40）
+
+状态：VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒→WeFlow）：社媒自动化控制台人工确认草稿新增 `businessScenario` 场景归类，S2 高意向私信线索默认归入 `S2截流获客`，只读总览新增 `场景 <名称> <数量>`，运营人员可在不触发外部发送的前提下区分 S1/S2/S3/S4 草稿来源。
+- A 泳道（DYQ 后端）：复核主后端 `48080` 健康端点，HTTP 200 且状态 `UP`，可继续承接设备注册、心跳、任务下发链路。
+
+验证：
+- `/mnt/d/work/code/social-media-web-automation`：`npm test -- --test-name-pattern='控制台只读总览|S2.2 私信线索转 WeFlow 承接契约'` 通过，实际覆盖 108 项，0 失败。
+- `/mnt/d/work/code/social-media-web-automation`：`npm run typecheck` 通过。
+- `/mnt/d/work/code/social-media-web-automation`：`git diff --check` 通过。
+- DYQ 48080：`curl http://127.0.0.1:48080/admin-api/actuator/health` 返回 HTTP 200，状态 `UP`。
+
+- A 泳道验证补充：`curl/urllib http://127.0.0.1:48080/admin-api/actuator/health` 返回 HTTP 200、状态 `UP`，主后端仍可承接后续 S1 任务下发。
+
+提交：
+- 社媒仓库本地提交：`094bda0 feat(场景归类): 人工确认队列展示业务场景统计`。
+
+阻塞：
+- 无强阻塞；未做真实外部私信发送，继续保持人工确认安全边界。
+
+下一步：
+- 把 S1 直播间/热点线索也接入同一业务场景归类，或补真实控制台截图证据。
+
+## 本次会话第4轮 / 累计第24轮（2026-06-06 22:45）
+
+状态：BUILDING → VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒自动化）：新增 S1 直播间/热点线索人工确认草稿能力，文件为 `/mnt/d/work/code/social-media-web-automation/src/operations/live-room-lead-handoff.ts`。
+- C 泳道验证：新增 `/mnt/d/work/code/social-media-web-automation/tests/live-room-lead-handoff.test.ts`，覆盖高意向观察结果转评论草稿、低意向拒绝、批量入队并保留 `S1直播间截流` 场景归类。
+- A 泳道（DYQ 前置）：本轮已按规则读取 DYQ 测试凭证来源文件 `/mnt/e/code/dyq/.claude/rules/testing-credentials.md`，仅用于确认测试规则，不写明文密码或令牌。
+
+验证：
+- 先写测试后运行 `npm test -- --test-name-pattern='S1直播间/热点线索人工确认草稿'`，首次红灯为缺少 `src/operations/live-room-lead-handoff.ts`。
+- 实现后再次运行 `npm test -- --test-name-pattern='S1直播间/热点线索人工确认草稿'`，通过 111 项，0 失败。
+- `/mnt/d/work/code/social-media-web-automation`：`npm run typecheck` 通过。
+- `/mnt/d/work/code/social-media-web-automation`：`git diff --check -- src/operations/live-room-lead-handoff.ts tests/live-room-lead-handoff.test.ts` 通过。
+
+- A 泳道验证补充：`curl/urllib http://127.0.0.1:48080/admin-api/actuator/health` 返回 HTTP 200、状态 `UP`，主后端仍可承接后续 S1 任务下发。
+
+提交：
+- 社媒仓库本地提交：`9658a71 feat(直播截流): 接入S1人工确认草稿`。
+
+阻塞：
+- 无强阻塞；本轮未执行真实评论、私信、关注、点赞或任何外部可见动作。
+
+下一步：
+- 把真实小红书只读搜索/详情提取结果接入 `buildLiveRoomLeadConfirmationDraft`，形成 S1 直播间/热点线索 → 控制台人工确认队列的可视化证据。
+
+
+## 本次会话第5轮 / 累计第25轮（2026-06-06 23:03）
+
+状态：BUILDING → VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒自动化）：新增 `enqueueXiaohongshuLiveLeadDetailsToConfirmationQueue`，把小红书 CDP 只读详情提取结果批量灌入 S1 人工确认队列；登录、验证码、风控项自动跳过，不生成评论草稿。
+- C 泳道可视化：用只读详情样例生成控制台面板证据，显示 `人工确认概览: 总数 1｜评论 1｜高 1｜场景 S1直播间截流 1`，人工确认草稿只展示，不提供自动评论入口。
+- A 泳道（DYQ 后端）：复核 48080 健康端点仍为 HTTP 200、状态 UP，可继续承接后续 S1 草稿下发到 WeFlow 的云端链路。
+
+验证：
+- RED：先运行 `npm test -- --test-name-pattern=小红书只读详情批量灌入`，失败原因为缺少 `enqueueXiaohongshuLiveLeadDetailsToConfirmationQueue` 导出。
+- GREEN：实现后 `npm test -- --test-name-pattern=小红书只读详情批量灌入|S1直播间/热点线索人工确认草稿` 通过 114 项，0 失败。
+- `/mnt/d/work/code/social-media-web-automation`：`npm run typecheck` 通过。
+- `/mnt/d/work/code/social-media-web-automation`：`git diff --check -- src/operations/live-room-lead-handoff.ts tests/live-room-lead-handoff.test.ts` 通过。
+- 面板证据：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round25-20260606-s1-xhs-dashboard/dashboard.txt`。
+- DYQ 48080：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round25-20260606-s1-xhs-dashboard/dyq-health.json` 显示 HTTP 200、状态 UP。
+
+提交：
+- 社媒仓库本地提交：`b77ab9b feat(直播截流): 接入小红书只读详情队列`。
+
+阻塞：
+- 无强阻塞；本轮未执行真实评论、私信、关注、点赞，也未绕过登录/验证码/风控。
+
+下一步：
+- 接真实 CDP 小红书只读搜索输出，或把 S1 草稿下发到 DYQ→WeFlow 安全草稿闭环。
+
+
+## 本次会话第6轮 / 累计第26轮（2026-06-06 23:15）
+
+状态：VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒→DYQ→WeFlow）：新增并执行证据脚本 `evidence/round26-20260606-s1-dyq-weflow-live/run_s1_xhs_to_weflow_live.py`，把 S1 小红书只读详情草稿真实下发到 DYQ 48080，再由 WeFlow 领取并回传安全草稿 result。
+- 社媒侧：复用 `buildLiveRoomLeadDraftFromXiaohongshuDetail` 生成 `S1直播间截流` 高风险人工确认草稿，安全种子写入 `s1-dyq-weflow-task-seed.safe.json`。
+- DYQ/WeFlow 侧：注册设备 `weflow-round26-s1-1780758892`，管理后台 execute 下发任务 `7365f8dc4def4af8a6baa99d6d8e841a`，WeFlow pending→safeDraft→signed result 回传通过。
+- A 泳道（DYQ 后端）：48080 健康端点 HTTP 200、状态 UP，开发测试凭证只从 `/mnt/e/code/dyq/.claude/rules/testing-credentials.md` 读取，未写入明文密码或完整令牌。
+
+验证：
+- `python3 -m py_compile .planning/djs-loop/dyq-goal-pool-1000/evidence/round26-20260606-s1-dyq-weflow-live/run_s1_xhs_to_weflow_live.py`：通过。
+- `/mnt/d/work/code/social-media-web-automation`：`npm test -- --test-name-pattern='小红书只读详情批量灌入|S1直播间/热点线索人工确认草稿'` 通过 114 项，0 失败。
+- `python3 run_s1_xhs_to_weflow_live.py`：通过；health/register/heartbeat/adminLogin/adminExecute/pendingToSafeDraftResult 均 HTTP 200 且业务码 0。
+- `git diff --check -- .planning/djs-loop/dyq-goal-pool-1000/evidence/round26-20260606-s1-dyq-weflow-live/run_s1_xhs_to_weflow_live.py`：通过。
+
+提交：
+- 未提交。原因：本轮主要新增 Paperclip 状态目录内证据脚本和文档，Paperclip 仓库已有大量既有未提交改动；社媒、DYQ、WeFlow 没有新增代码改动，避免混入无关文件。
+
+阻塞：
+- 无强阻塞；本轮未执行真实评论、私信、关注、点赞，也未触发真实微信发送。
+
+下一步：
+- 接真实 CDP 小红书只读搜索输出，复用本轮 S1→DYQ→WeFlow 闭环脚本批量生成安全草稿；或补控制台/桌面截图证据。
+
+## 本次会话第7轮 / 累计第27轮（2026-06-06 23:28）
+
+状态：BUILDING → VERIFYING → IN_PROGRESS
+
+真实产出：
+- C 泳道（社媒自动化）：新增小红书只读搜索结果卡片到 S1 人工确认队列的承接能力；高意向搜索结果生成 `S1直播间截流` 评论草稿，低意向卡片跳过。
+- C 泳道安全边界：`requiresHuman=true`、登录、验证码、风控命中时直接返回人工接管，不生成草稿；不自动评论、不私信、不点赞、不关注。
+- 公共入口：`src/index.ts` 已导出直播截流承接能力，便于后续 DYQ/WeFlow 或控制台从包入口复用。
+- B/C 联动验证：WeFlow 安全草稿脚本继续通过，证明下游人工确认草稿链路未被破坏。
+
+验证：
+- `/mnt/d/work/code/social-media-web-automation`：`npm run typecheck` 通过。
+- `/mnt/d/work/code/social-media-web-automation`：`npm test -- --test-name-pattern='小红书搜索结果'` 通过 116 项，0 失败。
+- `/mnt/d/work/code/social-media-web-automation`：`git diff --check` 通过。
+- `/mnt/d/work/code/WeFlow`：`python3 scripts/test_weflow_dyq_safe_draft.py` 通过 8 项，0 失败。
+
+提交：
+- 社媒仓库本地提交：`e42a9ca feat(直播截流): 接入小红书搜索结果草稿`。
+
+阻塞：
+- 无强阻塞；未执行任何真实外部可见动作，未绕过登录/验证码/风控。
+
+下一步：
+- 把搜索结果承接函数接入真实 CDP 搜索脚本证据，生成搜索关键词 → 人工确认草稿 → DYQ/WeFlow 安全草稿的完整闭环样例。
+
+
+## 第28轮｜2026-06-07 00:08 +0800
+- 任务类型：B泳道 PokeClaw 泳道内串行；Paperclip 状态文档维护。
+- 规则读取：已读 PokeClaw `CLAUDE.md`、`README.md` 产品方向/路线/平台约束、`QA_CHECKLIST.md`；已读 DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md`（未使用凭证、未记录敏感值）。
+- 仓库状态：执行前检查 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒 git status；未覆盖他人改动。本轮实际改动 PokeClaw + Paperclip 状态目录。
+- 真实产出：PokeClaw 新增可操作入口 `scripts/dyq28-local-loop-evidence.sh`，可在无真机/云端阻塞时生成端侧本地闭环证据包。
+- 测试先行/验收：新增 `CloudExecutorNodeContractTest` 证据格式测试，确保本地闭环证据覆盖成功执行、可重试失败、不可重试失败、执行超时、权限缺失、离线缓存六类端侧结果。
+- QA 文档：更新 `QA_CHECKLIST.md` 顶部 QA Debug Changelog，并新增 Z8-4 验收项。
+- 提交：PokeClaw `da814df feat(端侧闭环证据): 新增PokeClaw本地样例验收入口`。
+
+
+## 第29轮｜2026-06-07 00:21 +0800
+- 任务类型：C泳道社媒自动化并发可跑；A泳道DYQ健康复核；B/C联动WeFlow安全草稿回归。
+- 规则读取：已读 DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md`（未使用凭证、未记录敏感值）；已加载小红书 CDP Bridge 安全规则，已检查真实浏览器标签，当前未发现小红书标签，未强行打开或绕过登录/风控。
+- 仓库状态：执行前检查 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒 git status；未覆盖他人改动。本轮实际改动社媒仓库 + Paperclip 状态目录。
+- 真实产出：社媒仓库新增 `examples/s1-xiaohongshu-search-preview.ts` 与脚本入口 `npm run s1:xhs-search-preview`，可把小红书只读搜索提取 JSON 转成 S1 直播间截流人工确认评论草稿面板；不传文件时用内置样例演示。
+- 可见能力：运营现在可直接预览“搜索结果卡片 → S1人工确认评论草稿 → 面板展示”的链路，明确显示接收/拒绝数量、风险、目标、内容预览和安全边界。
+- 验证：预览脚本通过；小红书搜索结果测试 116 项通过；社媒 typecheck 通过；WeFlow 安全草稿回归 8 项通过；DYQ 48080 健康 HTTP 200/status UP。
+- 提交：社媒仓库 `c2c4c71 feat(直播截流): 新增小红书搜索草稿预览入口`。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round29-20260607-s1-xhs-preview/`。
+- 阻塞：真实浏览器当前没有小红书标签，未产生真实页面截图；这不阻塞本轮最小可用预览入口，下一轮可在主人打开小红书后接真实 CDP 输出。
+
+
+## 第30轮｜2026-06-07 00:32 +0800
+- 任务类型：B泳道 PokeClaw 泳道内串行；A泳道 DYQ 健康复核；Paperclip 状态文档维护。
+- 规则读取：已读 PokeClaw `CLAUDE.md`、`README.md`、`QA_CHECKLIST.md`；已读 DYQ `.claude/CLAUDE.md`、`.claude/rules/testing-credentials.md`（未使用凭证、未记录敏感值）。
+- 仓库状态：执行前检查 Paperclip、DYQ、Web、PokeClaw、WeFlow、社媒 git status；未覆盖他人改动。本轮实际改动 PokeClaw + Paperclip 状态目录。
+- 真实产出：PokeClaw 本地闭环证据入口新增 `operator-dashboard.md`，把端侧六类结果翻译为运营含义和下一步动作；运营无真机时也能验收 P1/P2 端侧闭环状态。
+- 可见能力：证据包现在包含 `summary.md` 与运营看板，明确展示“成功执行/可重试失败/不可重试失败/执行超时/权限缺失/离线缓存”的状态、含义和动作建议。
+- 验证：`bash -n scripts/dyq28-local-loop-evidence.sh` 通过；`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq30-local-loop-dashboard/20260607-round30` 通过；脚本内 Gradle 目标测试通过；看板内容断言通过；DYQ 48080 健康 HTTP 200/status UP。
+- 提交：PokeClaw `4117a12 feat(端侧闭环): 新增PokeClaw运营看板证据`。
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round30-20260607-pokeclaw-dashboard/`。
+- 阻塞：ADB 当前无在线设备，仍无法补真机截图/真机执行闭环；不阻塞本轮本地运营看板验收。
+
+## 第31轮：P1/P2 PokeClaw 机器可读运营状态
+
+- 时间：2026-06-07 00:45:02 +0800
+- 仓库状态：已执行六仓库 `git status --short`；PokeClaw 分支 dev 本轮只改 `scripts/dyq28-local-loop-evidence.sh` 与 `QA_CHECKLIST.md`，Paperclip 仅追加本轮状态和证据，不覆盖既有未提交改动。
+- 已读上下文：DYQ `.claude/CLAUDE.md`、`testing-credentials.md`（仅确认凭证来源并脱敏）、PokeClaw `CLAUDE.md`/`QA_CHECKLIST.md`、社媒 `README.md`、Paperclip `AGENTS.md` 摘要；确认 PokeClaw 变更需 QA 记录，外部可见动作必须人工确认。
+- 任务类型：B泳道 PokeClaw 为泳道内串行；Paperclip 状态目录为集成串行记录；未触碰全局锁文件、数据库迁移、权限菜单。
+- 推进动作：在 PokeClaw 本地闭环证据入口新增 `operator-status.json`，把 ADB 在线设备数、端侧闭环契约结果、下一步运营动作、安全边界输出为机器可读状态，供 DYQ 云端主控/看板直接消费。
+- 验证结果：`bash -n scripts/dyq28-local-loop-evidence.sh` 通过；`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq31-operator-status/20260607-round31` 通过；JSON 断言 `status=PASS`、`cloudLoopContract=PASS`、`nextOperatorAction` 非空；当前 `adbOnlineCount=0`，明确标记 `no_online_device`。
+- PokeClaw 提交：`c177e4b feat(端侧运营状态): 新增PokeClaw机器可读闭环状态`。
+- 证据目录：`.planning/djs-loop/dyq-goal-pool-1000/evidence/round31-20260607-pokeclaw-operator-status/`。
+- 下一步：A泳道回到后端/Web，优先把 `operator-status.json` 接入 Claw 概览/设备治理入口，形成云端可见的 PokeClaw 设备状态卡。
