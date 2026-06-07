@@ -1,0 +1,5 @@
+[HTTP 200 biz=None] /admin-api/actuator/health
+[HTTP 200 biz=0] /admin-api/claw/statistics/summary keys=['totalLobsters', 'activeLobsters', 'totalSkills', 'totalExperiences', 'evaluatedExperiences', 'avgRewardScore']
+[HTTP 200 biz=0] /admin-api/claw/statistics/mainline-overview keys=['updatedAt', 'items']
+[HTTP 200 biz=0] /admin-api/claw/statistics/goal-pool total=0 list_len=0 keys=['list', 'total']
+[HTTP 200 biz=0] /admin-api/claw/device/list total=253 list_len=10 keys=['list', 'total']

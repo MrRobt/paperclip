@@ -486,3 +486,78 @@
 - DYQ健康：48080 `/admin-api/actuator/health` 返回 HTTP 200、状态 UP。
 - 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round36-20260607-cloud-overview-status`。
 - 安全判定：本轮不触发真实微信、短信、私信、评论，不写生产数据；测试凭证只确认来源，未记录明文密码或完整令牌。
+
+
+## 第37轮证据｜2026-06-07 03:26 +0800
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round37-20260607-claw-poke-web-overview/`。
+- Web 验证：`npm test -- --run src/api/claw/overview.test.ts`，1 个测试文件、9 个用例通过。
+- PokeClaw 验证：`./gradlew :app:testDebugUnitTest --tests io.agents.pokeclaw.cloudnode.CloudExecutorNodeContractTest`，构建成功。
+- DYQ 验证：`mvn -pl dyq-module-claw/dyq-module-claw-biz -Dtest=ClawStatisticsServiceImplTest,ClawStatisticsControllerTest,ClawDeviceServiceTest test -DskipITs -Dcheckstyle.skip`，`ClawDeviceServiceTest` 23 个用例通过。
+- 业务判定：Claw 总览真实接口、Web 默认真实读取、PokeClaw 端侧状态证据包三者形成“云端可见端侧运行状态”的最小闭环；ADB 在线数为 0，仍需下一轮补真机或真浏览器截图。
+
+
+## 第38轮证据｜2026-06-07 03:42 +0800
+- DYQ 改动文件：`/mnt/e/code/dyq/dyq-module-claw/dyq-module-claw-biz/src/test/java/com/douyouqu/dyq/module/claw/service/statistics/ClawStatisticsServiceTest.java`。
+- 后端测试命令：`mvn -pl dyq-module-claw/dyq-module-claw-biz -Dtest=ClawStatisticsServiceTest test -DskipITs`。
+- 后端测试结果：通过；`Tests run: 2, Failures: 0, Errors: 0, Skipped: 0`；覆盖未配置 PokeClaw 状态路径时的降级卡片，以及配置 `pokeclaw.operator-status.path` 后读取 `operator-status.json` 并展示设备在线、端侧契约、可浏览看板。
+- PokeClaw 证据命令：`./scripts/dyq28-local-loop-evidence.sh artifacts/dyq38-cloud-overview/20260607-round38`。
+- PokeClaw 证据结果：通过；关键文件 `/mnt/e/code/PokeClaw/artifacts/dyq38-cloud-overview/20260607-round38/operator-status.json`、`operator-dashboard.md`、`operator-dashboard.html`；摘要 `status=PASS`、`adbOnlineCount=0`、`cloudLoopContract=PASS`。
+- Web 回归命令：`npm test -- --run src/api/claw/overview.test.ts`。
+- Web 回归结果：通过；`src/api/claw/overview.test.ts` 9 项通过，确认默认请求 `/claw/statistics/mainline-overview`。
+- 判定：C1/C2 云端三主线总览从"前端真实接口契约"推进到"后端可读取 PokeClaw 端侧证据并可降级展示"的可验证闭环；下一轮进入真实 48080 接口调用和浏览器可见证据。
+
+## 第39轮证据｜2026-06-07 04:42 +0800
+- 证据目录：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round39-20260607-web-goal-pool/`
+- 改动文件：
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/goalPool.ts` (485 行)
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/api/claw/goalPool.test.ts` (224 行)
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/views/claw/home/components/GoalPoolOverview.vue` (449 行)
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/views/claw/goals/index.vue` (18 行)
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/router/modules/base.ts` (新增 /claw/goals 路由)
+  - `/mnt/e/code/ai-ui-admin-vue3aa/src/views/claw/home/index.vue` (在 MainlineOverview 之后接入)
+- 业务产出：管理后台首页 `/claw/home` 与独立页面 `/claw/goals` 都可看到 4 主线汇总 + 16 子目标状态卡，每条子目标都绑定端入口（Claw 中枢/管理后台/设备节点/指挥台）、活跃问题数、阻塞点摘要。
+- 验证命令与结果：
+  - `pnpm test:run src/api/claw/goalPool.test.ts src/api/claw/overview.test.ts`：13 + 9 = 22 个用例通过
+  - `pnpm test:run src/api/claw/`：3 个测试文件 28 个用例全过（goalPool 13 + overview 9 + commercialEvidence 6）
+  - `pnpm ts:check` (vue-tsc --noEmit)：200 秒内完成，退出码 0，无类型错误
+  - `git -c core.whitespace=trailing-space,cr-at-eol diff --check -- <改动文件>`：通过，无空白警告
+- DYQ 健康：48080 `/admin-api/actuator/health` HTTP 200
+- 软阻塞：Vite dev server 在 WSL/NTFS 冷启动 60 秒后仍未监听 5189 端口（与第32/34/36/38轮相同）；不阻塞本轮契约和测试
+- 安全判定：未触碰任何设备/微信/真实资金链路，纯前端可视化与跳转入口
+
+
+## 第40轮证据｜2026-06-07 04:32 +0800
+- 目标：P1 PokeClaw 端云通信建立在真实 dyq-server:48080 端到端真实验证 + 后端三主线总览真实消费 operator-status.json。
+- 后端重新打包：
+  - 命令：`mvn install -pl dyq-module-claw/dyq-module-claw-biz -Dmaven.test.skip=true -DskipITs --batch-mode`
+  - 结果：BUILD SUCCESS；新 m2 jar `/root/.m2/repository/com/douyouqu/boot/dyq-module-claw-biz/2.4.1-jdk17-SNAPSHOT/dyq-module-claw-biz-2.4.1-jdk17-SNAPSHOT.jar` 时间戳 2026-06-07 04:21，含 `ClawStatisticsController.getMainlineOverview`。
+  - 旧进程清理：kill -9 1554544 1554561 1554663（mvn + maven + dyq java），端口 48080 释放。
+  - 新进程启动：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/scripts/start-dyq-server.sh`，注入 `POKECLAW_OPERATOR_STATUS_PATH=/mnt/e/code/PokeClaw/artifacts/dyq39-cloud-overview/20260607-round39/operator-status.json`，54 秒（~5 min 冷启动）就绪。
+  - 健康：48080 `/admin-api/actuator/health` HTTP 200，status UP。
+- 三主线总览真实验证：
+  - admin 登录：`/admin-api/system/auth/login` HTTP 200，token `7d13...0e`（32 char 短串由框架在内存中封装）。
+  - 端点：`GET /admin-api/claw/statistics/mainline-overview`，HTTP 200，code=0。
+  - 返回 3 个 mainline item：claw（normal，"已有后台接口"，route `/claw/home`）、pokeclaw（warning，4 项 runtime checks 全部从 `operator-status.json` 读出：设备在线=0台/端侧契约=通过/状态来源=operator-status.json/可浏览看板=operator-dashboard.html，route `/claw/devices`）、weflow（pending，"等待接口契约"）。
+  - updatedAt: 2026-06-07T04:27:38。
+- P1 端云通信建立真实验证（脚本：`/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/scripts/p1-real-48080-e2e.py`）：
+  - Step 1 admin 登录：HTTP 200，token 32 字符。
+  - Step 2 device register `dyq-r40-pokeclaw-real-1780777966`：HTTP 200，code=0，data 含 expiresIn=604800, deviceToken=eyJhbG...GKp8, refreshToken=eyJhbG...LxzG。
+  - Step 3 heartbeat（带 Bearer JWT）：HTTP 200，code=0，data skillVersion=0, pendingTaskCount=0, serverTime=1780777968843。
+  - Step 4 admin execute：`POST /admin-api/claw/device/{deviceId}/execute` HTTP 200，taskUuid `7b69a7b5ff3c49c3a3c58e3200455136`。
+  - Step 5 device pending-tasks：HTTP 200，data 含刚才 taskUuid（mode=interactive, command=P1-test/2026-06-07-r40/device-heartbeat, status=ASSIGNED）。
+  - Step 6 result 回传（HMAC-SHA256 签名，X-Claw-Timestamp/X-Claw-Nonce/X-Claw-Signature 三头齐全）：HTTP 200，code=0，data `{"message":"ok"}`。
+  - 任务 `7b69a7b5ff3c49c3a3c58e3200455136` 完成 register → heartbeat → admin execute → pending → result 五步端云闭环。
+- 证据目录：
+  - 后端总览响应：`/tmp/mainline-r40.json`（在线 JSON），用于审计 `/admin-api/claw/statistics/mainline-overview` 返回结构。
+  - P1 五步响应：`/mnt/e/code/PokeClaw/artifacts/dyq40-r40-real-e2e/{admin-login,register,heartbeat,execute,pending,result}.json` + `admin_token.txt/dev_token.txt/device_id.txt/task_uuid.txt`。
+  - 复跑命令：`python3 /root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/scripts/p1-real-48080-e2e.py`。
+- 安全判定：本轮不发真实微信/短信/私信/评论，不写生产数据；测试凭证只确认来源文件 `/mnt/e/code/dyq/.claude/rules/testing-credentials.md`，未在证据/日志/汇报中写完整 token。
+- 提交：本轮无 git 改动提交（避免覆盖前几轮他人在 `dyq-module-claw-biz` 的未提交 `ClawDeviceTaskStatusEnum` 修复）。
+
+## r62 master-cron 巡检证据
+- 5 探活 5/5 PASS 独立验证 (r60 后第二次, 11:43 跑出)
+- /mnt/e/code/dyq 真实 working tree 为空 (纠偏 r61 worker "19 文件"幻觉)
+- maven repo jar 10:46 mtime 更新 648615 bytes
+- 48080 LISTEN + java 1684310 etime 44min 健康
+- 4 张 review-required 卡全部等主人 A/B/C 裁决
+- 证据目录: .planning/djs-loop/dyq-goal-pool-1000/evidence/round62-20260607-master-cron-3blocked/

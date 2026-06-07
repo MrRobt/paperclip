@@ -5,7 +5,7 @@ STATUS: IN_PROGRESS
 ## 状态机
 
 当前状态：IN_PROGRESS
-当前轮次：36 / 1000
+当前轮次：39 / 1000
 
 ## 阶段计划
 
@@ -109,3 +109,90 @@ STATUS: IN_PROGRESS
 - [ ] 下一轮：把 HTML/JSON 证据入口接入 Web/Claw 概览真实读取或补前端真浏览器截图；若 ADB/ReDroid 上线则补 P2 真机截图证据。
 
 - 第36轮（2026-06-07 02:40）：A/B泳道推进完成；Web 新增 PokeClaw operator-status.json 归一化函数，Claw 总览可消费“设备在线/端侧契约/状态来源/可浏览看板”；PokeClaw 证据包新增 cloudOverviewSummary.runtimeChecks。下一轮优先把 Web mock 替换为后端/证据文件真实读取接口，或补 Claw 首页真浏览器截图。
+
+
+### 第37轮完成项
+- [x] A泳道/DYQ：修复设备任务状态枚举编译断点，`ClawDeviceServiceTest` 23 个用例通过，恢复 claw 模块测试编译能力。
+- [x] A泳道/Web：三主线总览 API 默认切到真实后端 `/claw/statistics/mainline-overview`，Web 接口测试 9 个用例通过。
+- [x] B泳道/PokeClaw：复核第37轮端侧运营看板证据包，`operator-status.json`、`operator-dashboard.md/html` 可被云端总览消费。
+- [ ] 下一轮：补三主线总览后端专门测试，或在管理后台真浏览器登录后直达 `/claw/home` 截图验收。
+
+
+### 第38轮完成项
+- [x] A泳道/DYQ：新增 `ClawStatisticsServiceTest`，专门覆盖三主线后端总览接口读取 PokeClaw `operator-status.json` 与未配置路径时的可视降级，补齐第37轮遗留的后端专门测试。
+- [x] B泳道/PokeClaw：复跑第38轮端侧本地闭环证据包，产出 `operator-status.json`、`operator-dashboard.md/html`，可被后端总览测试/后续真实接口配置消费。
+- [x] A泳道/Web：复跑三主线总览前端接口测试，确认默认走真实后端 `/claw/statistics/mainline-overview` 的契约未被破坏。
+- [ ] 下一轮：把 `POKECLAW_OPERATOR_STATUS_PATH` 注入 dyq-server dev 启动环境后，用真实 48080 登录态接口调用 `/claw/statistics/mainline-overview`，再补管理后台 `/claw/home` 真浏览器截图。
+
+
+### 第39轮完成项
+- [x] A泳道/Web：新增 `src/api/claw/goalPool.ts` 与 `goalPool.test.ts`，定义三主线 75 目标池契约：`getGoalPool` 默认真实 `/claw/statistics/goal-pool`，`getGoalPoolSnapshot` 兜底本地快照，`normalizeGoalPool` 容错归一化，`loadGoalPool` 沿用 `unknown + instanceof Error` 风格。
+- [x] A泳道/Web：新增 `src/views/claw/home/components/GoalPoolOverview.vue`（449 行），4 主线汇总卡 + 16 子目标状态卡，每条都绑定端入口（Claw 中枢/管理后台/设备节点/指挥台）与待办/阻塞点摘要。
+- [x] A泳道/Web：首页 `/claw/home` 在 `MainlineOverview` 之后接入 `GoalPoolOverview`；新增独立页面 `/claw/goals`（18 行），加 hidden `canTo` 验收直达路由。
+- [x] A泳道/Web：`pnpm test:run src/api/claw/` 通过 28 项；`pnpm ts:check` 退出码 0；`git diff --check` 零警告。
+- [ ] 下一轮：解决 Vite dev server WSL/NTFS 冷启动阻塞问题后，用真实浏览器验收 `/#/claw/home` 与 `/#/claw/goals` 截图；把后端 `/claw/statistics/goal-pool` 接入真实实现并跑通 48080 登录态。
+
+### 第40轮完成项 (本轮)
+- [x] A泳道/DYQ：把 `dyq-module-claw-biz` 重新 `mvn install` 进 m2，启动新 `dyq-server:48080` 加载第38/39轮 `operator-status.json`。
+- [x] A泳道/DYQ：管理后台 token 真实调用 `/admin-api/claw/statistics/mainline-overview`，返回三主线（claw/pokeclaw/weflow）总览 JSON；pokeclaw 4 项 runtime checks 全部从 `operator-status.json` 读出。
+- [x] P1 端云通信建立真实验证：用真实 48080 跑完 register → heartbeat → admin execute → pending 拉取 → HMAC 签名 result 回传 5 步全部 HTTP 200/code=0；任务 `7b69a7b5ff3c49c3a3c58e3200455136` 完成端到端闭环。
+- [x] 证据脚本：保存到 `.planning/djs-loop/dyq-goal-pool-1000/scripts/p1-real-48080-e2e.py`，可在任何 dyq-server:48080 复跑。
+- [x] 证据目录：`/mnt/e/code/PokeClaw/artifacts/dyq40-r40-real-e2e/` 含 register/heartbeat/execute/pending/result 五段完整响应。
+- [x] 集成：本次无 git 改动提交（避免覆盖前几轮他人在 dyq-module-claw 的未提交 enum 修复）。
+- [ ] 下一轮：补管理后台 `/claw/home` 真浏览器截图验收（要避免和前几轮未提交改动冲突）；或继续 P1.5 弱网/离线脚本端到端验证。
+
+### 第41轮完成项 (2026-06-07 04:34)
+- [x] C层/C1+C2：coder 卡 t_b05b9bc0 落 round41 evidence，5 文件改动（ClawStatisticsController 新 mainline-overview 接口、ClawStatisticsService+Impl getMainlineOverview+readPokeClawStatus、ClawDeviceServiceImpl String→ClawDeviceTaskStatusEnum 状态机、ClawDeviceServiceTest 5 处断言同步），25 测试 0 失败，真实 48080 mainline-overview 200 code=0 返回三主线（claw normal / pokeclaw warning 设备 0 / weflow pending 等 W 契约），设备列表 2 台，任务 1 条 SUCCESS。
+- [x] 5 文件未提交原因：已 git stash 保护（stash@{0} 设备链路核心逻辑），避免覆盖前几轮他人在 dyq-module-claw 的未提交 enum 修复。
+- [x] 集成：t_4b0e9ce5 WeFlow-agent W1.1 摸底 720s 完成（6 验证命令 0 失败，DESIGN.md 13.4KB 五段链路图谱 + 13 条安全防线 + 9 条缺口）。
+
+### 第42轮完成项 (2026-06-07 05:10) - 主控 cron 巡检 + 推子卡
+- [x] 48080 健康：04:56 round38 启动的 spring-boot:run (PID 1581144) 在 05:09 端口起来，actuator/health 200 db/rabbit/redis/sandbox/ssl/ping/diskSpace 全 UP。
+- [x] mainline-overview 真实接口：claw normal / pokeclaw warning 端侧证据已读取（设备 0 台 端侧契约通过 状态来源 operator-status.json 可浏览看板 operator-dashboard.html）/ weflow pending 等待 W 契约。
+- [x] 设备列表 10 台；token 真实登录有效。
+- [x] 边界指令广播：t_d3ae9b1d (claw-api) / t_c7779586 (claw-device) / t_9e936924 (mq-infra) / t_b7bdf21a (qc-api) 4 个 dyq 子卡收到 48080 启动中状态和"等端口起后验证"指令。
+- [x] coder 卡 t_b05b9bc0 重新催收：5 文件 + 25 测试 + mainline-overview 三主线 + 11 目标覆盖 + round41 evidence 完整 + 立即 kanban_complete；reclaim 释放后 dispatcher 派发 PID 1587359 重新 spawn，正在处理催收评论。
+- [x] 6 todo 卡（t_5fad3897 前端 / t_7ddad685 PokeClaw / t_59fcdffb WeFlow / t_e474c389 运营 / t_65c58e5c 商城 / t_33551fd0 QC）仍在 todo 等父卡 t_b05b9bc0 complete 后自动 promote 派发。
+- [x] 证据：/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round42-20260607-master-cron/ (r42-health.json r42-overview.json r42-summary.json r42-device-list.json r42-meta.txt r42-summary.md)。
+- [ ] 下一轮：等 coder 1587359 完成 → 6 todo 自动 promote → 监控 4 dyq 子任务 round42 真实接口验证。
+
+### 第45轮完成项 (2026-06-07 06:05) - 主控 cron 巡检 + 9卡催收 + review-required 记录
+- [x] 读 board list: 1 done (T0/t_f34d0b72) + 9 running (TC/TC-API/TC-DEV/TC-MQ/TWEB/TP/TW/TS34) + 1 blocked (TS12 review-required) + 1 todo (TQC)
+- [x] 9 张卡全部真实推进中（无 worker crash、无卡死）：TC 在写 mainline-overview 接口契约、TC-DEV 在写超时状态机测试、TC-MQ 在补幂等 handler 测试、TWEB 在写 vitest 最小配置 debug、TP 在落 r44 evidence 脚本、TW 在调试 DyqCloudTaskService tick、TS34 在写 10 个设备绑定 DDL/Controller 文件
+- [x] 9 张 in-flight 卡全部收到 r45 巡检广播（短报 + 跑通要求 + 完成小目标即 kanban_complete + 禁止强推/删 stash/重启 48080）
+- [x] t_d91a0d0c (TS12 review-required) 主控记录：167/167 PASS + 零真实外发 + commit 49356b5 + evidence 完整已读到，主控不擅自 unblock (成员约定)，挂 review-required 等主人复核；建议主人在 r46 决定 merge / 改派 / 走 integrator 收口
+- [x] social-agent 单 profile 同时承担 TS12 (review 等待) + TS34 (in-flight)，是默认允许的串行负担，未过载
+- [ ] 下一轮：等 9 张 in-flight 卡 kanban_complete → 1 张 todo (TQC) 自动 promote → 派发 QC 真接口/真浏览器/真仓复核 → 启动 integrator 收口
+
+### 第46轮完成项 (2026-06-07 06:26) - 主控 cron 完成催收 + 6 卡广播
+- [x] A泳道/DYQ 48080：health 200 / mainline-overview 200 / device list 10 台 / admin token 有效
+- [x] 6 张 in-flight 卡 r46 强催收评论：TW (weflow-agent 71/71 PASS + 614cedc W2.5) / TS12 (social-agent 167/167 + 49356b5) / TC (dyq-claw-api) / TC-DEV (dyq-claw-device) / TC-MQ (dyq-mq-infra) / TWEB (dyq-web-admin)
+- [x] TC-API t_e1d06efd unblock 变 todo（iteration budget exhausted → 等 t_76dcfaf8 完成）
+- [x] r46 evidence 落盘：round46-20260607-master-cron/r46-summary.md
+- [x] 边界保持：不强推 / 不删他人 stash / 不重启 48080 / 不动 dyq git（stale index.lock 02:29 不碰）
+- [ ] 下一轮：等 6 张 in-flight 卡 r46 催收后收口；TS12 等主人复核；TQC 等子卡 done 自动 promote
+
+### 第48轮完成项
+- [x] 主控亲自核验 48080：r47 报告"已拉起"实为误判，curl actuator=000、ss 无 LISTEN、spring-boot 启动失败（csMessageServiceImpl webSocketHandler BeanNotOfRequiredTypeException）；纠偏写入 r48 evidence。
+- [x] 4 张 in-flight 卡（t_76dcfaf8 TC / t_d3a551ca TC-DEV / t_cc8e238c TC-MQ / t_c0cda541 TWEB）发 r48 硬性收口 + 5 分钟倒计时评论。
+- [x] r48 evidence 落盘：/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round48-20260607-master-cron/r48-summary.md
+- [x] RUN_LOG.md 追加第48轮条目
+- [ ] 下一轮：r49 reclaim 仍未 kanban_complete 的卡 + spawn 新 worker 强收口；TW/TS12 review-required 等主人在 r48 决定 push/merge；TQC 等子卡 done 后自动 promote；48080 启动失败根因落 blockers/ 等专门 owner 修复。
+
+### 第54轮完成项 (2026-06-07 09:21) - 主控 cron 强收口 + 真实状态盘
+- [x] 看板扫描：done=9 / running=1 / blocked=3 / todo=1
+- [x] t_ce2d7705 强收口评论已发（停止调研，5 步执行：kill java → mvn install → mtime 校验 → spring-boot:run → 5 探活）
+- [x] 48080 真实状态：PID 1641553 活（etime 2h35min），Started DyqServerApplication 541.266s
+- [x] maven repo jar mtime 仍 06-06 16:19（未 mvn install）；target/classes 06-07 07:22
+- [x] TQC 10 parents 关系：9 done + 1 (t_ce2d7705) running；t_ce2d7705 children 包含 TQC（link 方向正确）
+- [x] 3 张 review-required 不擅自 unblock（TW/TS12/QC 矩阵）；等主人裁决
+- [x] r54 evidence 落盘：evidence/round54-20260607-master-cron/r54-summary.md
+- [x] RUN_LOG.md 第54轮追加
+- [ ] 下一轮：r55 等 t_ce2d7705 worker 接收 r54 评论 → 5 步执行 → kanban_complete → TQC auto-promote
+
+### 第62轮完成项
+- 5 探活 5/5 PASS 独立验证 (r60 后第二次, 11:43)
+- working tree 空确认 (纠偏 r61 worker 19 文件幻觉)
+- 强收口评论已发 owner-3 (方案 C 收口建议)
+- 4 张 review-required 卡状态汇总 (TW/TS12/QC 矩阵/owner-3)
+- r62 evidence 3 件套落盘 (round62-20260607-master-cron-3blocked/)

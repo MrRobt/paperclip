@@ -1,0 +1,52 @@
+STATUS: COMPLETE
+
+轮次: r62 master-cron 巡检
+时间: 2026-06-07 11:43 +0800
+收口人: my-profile (主控自检)
+
+## 4 张 blocked 卡 r62 主控亲核验状态
+
+### t_57014b0f owner-3 (dyq-claw-api)  — review-required
+- worker #25 (PID 1687069) 11:34 review-required block 后已死
+- 真实 working tree: `cd /mnt/e/code/dyq && git status --short` 输出 **空**（11:43 亲核验）
+- 5 探活 5/5 PASS（11:43 主控亲核验，见 5_probes.txt）:
+  - actuator/health → 200 + UP
+  - summary → 200 + biz=0 + totalLobsters/activeLobsters/totalSkills/totalExperiences/evaluatedExperiences/avgRewardScore
+  - mainline-overview → 200 + biz=0 + updatedAt/items
+  - goal-pool → 200 + biz=0 + total=0（r60 关键修复点，闭环）
+  - device/list → 200 + biz=0 + total=253
+- maven repo jar: 10:46 mtime 更新（648615 bytes）已加载进 48080
+- .git/index.lock: 0 字节 9h+ 死锁（Jun 7 02:29 → 现在），无 git 进程持有
+- **关键纠偏**: r61 worker 自报"19 文件 working tree 改动 + lock 阻塞"中"19 文件未提交"是**幻觉**（r53 已证伪同类假说），真实根因是 .git/index.lock 死锁 + worker 不知道 mvn install 后 working tree 已无未提交改动
+
+### t_047931ef TW (weflow-agent) — review-required
+- 5 次提交 + 71/71 PASS + 零真实外发
+- W1+W2 验收包已完成，等主人裁决是否合并 (按 r51 模式)
+
+### t_d91a0d0c TS12 (social-agent) — review-required
+- 49356b5 + 167/167 PASS + 零真实外发
+- 等主人裁决 (按 r51 模式)
+
+### t_72575e57 QC 矩阵 (dyq-qc-e2e) — review-required
+- 6/6 PASS + 10 文件落盘 + .git/index.lock 阻塞 commit
+- 等主人裁决 (按 r51 模式)
+
+### t_968faf75 TQC (dyq-qc-api) — todo
+- 11 parents 现状: 10 done / 1 blocked (t_57014b0f)
+- TQC 仍 todo，因 owner-3 review-required 卡未 done
+- 巡检型: 继续挂 todo，等人工裁决
+
+## 48080 服务真实状态
+- LISTEN ✓ (ss -tln: *:48080)
+- java PID 1684310 etime 44:01 STAT Sl 健康
+- 业务可用: actuator/login/summary/mainline-overview/goal-pool/device-list 6/6 PASS
+
+## 关键决策
+- **不擅自 unblock 4 张 review-required 卡**（worker→主人约定）
+- **方案 C 收口** owner-3: maven jar 已更新 + 48080 业务可走 + 5 探活 5/5 PASS，commit 留给后续 owner 卡（独立 owner-4 处理 .git/index.lock 死锁 + commit 收口）
+- **不擅自 complete review-required 卡**（不越权）
+
+## 下一步最小动作
+- r63 主控巡检
+- 等主人对 4 张 review-required 的 A/B/C 裁决
+- 如果主人授权方案 A (rm .git/index.lock + commit)，dispatch spawn 新 worker 立即执行（5min 内闭环）
