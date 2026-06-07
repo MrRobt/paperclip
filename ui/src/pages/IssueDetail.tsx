@@ -21,6 +21,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { assigneeValueFromSelection, suggestedCommentAssigneeValue } from "../lib/assignees";
 import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap, buildCompanyUserProfileMap, buildMarkdownMentionOptions } from "../lib/company-members";
 import { extractIssueTimelineEvents } from "../lib/issue-timeline-events";
+import { summarizeIssueEvidenceNoise } from "../lib/teamHealth";
 import { queryKeys } from "../lib/queryKeys";
 import { keepPreviousDataForSameQueryTail } from "../lib/query-placeholder-data";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
@@ -241,6 +242,51 @@ function resolveRunningIssueRun(
   return activeRun?.status === "running"
     ? activeRun
     : (liveRuns ?? []).find((run) => run.status === "running") ?? null;
+}
+
+function IssueEvidenceNoiseCard({
+  closureState,
+  usefulEvidenceCount,
+  runtimeSignalCount,
+  noiseCount,
+  hints,
+}: ReturnType<typeof summarizeIssueEvidenceNoise>) {
+  return (
+    <div className="mb-3 rounded-lg border border-border bg-card p-3 text-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="font-medium text-foreground">Evidence / runtime / noise</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Separates true closure evidence from live execution state and recovery-loop noise.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5">{closureState}</span>
+          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-emerald-700 dark:text-emerald-300">
+            {usefulEvidenceCount} useful evidence
+          </span>
+          <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-sky-700 dark:text-sky-300">
+            {runtimeSignalCount} runtime signals
+          </span>
+          <span className={cn(
+            "rounded-full border px-2 py-0.5",
+            noiseCount > 0
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+              : "border-border bg-muted/40 text-muted-foreground",
+          )}>
+            {noiseCount} noise hints
+          </span>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        {hints.map((hint) => (
+          <div key={hint} className="rounded-md border border-border bg-background px-2 py-1.5 text-xs text-muted-foreground">
+            {hint}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function dedupeLiveRunsById(liveRuns: readonly LiveRunForIssue[]) {
@@ -1034,6 +1080,29 @@ function IssueDetailActivityTab({
   const initialLoading =
     (activityLoading && activity === undefined)
     || (linkedRunsLoading && linkedRuns === undefined);
+  const issueEvidenceNoiseSummary = useMemo(
+    () => summarizeIssueEvidenceNoise({
+      issue: {
+        id: issue.id,
+        identifier: issue.identifier,
+        title: issue.title,
+        status: issue.status,
+        priority: issue.priority,
+        originKind: issue.originKind,
+        workProducts: issue.workProducts,
+      },
+      liveRuns: (linkedRuns ?? []).map((run) => ({
+        id: run.runId,
+        agentId: run.agentId,
+        issueId,
+        status: run.status,
+        livenessState: run.livenessState,
+        livenessReason: run.livenessReason,
+      })),
+      workProductCount: issue.workProducts?.length ?? 0,
+    }),
+    [issue.id, issue.identifier, issue.title, issue.status, issue.priority, issue.originKind, issue.workProducts, issueId, linkedRuns],
+  );
   const issueCostSummary = useMemo(() => {
     let input = 0;
     let output = 0;
@@ -1105,6 +1174,7 @@ function IssueDetailActivityTab({
 
   return (
     <>
+      <IssueEvidenceNoiseCard {...issueEvidenceNoiseSummary} />
       {shouldShowCostSummary && (
         <div className="mb-3 px-3 py-2 rounded-lg border border-border">
           <div className="text-sm font-medium text-muted-foreground mb-1">Cost Summary</div>
