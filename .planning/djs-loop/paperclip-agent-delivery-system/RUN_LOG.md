@@ -47,3 +47,11 @@
 - 验证：`pnpm --filter @paperclipai/server typecheck` 通过；相关服务单测 5 文件 20 用例通过。
 - 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-comment-draft-routes/summary.md`。
 - 下一轮：阻塞策略路由 + 模型健康路由。
+## 2026-06-08 阻塞策略与模型健康路由闭环
+
+- 方案依据：`doc/plans/2026-06-08-paperclip-agent-delivery-system-full-realtime-plan.md` 里程碑三。
+- 已实现：阻塞策略查询/创建/更新/降级，模型健康公司/智能体汇总与探测事件记录。
+- 写动作活动日志：`issue_blocker_policy.created/updated/downgraded`、`model_health.probed`。
+- 验证：`pnpm --filter @paperclipai/server typecheck` 通过；相关服务单测 5 文件 20 用例通过。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-blocker-model-routes/summary.md`。
+- 下一轮：恢复动作路由 + 批量唤醒路由。
