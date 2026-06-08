@@ -87,3 +87,17 @@
 - 提交：`cb682b8 feat(心跳): 注册评论草稿重放 cron handler，与心跳调度周期同步`（1 file changed, 6 insertions）。
 - 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-comment-draft-cron-registration/summary.md`（随本轮写入）。
 - 下一轮：里程碑四剩余项「静默运行生成恢复动作」或「模型失败生成健康事件」，或里程碑五前端控制台。
+
+## 2026-06-08 静默运行恢复动作文档化
+
+- `scanSilentActiveRuns` 已在 `recovery/service.ts:1616` 完整实现，cron 注册于 `index.ts:818`，属现有实现验证闭环，不需新增代码。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-silent-run-recovery-actions/summary.md`。
+- 提交：`2867e26 docs(纸夹): 标记静默运行恢复动作已闭环，补证据目录`。
+
+## 2026-06-08 模型健康事件文档化
+
+- `POST /api/agents/:id/model-health/probe` 探针接口已在 `model-health.ts:68` 完整实现，agent 主动上报，属现有实现验证闭环。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-model-health-events/summary.md`。
+- 提交：`af03d9a docs(纸夹): 里程碑四全部验收项已闭环，补模型健康事件和静默运行证据`。
+- 里程碑四全部验收项已通过。
+- 下一轮：里程碑五前端控制台（前端仓库独立，补三态证据页面）或进入里程碑一/二未完成项。
