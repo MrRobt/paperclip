@@ -821,6 +821,12 @@ export async function startServer(): Promise<StartedServer> {
           }
         })
         .then(async () => {
+          const replayed = await heartbeat.replayDueCommentDrafts();
+          if (replayed.replayed.length > 0 || replayed.failed.length > 0 || replayed.blocked.length > 0) {
+            logger.warn({ ...replayed }, "periodic comment draft replay processed");
+          }
+        })
+        .then(async () => {
           const reviewed = await heartbeat.reconcileProductivityReviews();
           if (reviewed.created > 0 || reviewed.updated > 0 || reviewed.failed > 0) {
             logger.warn({ ...reviewed }, "periodic productivity reconciliation created or updated review work");
