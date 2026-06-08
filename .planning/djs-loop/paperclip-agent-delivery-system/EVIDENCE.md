@@ -48,8 +48,7 @@
 - [x] 安全草稿重放证据（commit 314a005 + cb682b8：`replayDueCommentDrafts` cron handler 已实现并在心跳调度周期注册，每 tick 最多 20 条，分类重试/失败/blocked）。
 - [x] 静默运行生成恢复动作证据（现有实现已完整：`scanSilentActiveRuns` 在 `recovery/service.ts:1616`，cron 注册于 `index.ts:818`，返回 `created/escalated/folded` 评估问题，已文档化）。
 
-- [ ] 模型失败生成健康事件证据。
-- [ ] 安全草稿重放证据。
+- [x] 模型失败生成健康事件证据（现有实现已完整：`POST /api/agents/:id/model-health/probe` 探针接口在 `model-health.ts:68`，agent 主动上报模型失败事件，写入 `model_health_events` 表，触发 `chooseModelFallbackPolicy` 返回 fallback 推荐，已文档化）。
 
 ### 里程碑五：前端控制台
 
