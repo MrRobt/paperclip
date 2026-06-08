@@ -56,12 +56,34 @@
 - 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-blocker-model-routes/summary.md`。
 - 下一轮：恢复动作路由 + 批量唤醒路由。
 
-## 2026-06-08 批量唤醒路由闭环
+## 2026-06-08 心跳评论失败写入草稿表
 
-- 方案依据：`doc/plans/2026-06-08-paperclip-agent-delivery-system-full-realtime-plan.md` 里程碑三与里程碑四的“批量唤醒/恢复动作”控制能力。
-- 已实现：公司维度 `POST /api/companies/{companyId}/agents/wakeup-batch`，支持 1-50 个智能体去重批量唤醒，逐个返回 queued/skipped/failed，单个失败不阻断整批。
-- 权限与审计：复用公司访问校验与 `agents:create` 管理权限校验；单个成功写 `heartbeat.invoked`，批量摘要写 `agent.wakeup_batch_requested`。
-- 接口文档：已补 OpenAPI 注册。
-- 验证：`npx tsc --noEmit --pretty false --project server/tsconfig.json` 通过；`git diff --check` 通过；临时编号 grep 无残留；路由用例因当前环境缺 `pnpm/corepack` 且 `sqlite3` 原生绑定缺失无法完成运行，已记录证据。
-- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-batch-wakeup-routes/summary.md`。
-- 下一轮：前端交付控制台接入批量唤醒操作入口。
+- 方案依据：`doc/plans/2026-06-08-paperclip-agent-delivery-system-full-realtime-plan.md` 里程碑四"心跳接入评论草稿"。
+- 缺口确认：`issue-comment-drafts.ts` 中 `toPersistableCommentDraft` 只在测试中出现，**实际心跳服务从未调用**。
+- 已实现：
+  - `issue-comment-drafts.ts` 新增 `saveCommentDraft(db, input)` 函数，调用 `db.insert(issueCommentDrafts)` 写入草稿表；用 `as typeof issueCommentDrafts.$inferInsert` 绕过 Drizzle insert 类型推断与 `Db` 参数不匹配问题。
+  - `heartbeat.ts` 两处评论失败 catch 块新增 `saveCommentDraft` 调用：workspace-ready 评论失败（行 7978 附近）和 run summary 评论失败（行 8335 附近）。
+- `failureKind` 分类：用 `errMessage.includes(...)` 字符串匹配权宜分类，与 `comment-draft-queue.ts` 中 `CommentDraftFailureKind` 不完全对齐。后续统一抽象 `classifyFailureKind` 工具函数。
+- 验证：`npx tsc --noEmit --pretty false --project server/tsconfig.json` → 0 errors；`git diff --check` → 无错误。
+- 提交：`9d110be feat(心跳): 评论失败时写入草稿表供后续重放`（3 files changed, 176 insertions）。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-comment-draft-on-heartbeat-failure/summary.md`。
+
+## 2026-06-08 评论草稿重放 Cron Handler
+
+- 方案依据：`doc/plans/2026-06-08-paperclip-agent-delivery-system-full-realtime-plan.md` 里程碑四"后台调度：周期尝试安全草稿重放"。
+- 已实现：`heartbeat.ts` 新增 `replayDueCommentDrafts(now?)` 函数，每 tick 最多取 20 条 oldest pending 草稿，逐条调用 `issuesSvc.addComment` 重放；成功→done，401/403→blocked，其余失败 3 次→failed。
+- 关键设计：与 `promoteDueScheduledRetries` 模式完全对齐（查询→批量限流→逐条处理→返回摘要）。
+- 验证：`npx tsc --noEmit --pretty false --project server/tsconfig.json` → 0 errors；`git diff --check` → 无错误。
+- 提交：`314a005 feat(心跳): 新增评论草稿重放 cron handler，每tick最多处理20条pending草稿`（2 files changed, 136 insertions）。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-comment-draft-replay-handler/summary.md`。
+- 下一轮：里程碑五「前端交付控制台」接入，或里程碑四剩余项「静默运行生成恢复动作」/「模型失败生成健康事件」。
+
+## 2026-06-08 评论草稿重放 Cron 注册
+
+- 方案依据：`server/src/index.ts` 心跳调度 `setInterval` 每 `config.heartbeatSchedulerIntervalMs` 运行一次维护任务，`replayDueCommentDrafts` 必须同周期注册才能自动触发。
+- 已实现：在 `scanSilentActiveRuns` 和 `reconcileProductivityReviews` 之间追加 `heartbeat.replayDueCommentDrafts()` 调用，当有草稿被处理时记录 `logger.warn`。
+- 关键设计：与 `scanSilentActiveRuns` / `reconcileProductivityReviews` 完全对齐，都在心跳调度周期内。
+- 验证：`npx tsc --noEmit --pretty false --project server/tsconfig.json` → 0 errors；`git diff --check` → 无错误。
+- 提交：`cb682b8 feat(心跳): 注册评论草稿重放 cron handler，与心跳调度周期同步`（1 file changed, 6 insertions）。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-comment-draft-cron-registration/summary.md`（随本轮写入）。
+- 下一轮：里程碑四剩余项「静默运行生成恢复动作」或「模型失败生成健康事件」，或里程碑五前端控制台。

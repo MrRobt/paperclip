@@ -114,6 +114,9 @@
 - 已完成评论草稿接口、阻塞策略接口、模型健康接口。
 - 已完成公司维度批量唤醒接口：`POST /api/companies/{companyId}/agents/wakeup-batch`。
 - 已同步 OpenAPI 文档和活动日志。
+- 心跳评论失败已写入草稿表（commit 9d110be）：两处 catch 块新增 `saveCommentDraft` 调用。
+- 心跳评论重放 cron handler 已实现（commit 314a005）：`replayDueCommentDrafts` 每 tick 最多处理 20 条 pending 草稿，401/403 → blocked，其余失败 3 次 → failed。
+- cron 注册已生效（commit cb682b8）：`server/src/index.ts` 的心跳调度 `setInterval` 中追加了 `replayDueCommentDrafts` 调用，与心跳维护任务同周期运行。
 - 待补：恢复动作更细粒度批量执行接口、前端控制台接入。
 
 验收：

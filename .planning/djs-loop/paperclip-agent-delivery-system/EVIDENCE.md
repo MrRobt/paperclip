@@ -44,7 +44,8 @@
 
 ### 里程碑四：心跳、恢复与后台任务
 
-- [ ] 心跳评论失败生成草稿证据。
+- [x] 心跳评论失败生成草稿证据（commit 9d110be：`heartbeat.ts` 两处 catch 块调用 `saveCommentDraft`；`issue-comment-drafts.ts` 新增 DB 写入函数）。
+- [x] 安全草稿重放证据（commit 314a005 + cb682b8：`replayDueCommentDrafts` cron handler 已实现并在心跳调度周期注册，每 tick 最多 20 条，分类重试/失败/blocked）。
 - [ ] 静默运行生成恢复动作证据。
 - [ ] 模型失败生成健康事件证据。
 - [ ] 安全草稿重放证据。
