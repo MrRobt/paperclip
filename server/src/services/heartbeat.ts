@@ -46,6 +46,7 @@ import {
   projects,
   projectWorkspaces,
   issueCommentDrafts,
+  modelHealthEvents,
   routineRevisions,
   routineRuns,
   routines,
@@ -1377,6 +1378,62 @@ function normalizeLedgerBillingType(value: unknown): BillingType {
 
 function resolveLedgerBiller(result: AdapterExecutionResult): string {
   return readNonEmptyString(result.biller) ?? readNonEmptyString(result.provider) ?? "unknown";
+}
+
+function classifyModelHealthEventType(input: {
+  outcome: "succeeded" | "failed" | "cancelled" | "timed_out";
+  errorCode?: string | null;
+  errorMessage?: string | null;
+}): "adapter_error" | "model_error" | "timeout" | "rate_limited" | null {
+  if (input.outcome === "succeeded" || input.outcome === "cancelled") return null;
+  if (input.outcome === "timed_out" || input.errorCode === "timeout") return "timeout";
+  const text = `${input.errorCode ?? ""} ${input.errorMessage ?? ""}`.toLowerCase();
+  if (text.includes("rate") || text.includes("429")) return "rate_limited";
+  if (text.includes("model") || text.includes("llm") || text.includes("token") || text.includes("context")) return "model_error";
+  return "adapter_error";
+}
+
+async function recordModelHealthEventForRun(db: Db, input: {
+  companyId: string;
+  agentId: string;
+  runId: string;
+  adapterType: string;
+  outcome: "succeeded" | "failed" | "cancelled" | "timed_out";
+  adapterResult: AdapterExecutionResult;
+  errorMessage: string | null;
+  errorCode: string | null;
+}) {
+  const eventType = classifyModelHealthEventType({
+    outcome: input.outcome,
+    errorCode: input.errorCode,
+    errorMessage: input.errorMessage,
+  });
+  const resultJson = parseObject(input.adapterResult.resultJson);
+  const fallbackApplied = Boolean(resultJson.fallbackApplied ?? resultJson.fallbackSelected ?? resultJson.fallback);
+  if (!eventType && !fallbackApplied) return;
+  await db.insert(modelHealthEvents).values({
+    companyId: input.companyId,
+    agentId: input.agentId,
+    runId: input.runId,
+    adapterType: input.adapterType,
+    modelId: readNonEmptyString(input.adapterResult.model) ?? null,
+    eventType: eventType ?? "fallback_selected",
+    errorKind: input.errorCode,
+    latencyMs: null,
+    retryAttempt: 0,
+    fallbackApplied,
+    fallbackAdapterType: readNonEmptyString(resultJson.fallbackAdapterType) ?? readNonEmptyString(resultJson.fallbackProvider) ?? null,
+    fallbackModelId: readNonEmptyString(resultJson.fallbackModelId) ?? readNonEmptyString(resultJson.fallbackModel) ?? null,
+    errorSummary: input.errorMessage,
+    rawErrorExcerpt: input.errorMessage ? input.errorMessage.slice(0, 2_000) : null,
+    metadata: {
+      provider: readNonEmptyString(input.adapterResult.provider) ?? null,
+      biller: readNonEmptyString(input.adapterResult.biller) ?? null,
+      exitCode: input.adapterResult.exitCode ?? null,
+      signal: input.adapterResult.signal ?? null,
+      timedOut: input.adapterResult.timedOut === true,
+    },
+  });
 }
 
 function normalizeBilledCostCents(costUsd: number | null | undefined, billingType: BillingType): number {
@@ -8302,6 +8359,24 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             : outcome === "failed"
               ? (adapterResult.errorCode ?? "adapter_failed")
               : null;
+
+      try {
+        await recordModelHealthEventForRun(db, {
+          companyId: agent.companyId,
+          agentId: agent.id,
+          runId: run.id,
+          adapterType: agent.adapterType,
+          outcome,
+          adapterResult,
+          errorMessage: runErrorMessage,
+          errorCode: runErrorCode,
+        });
+      } catch (modelHealthErr) {
+        logger.warn(
+          { err: modelHealthErr, companyId: agent.companyId, agentId: agent.id, runId: run.id },
+          "failed to record model health event for heartbeat run",
+        );
+      }
 
       let logSummary: { bytes: number; sha256?: string; compressed: boolean } | null = null;
       if (handle) {
