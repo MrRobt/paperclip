@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import net from "node:net";
 import { Router } from "express";
 import type { Db } from "@paperclipai/db";
 import { and, count, eq, gt, inArray, isNull, sql } from "drizzle-orm";
@@ -28,6 +29,36 @@ function hasDevServerStatusToken(providedToken: string | undefined) {
   return timingSafeEqual(expected, provided);
 }
 
+function parseDiagnosticPorts(raw: unknown) {
+  const fallback = [3101, 3100, 5173, 4173];
+  if (typeof raw !== "string" || raw.trim().length === 0) return fallback;
+  const ports = raw
+    .split(",")
+    .map((part) => Number(part.trim()))
+    .filter((port) => Number.isInteger(port) && port > 0 && port <= 65_535);
+  return ports.length > 0 ? Array.from(new Set(ports)) : fallback;
+}
+
+async function probeLocalPort(port: number, timeoutMs = 500) {
+  return await new Promise<{ port: number; open: boolean; error?: string }>((resolve) => {
+    const socket = net.createConnection({ host: "127.0.0.1", port });
+    const finish = (open: boolean, error?: string) => {
+      socket.removeAllListeners();
+      socket.destroy();
+      resolve({ port, open, ...(error ? { error } : {}) });
+    };
+    socket.setTimeout(timeoutMs);
+    socket.once("connect", () => finish(true));
+    socket.once("timeout", () => finish(false, "timeout"));
+    socket.once("error", (error) => finish(false, (error as NodeJS.ErrnoException).code ?? error.message));
+  });
+}
+
+async function countRows(db: Db, query: ReturnType<typeof sql>) {
+  const result = await db.execute(query) as unknown as Array<Record<string, unknown>>;
+  return Number(result[0]?.count ?? 0);
+}
+
 export function healthRoutes(
   db?: Db,
   opts: {
@@ -43,6 +74,101 @@ export function healthRoutes(
   },
 ) {
   const router = Router();
+
+  router.get("/local-ops-diagnostic", async (req, res) => {
+    const actorType = "actor" in req ? req.actor?.type : null;
+    if (opts.deploymentMode === "authenticated" && actorType !== "board" && actorType !== "agent") {
+      res.status(403).json({ error: "authenticated_actor_required" });
+      return;
+    }
+
+    const ports = parseDiagnosticPorts(req.query.ports);
+    const portChecks = await Promise.all(ports.map((port) => probeLocalPort(port)));
+    const now = new Date();
+    const staleOutputCutoff = new Date(now.getTime() - 20 * 60 * 1000);
+    const recentCutoff = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+
+    if (!db) {
+      res.json({
+        status: "degraded",
+        checkedAt: now.toISOString(),
+        ports: portChecks,
+        process: {
+          pid: process.pid,
+          uptimeSeconds: Math.round(process.uptime()),
+        },
+        database: { available: false },
+        summary: "数据库不可用，仅返回本机端口和当前服务进程摘要。",
+      });
+      return;
+    }
+
+    try {
+      await db.execute(sql`SELECT 1`);
+      const [queuedRuns, runningRuns, scheduledRuns, activeIssues, recentAdapterFailures, longRunningNoOutput] = await Promise.all([
+        countRows(db, sql`SELECT count(*) FROM heartbeat_runs WHERE status = 'queued'`),
+        countRows(db, sql`SELECT count(*) FROM heartbeat_runs WHERE status = 'running'`),
+        countRows(db, sql`SELECT count(*) FROM heartbeat_runs WHERE scheduled_retry_at IS NOT NULL AND status IN ('queued', 'running', 'failed', 'timed_out')`),
+        countRows(db, sql`SELECT count(*) FROM issues WHERE status IN ('todo', 'backlog', 'in_progress', 'blocked')`),
+        countRows(db, sql`SELECT count(*) FROM heartbeat_runs WHERE created_at >= ${recentCutoff} AND (status IN ('failed', 'timed_out') OR error_code IS NOT NULL)`),
+        countRows(db, sql`SELECT count(*) FROM heartbeat_runs WHERE status = 'running' AND started_at < ${staleOutputCutoff} AND (last_output_at IS NULL OR last_output_at < ${staleOutputCutoff})`),
+      ]);
+      const activeRunRows = await db.execute(sql`
+        SELECT id, agent_id, status, started_at, last_output_at, process_pid, process_group_id, liveness_state, liveness_reason, next_action
+        FROM heartbeat_runs
+        WHERE status IN ('queued', 'running')
+        ORDER BY created_at DESC
+        LIMIT 20
+      `) as unknown as Array<Record<string, unknown>>;
+      const recentFailureRows = await db.execute(sql`
+        SELECT id, agent_id, status, error_code, error, created_at, finished_at
+        FROM heartbeat_runs
+        WHERE created_at >= ${recentCutoff} AND (status IN ('failed', 'timed_out') OR error_code IS NOT NULL)
+        ORDER BY created_at DESC
+        LIMIT 10
+      `) as unknown as Array<Record<string, unknown>>;
+
+      const recommendations = [
+        longRunningNoOutput > 0 ? `${longRunningNoOutput} 个运行超过 20 分钟无输出` : null,
+        queuedRuns > 10 ? `任务队列堆积：queued=${queuedRuns}` : null,
+        recentAdapterFailures > 0 ? `近 6 小时适配器/运行失败 ${recentAdapterFailures} 次` : null,
+        portChecks.some((port) => !port.open) ? "存在本机端口未监听" : null,
+      ].filter((item): item is string => typeof item === "string");
+
+      res.json({
+        status: recommendations.length > 0 ? "attention" : "ok",
+        checkedAt: now.toISOString(),
+        ports: portChecks,
+        process: {
+          pid: process.pid,
+          uptimeSeconds: Math.round(process.uptime()),
+          nodeVersion: process.version,
+        },
+        database: { available: true },
+        queues: {
+          queuedRuns,
+          runningRuns,
+          scheduledRuns,
+          activeIssues,
+        },
+        longRunningNoOutput,
+        recentAdapterFailures,
+        activeRuns: activeRunRows,
+        recentFailures: recentFailureRows,
+        recommendations: recommendations.length > 0
+          ? recommendations
+          : ["本机服务、队列和最近运行态暂未发现明显异常。"],
+      });
+    } catch (error) {
+      logger.warn({ err: error }, "Local ops diagnostic failed");
+      res.status(503).json({
+        status: "unhealthy",
+        checkedAt: now.toISOString(),
+        ports: portChecks,
+        error: "local_ops_diagnostic_failed",
+      });
+    }
+  });
 
   router.post("/dev-server/restart", async (req, res) => {
     const actorType = "actor" in req ? req.actor?.type : null;
