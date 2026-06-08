@@ -101,6 +101,8 @@ import {
   sanitizeRuntimeServiceBaseEnv,
 } from "./workspace-runtime.js";
 import { issueService } from "./issues.js";
+import { saveCommentDraft } from "./issue-comment-drafts.js";
+import { type CommentDraftFailureKind } from "./comment-draft-queue.js";
 import {
   buildIssueMonitorClearedPatch,
   buildIssueMonitorTriggeredPatch,
@@ -7978,6 +7980,39 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             "stderr",
             `[paperclip] Failed to post workspace-ready comment: ${err instanceof Error ? err.message : String(err)}\n`,
           );
+          // 评论失败时写入草稿表，供后续重放
+          const workspaceComment = buildWorkspaceReadyComment({ workspace: executionWorkspace, runtimeServices });
+          const errMessage = err instanceof Error ? err.message : String(err);
+          const failureKind: CommentDraftFailureKind =
+            errMessage.includes("401") || errMessage.includes("unauthorized")
+              ? "unauthorized"
+              : errMessage.includes("403") || errMessage.includes("forbidden")
+                ? "forbidden"
+                : errMessage.includes("404") || errMessage.includes("not found")
+                  ? "not_found"
+                  : errMessage.includes("foreign key")
+                    ? "foreign_key_missing"
+                    : errMessage.includes("rate")
+                      ? "rate_limited"
+                      : errMessage.includes("500") || errMessage.includes("server error")
+                        ? "server_error"
+                        : errMessage.includes("ECONN")
+                          ? "network"
+                          : "unknown";
+          await saveCommentDraft(db, {
+            companyId: agent.companyId,
+            issueId,
+            authorType: "agent",
+            authorAgentId: agent.id,
+            createdByRunId: run.id,
+            body: workspaceComment,
+            metadata: { runId: run.id },
+            failureKind,
+            failureReason: errMessage,
+            httpStatus: null,
+            rawErrorMessage: String(err),
+            requestedAt: new Date().toISOString(),
+          });
         }
       }
       const onAdapterMeta = async (meta: AdapterInvocationMeta) => {
@@ -8295,6 +8330,41 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
               "stderr",
               `[paperclip] Failed to post run summary comment: ${err instanceof Error ? err.message : String(err)}\n`,
             );
+            // 评论失败时写入草稿表，供后续重放
+            const issueCommentBody = buildHeartbeatRunIssueComment(persistedResultJson);
+            if (issueCommentBody) {
+              const errMessage = err instanceof Error ? err.message : String(err);
+              const failureKind: CommentDraftFailureKind =
+                errMessage.includes("401") || errMessage.includes("unauthorized")
+                  ? "unauthorized"
+                  : errMessage.includes("403") || errMessage.includes("forbidden")
+                    ? "forbidden"
+                    : errMessage.includes("404") || errMessage.includes("not found")
+                      ? "not_found"
+                      : errMessage.includes("foreign key")
+                        ? "foreign_key_missing"
+                        : errMessage.includes("rate")
+                          ? "rate_limited"
+                          : errMessage.includes("500") || errMessage.includes("server error")
+                            ? "server_error"
+                            : errMessage.includes("ECONN")
+                              ? "network"
+                              : "unknown";
+              await saveCommentDraft(db, {
+                companyId: agent.companyId,
+                issueId,
+                authorType: "agent",
+                authorAgentId: agent.id,
+                createdByRunId: livenessRun.id,
+                body: issueCommentBody,
+                metadata: { runId: livenessRun.id },
+                failureKind,
+                failureReason: errMessage,
+                httpStatus: null,
+                rawErrorMessage: String(err),
+                requestedAt: new Date().toISOString(),
+              });
+            }
           }
         }
         if (outcome === "failed" && isMaxTurnExhaustionRun(livenessRun)) {

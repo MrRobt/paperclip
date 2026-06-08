@@ -4,6 +4,8 @@ import {
   type CommentDraftAuthorType,
   type CommentDraftReplayStatus,
 } from "./comment-draft-queue.js";
+import { issueCommentDrafts } from "@paperclipai/db";
+import type { Db } from "@paperclipai/db";
 
 export interface PersistableCommentDraftInput {
   companyId: string;
@@ -129,4 +131,35 @@ export function shouldAutoReplayDraft(input: {
   if (input.replayAttemptCount >= input.maxAttempts) return false;
   if (input.failureKind === "unauthorized" || input.failureKind === "forbidden") return false;
   return true;
+}
+
+/**
+ * 将评论失败写入 issue_comment_drafts 表。
+ * 心跳评论失败、恢复服务写评论失败等均可调用。
+ */
+type DbFailureKind = "route_error" | "authorization_error" | "validation_error" | "database_error" | "comment_gate_blocked" | "unknown";
+type DbReplayStatus = "pending" | "ready" | "blocked" | "done" | "failed";
+
+export async function saveCommentDraft(
+  db: Db,
+  input: PersistableCommentDraftInput,
+): Promise<void> {
+  const draft = toPersistableCommentDraft(input);
+  const row = {
+    companyId: draft.companyId,
+    issueId: draft.issueId,
+    authorAgentId: draft.authorAgentId,
+    authorUserId: draft.authorUserId ?? null,
+    authorType: draft.authorType as "agent" | "user" | "system",
+    createdByRunId: draft.createdByRunId ?? null,
+    body: draft.body,
+    presentation: draft.presentation ?? null,
+    metadata: draft.metadata ?? null,
+    failureKind: draft.failureKind as DbFailureKind,
+    failureReason: draft.failureReason ?? null,
+    httpStatus: draft.httpStatus ?? null,
+    errorMessage: draft.errorMessage ?? null,
+    replayStatus: draft.replayStatus as DbReplayStatus,
+  };
+  await db.insert(issueCommentDrafts).values(row as typeof issueCommentDrafts.$inferInsert);
 }
