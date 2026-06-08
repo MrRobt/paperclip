@@ -11,6 +11,7 @@ vi.mock("acpx/runtime", () => ({
 }));
 
 const agentId = "11111111-1111-4111-8111-111111111111";
+const secondAgentId = "33333333-3333-4333-8333-333333333333";
 const companyId = "22222222-2222-4222-8222-222222222222";
 
 const baseAgent = {
@@ -73,6 +74,7 @@ const mockHeartbeatService = vi.hoisted(() => ({
   resetRuntimeSession: vi.fn(),
   getRun: vi.fn(),
   cancelRun: vi.fn(),
+  wakeup: vi.fn(),
 }));
 
 const mockIssueApprovalService = vi.hoisted(() => ({
@@ -316,6 +318,7 @@ describe.sequential("agent permission routes", () => {
     mockHeartbeatService.resetRuntimeSession.mockReset();
     mockHeartbeatService.getRun.mockReset();
     mockHeartbeatService.cancelRun.mockReset();
+    mockHeartbeatService.wakeup.mockReset();
     mockIssueApprovalService.linkManyForApproval.mockReset();
     mockIssueService.list.mockReset();
     mockSecretService.normalizeAdapterConfigForPersistence.mockReset();
@@ -335,6 +338,9 @@ describe.sequential("agent permission routes", () => {
     mockAgentService.getById.mockResolvedValue(baseAgent);
     mockAgentService.list.mockResolvedValue([baseAgent]);
     mockAgentService.getChainOfCommand.mockResolvedValue([]);
+    mockHeartbeatService.wakeup.mockImplementation(async (wakeupAgentId: string) => ({
+      id: `run-${wakeupAgentId}`,
+    }));
     mockAgentService.resolveByReference.mockResolvedValue({ ambiguous: false, agent: baseAgent });
     mockAgentService.create.mockResolvedValue(baseAgent);
     mockAgentService.activatePendingApproval.mockResolvedValue({
@@ -487,6 +493,83 @@ describe.sequential("agent permission routes", () => {
       .send({}));
 
     expect(res.status).toBe(403);
+  });
+
+  it("queues batch wakeups for company agents and reports per-agent outcomes", async () => {
+    const secondAgent = { ...baseAgent, id: secondAgentId, name: "Reviewer", urlKey: "reviewer" };
+    mockAgentService.getById.mockImplementation(async (id: string) => {
+      if (id === agentId) return baseAgent;
+      if (id === secondAgentId) return secondAgent;
+      return null;
+    });
+    mockHeartbeatService.wakeup.mockImplementation(async (wakeupAgentId: string) => ({
+      id: `run-${wakeupAgentId}`,
+    }));
+
+    const app = await createApp({
+      type: "board",
+      userId: "board-user",
+      source: "session",
+      isInstanceAdmin: true,
+      companyIds: [companyId],
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .post(`/api/companies/${companyId}/agents/wakeup-batch`)
+      .send({
+        agentIds: [agentId, secondAgentId, agentId],
+        source: "on_demand",
+        triggerDetail: "manual",
+        reason: "manual_rerun",
+        idempotencyKey: "batch-1",
+        payload: { issueId: "ISS-1" },
+      }));
+
+    expect(res.status, JSON.stringify(res.body)).toBe(202);
+    expect(res.body.results).toEqual([
+      { agentId, status: "queued", runId: `run-${agentId}` },
+      { agentId: secondAgentId, status: "queued", runId: `run-${secondAgentId}` },
+    ]);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledTimes(2);
+    expect(mockHeartbeatService.wakeup).toHaveBeenNthCalledWith(1, agentId, expect.objectContaining({
+      reason: "manual_rerun",
+      idempotencyKey: `batch-1:${agentId}`,
+      requestedByActorType: "user",
+      requestedByActorId: "board-user",
+      contextSnapshot: expect.objectContaining({
+        batchWakeup: true,
+        batchCompanyId: companyId,
+      }),
+    }));
+    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      action: "agent.wakeup_batch_requested",
+      entityType: "company",
+      entityId: companyId,
+      details: expect.objectContaining({
+        requestedAgentCount: 2,
+        queuedCount: 2,
+        failedCount: 0,
+      }),
+    }));
+  });
+
+  it("blocks batch wakeups for authenticated company members without agent admin permission", async () => {
+    mockAccessService.canUser.mockResolvedValue(false);
+
+    const app = await createApp({
+      type: "board",
+      userId: "member-user",
+      source: "session",
+      isInstanceAdmin: false,
+      companyIds: [companyId],
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .post(`/api/companies/${companyId}/agents/wakeup-batch`)
+      .send({ agentIds: [agentId] }));
+
+    expect(res.status).toBe(403);
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
   it("blocks agent-authenticated self-updates that set host-executed workspace commands", async () => {

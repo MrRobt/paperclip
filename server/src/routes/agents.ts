@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Db } from "@paperclipai/db";
 import { agents as agentsTable, companies, heartbeatRuns, issues as issuesTable } from "@paperclipai/db";
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
+import { z } from "zod";
 import {
   agentSkillSyncSchema,
   agentMineInboxQuerySchema,
@@ -99,6 +100,10 @@ import {
 import { getTelemetryClient } from "../telemetry.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
 import { recoveryService } from "../services/recovery/service.js";
+
+const batchWakeAgentsSchema = wakeAgentSchema.extend({
+  agentIds: z.array(z.string().uuid()).min(1).max(50),
+});
 
 const RUN_LOG_DEFAULT_LIMIT_BYTES = 256_000;
 const RUN_LOG_MAX_LIMIT_BYTES = 1024 * 1024;
@@ -2975,6 +2980,97 @@ export function agentRoutes(
       source: req.body.source,
       skippedResponse: (agent) => buildSkippedWakeupResponse(agent, req.body.payload ?? null),
     });
+  });
+
+  router.post("/companies/:companyId/agents/wakeup-batch", validate(batchWakeAgentsSchema), async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    await assertBoardCanManageAgentsForCompany(req, companyId);
+
+    const actor = getActorInfo(req);
+    const uniqueAgentIds = [...new Set(req.body.agentIds as string[])];
+    const results: Array<{
+      agentId: string;
+      status: "queued" | "skipped" | "failed";
+      runId: string | null;
+      error?: string;
+    }> = [];
+
+    for (const agentId of uniqueAgentIds) {
+      const agent = await svc.getById(agentId);
+      if (!agent || agent.companyId !== companyId) {
+        results.push({
+          agentId,
+          status: "failed",
+          runId: null,
+          error: "Agent not found in company",
+        });
+        continue;
+      }
+
+      try {
+        const run = await heartbeat.wakeup(agentId, {
+          source: req.body.source,
+          triggerDetail: req.body.triggerDetail ?? "manual",
+          reason: req.body.reason ?? null,
+          payload: req.body.payload ?? null,
+          idempotencyKey: req.body.idempotencyKey ? `${req.body.idempotencyKey}:${agentId}` : null,
+          requestedByActorType: "user",
+          requestedByActorId: req.actor.type === "board" ? req.actor.userId ?? null : null,
+          contextSnapshot: {
+            triggeredBy: req.actor.type,
+            actorId: req.actor.type === "board" ? req.actor.userId : null,
+            batchWakeup: true,
+            batchCompanyId: companyId,
+            forceFreshSession: req.body.forceFreshSession === true,
+          },
+        });
+
+        if (!run) {
+          results.push({ agentId, status: "skipped", runId: null });
+          continue;
+        }
+
+        await logActivity(db, {
+          companyId,
+          actorType: actor.actorType,
+          actorId: actor.actorId,
+          agentId: actor.agentId,
+          runId: actor.runId,
+          action: "heartbeat.invoked",
+          entityType: "heartbeat_run",
+          entityId: run.id,
+          details: { agentId, source: "agent_wakeup_batch" },
+        });
+        results.push({ agentId, status: "queued", runId: run.id });
+      } catch (error) {
+        results.push({
+          agentId,
+          status: "failed",
+          runId: null,
+          error: error instanceof Error ? error.message : "Wakeup failed",
+        });
+      }
+    }
+
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      action: "agent.wakeup_batch_requested",
+      entityType: "company",
+      entityId: companyId,
+      details: {
+        requestedAgentCount: uniqueAgentIds.length,
+        queuedCount: results.filter((result) => result.status === "queued").length,
+        skippedCount: results.filter((result) => result.status === "skipped").length,
+        failedCount: results.filter((result) => result.status === "failed").length,
+      },
+    });
+
+    res.status(202).json({ results });
   });
 
   router.post("/agents/:id/heartbeat/invoke", async (req, res) => {

@@ -55,3 +55,13 @@
 - 验证：`pnpm --filter @paperclipai/server typecheck` 通过；相关服务单测 5 文件 20 用例通过。
 - 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-blocker-model-routes/summary.md`。
 - 下一轮：恢复动作路由 + 批量唤醒路由。
+
+## 2026-06-08 批量唤醒路由闭环
+
+- 方案依据：`doc/plans/2026-06-08-paperclip-agent-delivery-system-full-realtime-plan.md` 里程碑三与里程碑四的“批量唤醒/恢复动作”控制能力。
+- 已实现：公司维度 `POST /api/companies/{companyId}/agents/wakeup-batch`，支持 1-50 个智能体去重批量唤醒，逐个返回 queued/skipped/failed，单个失败不阻断整批。
+- 权限与审计：复用公司访问校验与 `agents:create` 管理权限校验；单个成功写 `heartbeat.invoked`，批量摘要写 `agent.wakeup_batch_requested`。
+- 接口文档：已补 OpenAPI 注册。
+- 验证：`npx tsc --noEmit --pretty false --project server/tsconfig.json` 通过；`git diff --check` 通过；临时编号 grep 无残留；路由用例因当前环境缺 `pnpm/corepack` 且 `sqlite3` 原生绑定缺失无法完成运行，已记录证据。
+- 证据：`.planning/djs-loop/paperclip-agent-delivery-system/evidence/round-20260608-batch-wakeup-routes/summary.md`。
+- 下一轮：前端交付控制台接入批量唤醒操作入口。

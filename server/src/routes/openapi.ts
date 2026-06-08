@@ -1184,6 +1184,18 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
+  path: "/api/companies/{companyId}/agents/wakeup-batch",
+  tags: ["agents"],
+  summary: "Wake up multiple agents in a company",
+  request: {
+    params: z.object({ companyId: z.string() }),
+    body: jsonBody(wakeAgentSchema.extend({ agentIds: z.array(z.string().uuid()).min(1).max(50) })),
+  },
+  responses: { 202: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "post",
   path: "/api/agents/{id}/pause",
   tags: ["agents"],
   summary: "Pause an agent",
