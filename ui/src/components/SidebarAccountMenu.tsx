@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen,
+  Globe,
   LogOut,
   type LucideIcon,
   Moon,
@@ -14,9 +15,16 @@ import type { DeploymentMode } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
+import { changeLanguage, i18n, supportedLocales } from "@/i18n";
 import { useSidebar } from "../context/SidebarContext";
 import { useTheme } from "../context/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "../lib/utils";
 
@@ -215,6 +223,7 @@ export function SidebarAccountMenu({
                 external
                 onClick={() => setOpen(false)}
               />
+              <LanguageMenu currentLanguage={i18n.language} onSelect={() => setOpen(false)} />
               <MenuAction
                 label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                 description="Toggle the app appearance."
@@ -252,5 +261,101 @@ export function SidebarAccountMenu({
         </PopoverContent>
       </Popover>
     </div>
+  );
+}
+
+// Map of locale codes to display labels (native names)
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "English",
+  "zh-CN": "简体中文",
+  "zh-TW": "繁體中文",
+  ja: "日本語",
+  ko: "한국어",
+  de: "Deutsch",
+  fr: "Français",
+  es: "Español",
+  pt: "Português",
+  ru: "Русский",
+  ar: "العربية",
+  hi: "हिन्दी",
+  th: "ไทย",
+  vi: "Tiếng Việt",
+  id: "Bahasa Indonesia",
+  ms: "Bahasa Melayu",
+  fil: "Filipino",
+  nl: "Nederlands",
+  pl: "Polski",
+  tr: "Türkçe",
+  uk: "Українська",
+  he: "עברית",
+  ur: "اردو",
+  sv: "Svenska",
+  no: "Norsk",
+  da: "Dansk",
+  fi: "Suomi",
+  el: "Ελληνικά",
+  cs: "Čeština",
+  hu: "Magyar",
+  ro: "Română",
+  bn: "বাংলা",
+  pa: "ਪੰਜਾਬੀ",
+  mr: "मराठी",
+  ta: "தமிழ்",
+  te: "తెలుగు",
+  sw: "Kiswahili",
+  fa: "فارسی",
+};
+
+function LanguageMenu({ currentLanguage, onSelect }: { currentLanguage: string; onSelect: () => void }) {
+  const [open, setOpen] = useState(false);
+
+  const currentLabel = LANGUAGE_LABELS[currentLanguage] ?? LANGUAGE_LABELS[currentLanguage.split("-")[0]] ?? currentLanguage;
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-accent/60"
+        >
+          <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+            <Globe className="size-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-foreground">
+              {currentLabel !== currentLanguage ? `${currentLabel} (${currentLanguage})` : currentLabel}
+            </span>
+            <span className="block text-xs text-muted-foreground">Change language</span>
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[220px] rounded-xl border-border/70 p-1 shadow-xl shadow-black/10">
+        {supportedLocales.map((locale) => {
+          const label = LANGUAGE_LABELS[locale] ?? locale;
+          const isActive = locale === currentLanguage;
+          return (
+            <DropdownMenuItem
+              key={locale}
+              className={cn(
+                "cursor-pointer rounded-lg px-2 py-2 text-sm",
+                isActive && "bg-accent font-medium",
+              )}
+              onClick={() => {
+                void changeLanguage(locale);
+                setOpen(false);
+                onSelect();
+              }}
+            >
+              <span className={cn("flex-1", isActive ? "text-foreground" : "text-muted-foreground")}>
+                {label}
+              </span>
+              {isActive ? (
+                <span className="ml-2 text-xs text-muted-foreground">✓</span>
+              ) : null}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
