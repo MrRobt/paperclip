@@ -45,6 +45,7 @@ import {
   issueWorkProducts,
   projects,
   projectWorkspaces,
+  issueCommentDrafts,
   routineRevisions,
   routineRuns,
   routines,
@@ -5795,6 +5796,92 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     };
   }
 
+  /**
+   * Cron handler: replay due comment drafts.
+   * Polls `issue_comment_drafts` for `replayStatus=pending` rows (max 20 per tick)
+   * and attempts to post them via `issuesSvc.addComment`.
+   *
+   * Auth/403 failures set status to `blocked` (won't retry).
+   * Network/500 failures increment attempt count; after 3 failures → `failed`.
+   */
+  async function replayDueCommentDrafts(now = new Date()): Promise<{
+    replayed: string[];
+    failed: string[];
+    blocked: string[];
+  }> {
+    const MAX_ATTEMPTS = 3;
+
+    // Pick up to 20 oldest pending drafts, ordered by creation time
+    const drafts = await db
+      .select()
+      .from(issueCommentDrafts)
+      .where(eq(issueCommentDrafts.replayStatus, "pending"))
+      .orderBy(asc(issueCommentDrafts.createdAt))
+      .limit(20);
+
+    const replayedIds: string[] = [];
+    const failedIds: string[] = [];
+    const blockedIds: string[] = [];
+
+    for (const draft of drafts) {
+      try {
+        // Use metadata.runId as the runId hint if available
+        const runIdHint = typeof draft.metadata === "object" && draft.metadata !== null
+          ? ((draft.metadata as unknown) as Record<string, unknown>).runId as string | undefined
+          : undefined;
+
+        await issuesSvc.addComment(
+          draft.issueId,
+          draft.body,
+          {
+            agentId: draft.authorAgentId ?? undefined,
+            runId: runIdHint ?? draft.createdByRunId ?? undefined,
+          },
+        );
+
+        // Success — mark done
+        await db
+          .update(issueCommentDrafts)
+          .set({
+            replayStatus: "done",
+            lastReplayAt: now,
+            replayAttemptCount: draft.replayAttemptCount + 1,
+            updatedAt: now,
+          })
+          .where(eq(issueCommentDrafts.id, draft.id));
+
+        replayedIds.push(draft.id);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const isAuth = errMsg.includes("401") || errMsg.includes("unauthorized") ||
+          errMsg.includes("403") || errMsg.includes("forbidden");
+
+        // Auth errors → blocked (don't retry); max attempts exceeded → failed; otherwise stay pending
+        const finalStatus: "failed" | "blocked" | "pending" =
+          isAuth ? "blocked" : draft.replayAttemptCount + 1 >= MAX_ATTEMPTS ? "failed" : "pending";
+
+        await db
+          .update(issueCommentDrafts)
+          .set({
+            replayStatus: finalStatus,
+            lastReplayAt: now,
+            replayAttemptCount: draft.replayAttemptCount + 1,
+            errorMessage: errMsg,
+            updatedAt: now,
+          })
+          .where(eq(issueCommentDrafts.id, draft.id));
+
+        if (isAuth) {
+          blockedIds.push(draft.id);
+        } else {
+          failedIds.push(draft.id);
+        }
+      }
+    }
+
+    return { replayed: replayedIds, failed: failedIds, blocked: blockedIds };
+  }
+
   async function getIssueRetryRun(
     companyId: string,
     issueId: string,
@@ -10260,6 +10347,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     promoteDueScheduledRetries,
     retryScheduledRetryNow,
+
+    replayDueCommentDrafts,
 
     resumeQueuedRuns,
 
