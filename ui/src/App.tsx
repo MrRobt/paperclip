@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes, useLocation, useParams } from "@/lib/r
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
 import { Layout } from "./components/Layout";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { Dashboard } from "./pages/Dashboard";
@@ -336,7 +337,15 @@ export function App() {
           <Route path="execution-workspaces/:workspaceId/issues" element={<UnprefixedBoardRedirect />} />
           <Route path="execution-workspaces/:workspaceId/routines" element={<UnprefixedBoardRedirect />} />
           <Route path=":companyPrefix" element={<Layout />}>
-            {boardRoutes()}
+            <Route
+              element={
+                <AppErrorBoundary>
+                  <Outlet />
+                </AppErrorBoundary>
+              }
+            >
+              {boardRoutes()}
+            </Route>
           </Route>
           <Route path="*" element={<NotFoundPage scope="global" />} />
         </Route>
