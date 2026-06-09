@@ -119,55 +119,72 @@ export function TeamHealth() {
   const summary = useMemo(() => summarizeTeamHealth(rows), [rows]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view team health." />;
+    return <EmptyState icon={Bot} message="请选择公司后查看团队健康状态。" />;
   }
 
   if (agentsQuery.isLoading || issuesQuery.isLoading) {
     return <PageSkeleton variant="dashboard" />;
   }
 
+  const firstError = agentsQuery.error ?? issuesQuery.error ?? liveRunsQuery.error;
+  if (firstError) {
+    const errorMessage = firstError instanceof Error ? firstError.message : "接口返回异常";
+    return (
+      <div className="space-y-3">
+        <EmptyState icon={ShieldAlert} message="团队健康页加载失败，请刷新重试。" />
+        <div className="mx-auto max-w-2xl rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          错误信息：<code className="break-all font-mono">{errorMessage}</code>
+        </div>
+      </div>
+    );
+  }
+
+  if (rows.length === 0) {
+    return <EmptyState icon={Bot} message="暂无团队成员，暂时没有可展示的健康状态。" />;
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Team Health</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">团队健康</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-            Separate Paperclip status, live runtime, useful evidence, recovery noise, and one-high-priority load before judging whether the team is really moving.
+            汇总公司状态、代理状态、任务状态、运行队列和最近异常，区分真实交付证据与恢复链噪声。
           </p>
         </div>
         <div className="text-xs text-muted-foreground">
-          Auto refreshes every 10–15s · {rows.length} agents
+          每十到十五秒自动刷新 · {rows.length} 名代理
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        {metricLabel(summary.totalAgents, "agents")}
-        {metricLabel(summary.activeRuntimeAgents, "live runtime")}
-        {metricLabel(summary.criticalAgents, "critical runtime")}
-        {metricLabel(summary.oneHighPriorityViolations, "one-high-priority violations")}
-        {metricLabel(summary.effectiveEvidenceCount, "effective evidence")}
-        {metricLabel(summary.noiseCount, "noise hints")}
+        {metricLabel(summary.totalAgents, "代理总数")}
+        {metricLabel(summary.activeRuntimeAgents, "运行中代理")}
+        {metricLabel(summary.criticalAgents, "严重运行异常")}
+        {metricLabel(summary.oneHighPriorityViolations, "高优先级超载")}
+        {metricLabel(summary.effectiveEvidenceCount, "有效交付证据")}
+        {metricLabel(summary.noiseCount, "噪声提示")}
       </div>
 
       {rows.some((row) => row.noiseCount > 0 || row.violatesOneHighPriority) ? (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200">
           <div className="flex items-center gap-2 font-medium">
             <ShieldAlert className="h-4 w-4" />
-            Recovery/noise review needed
+            需要复核恢复链或噪声
           </div>
           <p className="mt-1 text-xs">
-            Runs and comments that only show recovery loops, silence, or watchdog handoffs are surfaced as noise, not counted as real delivery evidence.
+            仅体现恢复循环、沉默或看门狗交接的运行信号会被标记为噪声，不计入真实交付证据。
           </p>
         </div>
       ) : null}
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="grid grid-cols-[1.25fr_0.9fr_1fr_1.2fr_1.2fr] gap-3 border-b border-border bg-muted/30 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <div>Agent</div>
-          <div>Paperclip / runtime</div>
-          <div>Load</div>
-          <div>Useful evidence</div>
-          <div>Noise / recovery</div>
+          <div>代理</div>
+          <div>纸夹状态 / 运行态</div>
+          <div>负载</div>
+          <div>有效证据</div>
+          <div>噪声 / 恢复链</div>
         </div>
         <div className="divide-y divide-border">
           {rows.map((row) => (
@@ -176,7 +193,7 @@ export function TeamHealth() {
                 <Link className="font-medium text-foreground hover:underline" to={`/agents/${row.agentId}`}>
                   {row.agentName}
                 </Link>
-                <div className="mt-1 truncate text-xs text-muted-foreground">{row.adapterType ?? "No adapter"}</div>
+                <div className="mt-1 truncate text-xs text-muted-foreground">{row.adapterType ?? "未配置适配器"}</div>
               </div>
               <div className="space-y-2">
                 <StatusBadge status={row.paperclipStatus} />
@@ -186,15 +203,15 @@ export function TeamHealth() {
                 </div>
               </div>
               <div className="space-y-1 text-xs">
-                <div>{row.openIssueCount} open issues</div>
+                <div>{row.openIssueCount} 个未完成任务</div>
                 <div className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5", row.violatesOneHighPriority ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground")}>
                   {row.violatesOneHighPriority ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
-                  {row.highPriorityLoad} high priority
+                  {row.highPriorityLoad} 个高优先级
                 </div>
               </div>
               <div className="space-y-1 text-xs">
                 {row.recentEvidence.length === 0 ? (
-                  <span className="text-muted-foreground">No recent useful evidence</span>
+                  <span className="text-muted-foreground">暂无近期有效证据</span>
                 ) : row.recentEvidence.map((item) => (
                   <Link key={item.issueId} to={`/issues/${item.issueId}`} className="block rounded border border-border px-2 py-1 hover:bg-accent/50">
                     <div className="flex items-center gap-1 font-medium text-foreground">
@@ -208,10 +225,10 @@ export function TeamHealth() {
               </div>
               <div className="space-y-1 text-xs">
                 {row.noiseHints.length === 0 ? (
-                  <span className="text-muted-foreground">No obvious noise</span>
+                  <span className="text-muted-foreground">暂无明显噪声</span>
                 ) : row.noiseHints.map((hint, index) => (
                   <div key={`${hint.issueId ?? hint.runId ?? index}`} className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1">
-                    <div className="font-medium text-amber-800 dark:text-amber-200">{hint.identifier ?? hint.runId?.slice(0, 8) ?? "noise"}</div>
+                    <div className="font-medium text-amber-800 dark:text-amber-200">{hint.identifier ?? hint.runId?.slice(0, 8) ?? "噪声"}</div>
                     <div className="truncate text-muted-foreground">{hint.title}</div>
                     <div className="text-[11px] text-muted-foreground">{hint.reason}</div>
                   </div>
