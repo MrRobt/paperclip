@@ -673,6 +673,27 @@
       "when": 1780888330857,
       "tag": "0095_whole_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1780986319347,
+      "tag": "0096_add_legion_tasks_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1780986319348,
+      "tag": "0097_add_legion_handoffs_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1780986319349,
+      "tag": "0098_add_task_decomposition_metadata",
+      "breakpoints": true
     }
   ]
 }

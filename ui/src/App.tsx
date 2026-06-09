@@ -9,6 +9,8 @@ import { Dashboard } from "./pages/Dashboard";
 import { DashboardLive } from "./pages/DashboardLive";
 import { TeamHealth } from "./pages/TeamHealth";
 import { DeliveryControlPlanePage } from "./pages/DeliveryControlPlanePage";
+import { LegionTasksPage } from "./pages/LegionTasks";
+import { LegionGoalDecomposePage } from "./pages/LegionGoalDecompose";
 import { Companies } from "./pages/Companies";
 import { Agents } from "./pages/Agents";
 import { AgentDetail } from "./pages/AgentDetail";
@@ -74,6 +76,8 @@ function boardRoutes() {
       <Route path="dashboard/live" element={<DashboardLive />} />
       <Route path="team-health" element={<TeamHealth />} />
       <Route path="delivery-control-plane" element={<DeliveryControlPlanePage />} />
+      <Route path="legion/tasks" element={<LegionTasksPage />} />
+      <Route path="legion/goals/:goalId/decompose" element={<LegionGoalDecomposePage />} />
       <Route path="onboarding" element={<OnboardingRoutePage />} />
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
