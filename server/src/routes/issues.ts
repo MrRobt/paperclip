@@ -5963,7 +5963,8 @@ export function issueRoutes(
       const assigneeId = currentIssue.assigneeAgentId;
       const actorIsAgent = actor.actorType === "agent";
       const selfComment = actorIsAgent && actor.actorId === assigneeId;
-      const skipWake = selfComment || isClosed;
+      const activeRunComment = Boolean(actor.runId && actor.runId === currentIssue.executionRunId);
+      const skipWake = selfComment || activeRunComment || isClosed;
       if (assigneeId && (reopened || !skipWake)) {
         if (reopened) {
           wakeups.set(assigneeId, {

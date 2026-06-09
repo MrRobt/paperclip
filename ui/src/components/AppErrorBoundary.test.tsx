@@ -11,8 +11,9 @@ import { AppErrorBoundary } from "./AppErrorBoundary";
 let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
-function ThrowingChild({ message }: { message: string }) {
+function ThrowingChild({ message }: { message: string }): null {
   throw new Error(message);
+  return null;
 }
 
 function renderBoundary(message: string) {

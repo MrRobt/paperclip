@@ -31,7 +31,43 @@ Before making changes, read in this order:
 - `packages/plugins/`: plugin system packages
 - `doc/`: operational and product docs
 
-## 4. Dev Setup (Auto DB)
+## 4. Execution Channel Policy（执行通道策略）
+
+**【强制】所有编码任务必须使用 Hermes 本地执行。**
+
+### 4.1 允许的执行通道
+
+| 通道 | 用途 | 使用条件 |
+|---|---|---|
+| Hermes 本地（默认） | 所有编码任务：读、写、搜索、终端、Git | 始终启用，无需特殊授权 |
+| Paperclip 看板任务 | 任务领取、状态更新、评论 | 通过 Paperclip 看板操作 |
+| 浏览器自动化 | 前端 UI 验证、截图 | 仅用于 QA 验证，不用于编码 |
+
+### 4.2 绝对禁止
+
+- ❌ **禁止使用 sub2api / sb2 / 萨普图 远程 Claude Code 会话**
+  - 禁止调用 `mcp_sub2api_send_claude_command`
+  - 禁止创建/管理 sub2api workspace PTY 会话
+  - 禁止通过 sub2api 派发任何编码任务
+  - 禁止在 prompt、cron、skill 里引用 sub2api workspace ID
+- ❌ 禁止在 AGENTS.md、cron prompt、skill prompt 里加载 `sub2api-deployed-service` 或 `dyq-sb2` 技能
+- ❌ 禁止创建针对 sub2api/sb2 的定时任务
+
+### 4.3 违规处理
+
+如果发现违反上述禁令的 cron、skill 或 prompt，应立即：
+1. 删除相关 cron job
+2. 移除相关 prompt 中的 sb2/sub2api 引用
+3. 终止相关 PTY 会话
+
+### 4.4 为什么禁止 sb2
+
+- sb2 远程会话容易卡在 Vim 编辑器、交互式选择菜单等状态，无法自动恢复
+- sub2api workspace 缺乏有效的超时和中断机制
+- Hermes 本地执行可以完整使用终端、文件、搜索工具，无状态丢失风险
+- 本地执行可观测、可中断、可验证，远程 PTY 黑箱无法做到
+
+## 5. Dev Setup（本地开发）
 
 Use embedded PGlite in dev by leaving `DATABASE_URL` unset.
 
@@ -59,7 +95,7 @@ rm -rf data/pglite
 pnpm dev
 ```
 
-## 5. Core Engineering Rules
+## 6. Core Engineering Rules
 
 1. Keep changes company-scoped.
 Every domain entity should be scoped to a company and company boundaries must be enforced in routes/services.
@@ -87,7 +123,7 @@ When you are creating a plan file in the repository itself, new plan documents b
 6. Attach inspectable generated artifacts.
 When your task produces a user-inspectable file, follow the Paperclip skill's "Generated Artifacts and Work Products" workflow before final disposition. In this repo, prefer the self-contained skill helper at `skills/paperclip/scripts/paperclip-upload-artifact.sh` so the file is available through the Paperclip API, create/update an artifact work product when the file is the deliverable, link the uploaded artifact in the final issue comment, and then set status. Do not rely on local filesystem paths as the only access path. See `doc/AGENT-ARTIFACTS.md` for `.mp4` and `.webm` examples.
 
-## 6. Database Change Workflow
+## 7. Database Change Workflow
 
 When changing data model:
 
@@ -109,7 +145,7 @@ Notes:
 - `packages/db/drizzle.config.ts` reads compiled schema from `dist/schema/*.js`
 - `pnpm db:generate` compiles `packages/db` first
 
-## 7. Verification Before Hand-off
+## 8. Verification Before Hand-off
 
 Default local/agent test path:
 
@@ -138,7 +174,7 @@ pnpm build
 
 If anything cannot be run, explicitly report what was not run and why.
 
-## 8. API and Auth Expectations
+## 9. API and Auth Expectations
 
 - Base path: `/api`
 - Board access is treated as full-control operator context
@@ -152,13 +188,13 @@ When adding endpoints:
 - write activity log entries for mutations
 - return consistent HTTP errors (`400/401/403/404/409/422/500`)
 
-## 9. UI Expectations
+## 10. UI Expectations
 
 - Keep routes and nav aligned with available API surface
 - Use company selection context for company-scoped pages
 - Surface failures clearly; do not silently ignore API errors
 
-## 10. Pull Request Requirements
+## 11. Pull Request Requirements
 
 When creating a pull request (via `gh pr create` or any other method), you **must** read and fill in every section of [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md). Do not craft ad-hoc PR bodies — use the template as the structure for your PR description. Required sections:
 
@@ -169,7 +205,7 @@ When creating a pull request (via `gh pr create` or any other method), you **mus
 - **Model Used** — the AI model that produced or assisted with the change (provider, exact model ID, context window, capabilities). Write "None — human-authored" if no AI was used.
 - **Checklist** — all items checked
 
-## 11. Definition of Done
+## 12. Definition of Done
 
 A change is done when all are true:
 
@@ -179,7 +215,7 @@ A change is done when all are true:
 4. Docs updated when behavior or commands change
 5. PR description follows the [PR template](.github/PULL_REQUEST_TEMPLATE.md) with all sections filled in (including Model Used)
 
-## 11. Fork-Specific: HenkDz/paperclip
+## 13. Fork-Specific: HenkDz/paperclip
 
 This is a fork of `paperclipai/paperclip` with QoL patches and an **external-only** Hermes adapter story on branch `feat/externalize-hermes-adapter` ([tree](https://github.com/HenkDz/paperclip/tree/feat/externalize-hermes-adapter)).
 

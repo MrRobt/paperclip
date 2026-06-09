@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { i18n } from "@/i18n";
 import { DeliveryControlPlanePage } from "./DeliveryControlPlanePage";
 
 const mockApi = vi.hoisted(() => ({
@@ -28,12 +30,6 @@ vi.mock("@/lib/router", () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-async function act(callback: () => void | Promise<void>) {
-  await callback();
-  await Promise.resolve();
-  await new Promise((resolve) => window.setTimeout(resolve, 0));
-}
-
 async function flushReact() {
   await act(async () => {
     await Promise.resolve();
@@ -50,7 +46,8 @@ function clickButton(container: HTMLElement, label: string) {
 describe("DeliveryControlPlanePage", () => {
   let container: HTMLDivElement;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("zh-CN");
     container = document.createElement("div");
     document.body.appendChild(container);
     mockCompanyState.selectedCompanyId = "company-1";

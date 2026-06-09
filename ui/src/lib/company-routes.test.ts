@@ -35,4 +35,18 @@ describe("company routes", () => {
     expect(applyCompanyPrefix("/search?q=hello%20world", "PAP")).toBe("/PAP/search?q=hello%20world");
     expect(toCompanyRelativePath("/PAP/search?q=foo")).toBe("/search?q=foo");
   });
+
+  it("keeps company-prefixed health and delivery pages relative when switching companies", () => {
+    expect(isBoardPathWithoutPrefix("/team-health")).toBe(true);
+    expect(isBoardPathWithoutPrefix("/delivery-control-plane")).toBe(true);
+    expect(extractCompanyPrefixFromPath("/CMP/team-health")).toBe("CMP");
+    expect(toCompanyRelativePath("/CMP/team-health")).toBe("/team-health");
+    expect(toCompanyRelativePath("/CMP/delivery-control-plane?tab=runs")).toBe(
+      "/delivery-control-plane?tab=runs",
+    );
+    expect(applyCompanyPrefix("/team-health", "CMP")).toBe("/CMP/team-health");
+    expect(applyCompanyPrefix("/delivery-control-plane?tab=runs", "CMP")).toBe(
+      "/CMP/delivery-control-plane?tab=runs",
+    );
+  });
 });

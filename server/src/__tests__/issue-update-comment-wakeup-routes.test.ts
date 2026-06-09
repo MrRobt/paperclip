@@ -165,7 +165,7 @@ function registerModuleMocks() {
   }));
 }
 
-async function createApp() {
+async function createApp(actorOverrides: Record<string, unknown> = {}) {
   const [{ errorHandler }, { issueRoutes }] = await Promise.all([
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
@@ -179,6 +179,7 @@ async function createApp() {
       companyIds: ["company-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
+      ...actorOverrides,
     };
     next();
   });
@@ -313,5 +314,29 @@ describe("issue update comment wakeups", () => {
         }),
       }),
     );
+  });
+
+  it("does not wake the assignee for comments created by the active run", async () => {
+    const activeRunId = "22222222-2222-4222-8222-222222222222";
+    const existing = makeIssue({
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+      assigneeUserId: null,
+      status: "in_progress",
+      executionRunId: activeRunId,
+    });
+    mockIssueService.getById.mockResolvedValue(existing);
+    mockIssueService.addComment.mockResolvedValue({
+      id: "comment-active-run",
+      issueId: existing.id,
+      companyId: existing.companyId,
+      body: "验收通过，准备收口完成。",
+    });
+
+    const res = await request(await createApp({ runId: activeRunId }))
+      .post(`/api/issues/${existing.id}/comments`)
+      .send({ body: "验收通过，准备收口完成。" });
+
+    expect(res.status).toBe(201);
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 });
