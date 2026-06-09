@@ -1,0 +1,32 @@
+{
+  "base": "http://127.0.0.1:48080",
+  "deviceId": "djs-loop-smoke-001",
+  "checks": [
+    {
+      "name": "主后端端口与健康端点",
+      "http": 200,
+      "status": "UP",
+      "db": "UP",
+      "redis": "UP",
+      "rabbit": "UP",
+      "nacosConfig": null
+    },
+    {
+      "name": "Claw设备注册",
+      "http": 200,
+      "code": 0,
+      "hasDeviceToken": true,
+      "tokenLength": 190,
+      "expiresIn": 604800
+    },
+    {
+      "name": "Claw设备心跳",
+      "http": 200,
+      "code": 0,
+      "pendingTaskCount": 0,
+      "skillVersion": 0,
+      "hasServerTime": true
+    }
+  ],
+  "passed": true
+}

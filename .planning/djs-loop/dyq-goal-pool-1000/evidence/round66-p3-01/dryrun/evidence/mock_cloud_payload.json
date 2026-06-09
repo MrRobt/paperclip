@@ -1,0 +1,14 @@
+{
+  "requestId": "req-e81ea97d",
+  "taskUuid": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+  "deviceId": "pokeclaw-p3p01-20260607-133319",
+  "traceId": "trace-782fbbe6",
+  "status": "SUCCESS",
+  "accepted": "true",
+  "recoverable": "false",
+  "errorCode": "NONE",
+  "result": "模拟执行完成: 已打开应用",
+  "evidenceRefs": "mock://launch_app/settings,screenshot_p3-01.png",
+  "occurredAtMillis": "1780810399748",
+  "mockCloudVersion": "p3-01-1.0"
+}

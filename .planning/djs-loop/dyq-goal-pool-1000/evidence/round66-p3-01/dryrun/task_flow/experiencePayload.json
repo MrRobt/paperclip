@@ -1,0 +1,13 @@
+{
+  "taskUuid": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+  "deviceId": "pokeclaw-p3p01-20260607-133319",
+  "traceId": "trace-782fbbe6",
+  "lessonType": "TASK_EXECUTION_SUCCESS",
+  "outcome": "SUCCESS",
+  "summary": "模拟执行完成: 已打开应用",
+  "errorCode": "NONE",
+  "recoverable": "false",
+  "occurredAtMillis": "1780810399748",
+  "evidenceRefs": "mock://launch_app/settings,screenshot_p3-01.png",
+  "experienceVersion": "p3-01-1.0"
+}

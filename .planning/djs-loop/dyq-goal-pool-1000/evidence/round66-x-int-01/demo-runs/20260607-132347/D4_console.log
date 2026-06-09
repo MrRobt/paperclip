@@ -1,0 +1,1208 @@
+
+> social-media-web-automation@0.1.0 test
+> node --import tsx --test tests/**/*.test.ts 控制台只读总览
+
+TAP version 13
+# Subtest: 审计详情查询与脱敏参数快照
+    # Subtest: 递归脱敏默认敏感字段，仅保留可审计参数结构
+    ok 1 - 递归脱敏默认敏感字段，仅保留可审计参数结构
+      ---
+      duration_ms: 2.01796
+      type: 'test'
+      ...
+    # Subtest: 按任务生成审计详情，包含脱敏快照、事件副本、阶段轨迹和截图证据数组
+    ok 2 - 按任务生成审计详情，包含脱敏快照、事件副本、阶段轨迹和截图证据数组
+      ---
+      duration_ms: 3.001292
+      type: 'test'
+      ...
+    # Subtest: 失败事件推导失败终止轨迹，未传截图时返回空数组
+    ok 3 - 失败事件推导失败终止轨迹，未传截图时返回空数组
+      ---
+      duration_ms: 0.843552
+      type: 'test'
+      ...
+    # Subtest: 审计详情会脱敏事件数据和截图元数据，并返回不可污染原始输入的副本
+    ok 4 - 审计详情会脱敏事件数据和截图元数据，并返回不可污染原始输入的副本
+      ---
+      duration_ms: 0.433487
+      type: 'test'
+      ...
+    1..4
+ok 1 - 审计详情查询与脱敏参数快照
+  ---
+  duration_ms: 8.005567
+  type: 'suite'
+  ...
+# Subtest: 审计事件与内存审计日志
+    # Subtest: 创建审计事件时包含稳定结构和可选数据
+    ok 1 - 创建审计事件时包含稳定结构和可选数据
+      ---
+      duration_ms: 1.784185
+      type: 'test'
+      ...
+    # Subtest: 内存审计日志按写入顺序保存并可按 taskId 查询
+    ok 2 - 内存审计日志按写入顺序保存并可按 taskId 查询
+      ---
+      duration_ms: 0.411316
+      type: 'test'
+      ...
+    # Subtest: 记录失败时落 error 审计事件
+    ok 3 - 记录失败时落 error 审计事件
+      ---
+      duration_ms: 0.406177
+      type: 'test'
+      ...
+    # Subtest: 查询结果返回副本，避免外部修改内存日志
+    ok 4 - 查询结果返回副本，避免外部修改内存日志
+      ---
+      duration_ms: 0.303207
+      type: 'test'
+      ...
+    1..4
+ok 2 - 审计事件与内存审计日志
+  ---
+  duration_ms: 4.381326
+  type: 'suite'
+  ...
+# Subtest: 自动化预览与真实执行安全门禁
+    # Subtest: runner.preview 调用平台 preview 契约并返回风险、页面、动作和预计影响
+    ok 1 - runner.preview 调用平台 preview 契约并返回风险、页面、动作和预计影响
+      ---
+      duration_ms: 13.115598
+      type: 'test'
+      ...
+    # Subtest: 真实执行 dryRun=false 未带 previewApproval 时拒绝执行
+    ok 2 - 真实执行 dryRun=false 未带 previewApproval 时拒绝执行
+      ---
+      duration_ms: 1.948892
+      type: 'test'
+      ...
+    # Subtest: 真实执行 dryRun=false 且 previewApproval 匹配时允许执行
+    ok 3 - 真实执行 dryRun=false 且 previewApproval 匹配时允许执行
+      ---
+      duration_ms: 0.642066
+      type: 'test'
+      ...
+    # Subtest: 平台未提供 preview 契约时即使伪造确认也拒绝真实执行
+    ok 4 - 平台未提供 preview 契约时即使伪造确认也拒绝真实执行
+      ---
+      duration_ms: 0.274191
+      type: 'test'
+      ...
+    # Subtest: 预览失败时即使带确认也拒绝真实执行
+    ok 5 - 预览失败时即使带确认也拒绝真实执行
+      ---
+      duration_ms: 0.342808
+      type: 'test'
+      ...
+    # Subtest: 真实执行前二次预览抛异常时返回失败并写入审计
+    ok 6 - 真实执行前二次预览抛异常时返回失败并写入审计
+      ---
+      duration_ms: 3.291639
+      type: 'test'
+      ...
+    # Subtest: 确认参数与当前任务参数不匹配时拒绝真实执行
+    ok 7 - 确认参数与当前任务参数不匹配时拒绝真实执行
+      ---
+      duration_ms: 1.939821
+      type: 'test'
+      ...
+    # Subtest: 小红书适配器提供只读动作预览
+    ok 8 - 小红书适配器提供只读动作预览
+      ---
+      duration_ms: 0.769193
+      type: 'test'
+      ...
+    # Subtest: 小红书首期只暴露只读动作，不把收藏等写操作放入支持列表
+    ok 9 - 小红书首期只暴露只读动作，不把收藏等写操作放入支持列表
+      ---
+      duration_ms: 0.280343
+      type: 'test'
+      ...
+    1..9
+ok 3 - 自动化预览与真实执行安全门禁
+  ---
+  duration_ms: 24.76714
+  type: 'suite'
+  ...
+# Subtest: 自动化执行器
+    # Subtest: 按任务平台路由到对应适配器
+    ok 1 - 按任务平台路由到对应适配器
+      ---
+      duration_ms: 2.289566
+      type: 'test'
+      ...
+    # Subtest: 平台不存在时返回失败结果
+    ok 2 - 平台不存在时返回失败结果
+      ---
+      duration_ms: 0.443857
+      type: 'test'
+      ...
+    # Subtest: 执行器预览和执行阶段写入状态审计事件
+    ok 3 - 执行器预览和执行阶段写入状态审计事件
+      ---
+      duration_ms: 9.070891
+      type: 'test'
+      ...
+    # Subtest: 执行器捕获异常时写入 error 审计事件
+    ok 4 - 执行器捕获异常时写入 error 审计事件
+      ---
+      duration_ms: 0.311991
+      type: 'test'
+      ...
+    1..4
+ok 4 - 自动化执行器
+  ---
+  duration_ms: 14.395674
+  type: 'suite'
+  ...
+# Subtest: CDP Bridge MCP 执行器契约
+    # Subtest: 只选择本地真实 Chrome 中的小红书标签并返回登录态与截图证据
+    ok 1 - 只选择本地真实 Chrome 中的小红书标签并返回登录态与截图证据
+      ---
+      duration_ms: 2.820145
+      type: 'test'
+      ...
+    # Subtest: 检测到登录弹窗、二维码、验证码或风控关键词时停止并要求人工接管
+    ok 2 - 检测到登录弹窗、二维码、验证码或风控关键词时停止并要求人工接管
+      ---
+      duration_ms: 0.716575
+      type: 'test'
+      ...
+    # Subtest: 没有小红书标签时通过 CDP Bridge 导航到发现页再检测
+    ok 3 - 没有小红书标签时通过 CDP Bridge 导航到发现页再检测
+      ---
+      duration_ms: 0.431023
+      type: 'test'
+      ...
+    # Subtest: 从本地真实 Chrome 当前发现流提取只读笔记卡片并保留截图证据
+    ok 4 - 从本地真实 Chrome 当前发现流提取只读笔记卡片并保留截图证据
+      ---
+      duration_ms: 0.809923
+      type: 'test'
+      ...
+    # Subtest: 从已打开的小红书详情弹层只读提取标题正文作者评论并保留截图证据
+    ok 5 - 从已打开的小红书详情弹层只读提取标题正文作者评论并保留截图证据
+      ---
+      duration_ms: 0.53158
+      type: 'test'
+      ...
+    # Subtest: 端到端封装会打开首条笔记、等待详情弹层、提取详情并截图审计
+    ok 6 - 端到端封装会打开首条笔记、等待详情弹层、提取详情并截图审计
+      ---
+      duration_ms: 1.026352
+      type: 'test'
+      ...
+    # Subtest: 端到端封装遇到登录或验证风险时停止点击并要求人工接管
+    ok 7 - 端到端封装遇到登录或验证风险时停止点击并要求人工接管
+      ---
+      duration_ms: 0.36986
+      type: 'test'
+      ...
+    # Subtest: 搜索只读提取会导航到搜索页、提取结果并落审计证据
+    ok 8 - 搜索只读提取会导航到搜索页、提取结果并落审计证据
+      ---
+      duration_ms: 16.293466
+      type: 'test'
+      ...
+    # Subtest: 搜索只读提取遇到登录或验证风险时不读取结果并返回人工接管事件
+    ok 9 - 搜索只读提取遇到登录或验证风险时不读取结果并返回人工接管事件
+      ---
+      duration_ms: 2.71514
+      type: 'test'
+      ...
+    1..9
+ok 5 - CDP Bridge MCP 执行器契约
+  ---
+  duration_ms: 28.141107
+  type: 'suite'
+  ...
+# Subtest: 交互式本地控制台命令流
+    # Subtest: 通过标准输入连续创建任务、生成预览、查看审计并退出
+    ok 1 - 通过标准输入连续创建任务、生成预览、查看审计并退出
+      ---
+      duration_ms: 1836.749449
+      type: 'test'
+      ...
+    # Subtest: 通过标准输入触发人工接管时展示安全动作骨架
+    ok 2 - 通过标准输入触发人工接管时展示安全动作骨架
+      ---
+      duration_ms: 1434.743801
+      type: 'test'
+      ...
+    1..2
+ok 6 - 交互式本地控制台命令流
+  ---
+  duration_ms: 3272.644495
+  type: 'suite'
+  ...
+# Subtest: 控制台状态展示模型
+    # Subtest: 把任务状态归并为等待、运行、需人工、结束三态展示组
+    ok 1 - 把任务状态归并为等待、运行、需人工、结束三态展示组
+      ---
+      duration_ms: 3.371472
+      type: 'test'
+      ...
+    # Subtest: 任务列表行展示中文状态、试运行安全提示和人工接管提示
+    ok 2 - 任务列表行展示中文状态、试运行安全提示和人工接管提示
+      ---
+      duration_ms: 0.43458
+      type: 'test'
+      ...
+    # Subtest: 任务列表面板覆盖加载、错误、空态和正常列表三态骨架
+    ok 3 - 任务列表面板覆盖加载、错误、空态和正常列表三态骨架
+      ---
+      duration_ms: 0.409644
+      type: 'test'
+      ...
+    # Subtest: 人工接管面板明确展示原因、人工处理入口、复检和终止动作
+    ok 4 - 人工接管面板明确展示原因、人工处理入口、复检和终止动作
+      ---
+      duration_ms: 0.259193
+      type: 'test'
+      ...
+    # Subtest: 安全预览面板明确展示风险、访问页面、动作、影响和确认门禁
+    ok 5 - 安全预览面板明确展示风险、访问页面、动作、影响和确认门禁
+      ---
+      duration_ms: 0.328753
+      type: 'test'
+      ...
+    # Subtest: 本地真实浏览器风控检测面板展示登录态、命中原因和截图证据
+    ok 6 - 本地真实浏览器风控检测面板展示登录态、命中原因和截图证据
+      ---
+      duration_ms: 0.322451
+      type: 'test'
+      ...
+    1..6
+ok 7 - 控制台状态展示模型
+  ---
+  duration_ms: 7.215005
+  type: 'suite'
+  ...
+# Subtest: 本地控制台最小命令入口
+    # Subtest: 先创建预览，再在 dryRun=true 时执行试运行
+    ok 1 - 先创建预览，再在 dryRun=true 时执行试运行
+      ---
+      duration_ms: 2.135029
+      type: 'test'
+      ...
+    # Subtest: dryRun=false 且未确认时阻止真实执行
+    ok 2 - dryRun=false 且未确认时阻止真实执行
+      ---
+      duration_ms: 0.621959
+      type: 'test'
+      ...
+    # Subtest: dryRun=false 且预览失败时即使已确认也阻止真实执行
+    ok 3 - dryRun=false 且预览失败时即使已确认也阻止真实执行
+      ---
+      duration_ms: 0.456641
+      type: 'test'
+      ...
+    # Subtest: dryRun=false 且 runner 缺少 preview 时阻止真实执行
+    ok 4 - dryRun=false 且 runner 缺少 preview 时阻止真实执行
+      ---
+      duration_ms: 0.244145
+      type: 'test'
+      ...
+    # Subtest: dryRun=false 且已确认时把预览确认对象传给 runner
+    ok 5 - dryRun=false 且已确认时把预览确认对象传给 runner
+      ---
+      duration_ms: 0.507125
+      type: 'test'
+      ...
+    # Subtest: 小红书发布评论私信等外部可见动作即使已确认也只能进入人工确认队列，禁止控制台真实执行
+    ok 6 - 小红书发布评论私信等外部可见动作即使已确认也只能进入人工确认队列，禁止控制台真实执行
+      ---
+      duration_ms: 0.806674
+      type: 'test'
+      ...
+    1..6
+ok 8 - 本地控制台最小命令入口
+  ---
+  duration_ms: 6.685918
+  type: 'suite'
+  ...
+# Subtest: 人工确认草稿队列
+    # Subtest: 只展示待确认发布、评论、私信草稿，不提供自动发送动作
+    ok 1 - 只展示待确认发布、评论、私信草稿，不提供自动发送动作
+      ---
+      duration_ms: 3.188877
+      type: 'test'
+      ...
+    # Subtest: 确认队列状态流转只支持标记展示、驳回和取消，不执行外部可见动作
+    ok 2 - 确认队列状态流转只支持标记展示、驳回和取消，不执行外部可见动作
+      ---
+      duration_ms: 0.67098
+      type: 'test'
+      ...
+    # Subtest: 运行时拒绝非发布评论私信草稿进入人工确认队列
+    ok 3 - 运行时拒绝非发布评论私信草稿进入人工确认队列
+      ---
+      duration_ms: 1.359464
+      type: 'test'
+      ...
+    1..3
+ok 9 - 人工确认草稿队列
+  ---
+  duration_ms: 6.763934
+  type: 'suite'
+  ...
+# [模拟风控] 任务 ee602492-9f99-43fd-ad29-6855be1cafc9 进入需人工状态
+# [模拟风控] 原因: 平台要求验证码验证
+# [模拟风控] 提示: 请在浏览器中完成验证码验证，完成后点击"我已处理，重新检测"
+# [模拟风控] 任务 5a8692e8-197c-4c3f-9383-08565f447988 进入需人工状态
+# [模拟风控] 原因: 平台要求验证码验证
+# [模拟风控] 提示: 请在浏览器中完成验证码验证，完成后点击"我已处理，重新检测"
+# [人工接管] 任务 5a8692e8-197c-4c3f-9383-08565f447988: 请打开浏览器完成人工处理
+# [人工接管] 提示: 完成处理后请点击"我已处理，重新检测"
+# [模拟风控] 任务 4c36cdd7-ecf0-43ab-8886-adbd7e8519e2 进入需人工状态
+# [模拟风控] 原因: 平台要求验证码验证
+# [模拟风控] 提示: 请在浏览器中完成验证码验证，完成后点击"我已处理，重新检测"
+# [人工接管] 任务 4c36cdd7-ecf0-43ab-8886-adbd7e8519e2: 已确认人工处理完成，任务恢复执行
+# [模拟风控] 任务 85387d95-4b03-450c-a203-3b0973edddd7 进入需人工状态
+# [模拟风控] 原因: 平台要求验证码验证
+# [模拟风控] 提示: 请在浏览器中完成验证码验证，完成后点击"我已处理，重新检测"
+# [人工接管] 任务 85387d95-4b03-450c-a203-3b0973edddd7: 已终止
+# [人工接管] 终止原因: 用户放弃
+# Subtest: 人工接管上下文消息
+    # Subtest: 验证码消息包含正确提示
+    ok 1 - 验证码消息包含正确提示
+      ---
+      duration_ms: 1.097876
+      type: 'test'
+      ...
+    # Subtest: 风控消息包含正确提示
+    ok 2 - 风控消息包含正确提示
+      ---
+      duration_ms: 0.230058
+      type: 'test'
+      ...
+    # Subtest: 登录过期消息包含正确提示
+    ok 3 - 登录过期消息包含正确提示
+      ---
+      duration_ms: 0.406337
+      type: 'test'
+      ...
+    # Subtest: 身份验证消息包含正确提示
+    ok 4 - 身份验证消息包含正确提示
+      ---
+      duration_ms: 1.059748
+      type: 'test'
+      ...
+    # Subtest: 冷却期消息包含正确提示
+    ok 5 - 冷却期消息包含正确提示
+      ---
+      duration_ms: 0.871414
+      type: 'test'
+      ...
+    # Subtest: 人工审核消息标记为不可恢复
+    ok 6 - 人工审核消息标记为不可恢复
+      ---
+      duration_ms: 0.625305
+      type: 'test'
+      ...
+    # Subtest: 未知原因返回默认值
+    ok 7 - 未知原因返回默认值
+      ---
+      duration_ms: 0.585942
+      type: 'test'
+      ...
+    1..7
+ok 10 - 人工接管上下文消息
+  ---
+  duration_ms: 10.438853
+  type: 'suite'
+  ...
+# Subtest: 人工接管处理器
+    # Subtest: simulateHumanRequired 将任务标记为需人工
+    ok 1 - simulateHumanRequired 将任务标记为需人工
+      ---
+      duration_ms: 4.290541
+      type: 'test'
+      ...
+    # Subtest: openBrowser 保持 human_required 状态
+    ok 2 - openBrowser 保持 human_required 状态
+      ---
+      duration_ms: 0.808487
+      type: 'test'
+      ...
+    # Subtest: recheck 将任务恢复为 running
+    ok 3 - recheck 将任务恢复为 running
+      ---
+      duration_ms: 1.201058
+      type: 'test'
+      ...
+    # Subtest: terminate 将任务标记为 cancelled
+    ok 4 - terminate 将任务标记为 cancelled
+      ---
+      duration_ms: 0.549043
+      type: 'test'
+      ...
+    1..4
+ok 11 - 人工接管处理器
+  ---
+  duration_ms: 7.590044
+  type: 'suite'
+  ...
+# Subtest: S1直播间/热点线索人工确认草稿
+    # Subtest: 把小红书只读详情提取结果转入S1人工确认评论草稿
+    ok 1 - 把小红书只读详情提取结果转入S1人工确认评论草稿
+      ---
+      duration_ms: 1.82484
+      type: 'test'
+      ...
+    # Subtest: 小红书只读详情触发人工接管时不生成评论草稿
+    ok 2 - 小红书只读详情触发人工接管时不生成评论草稿
+      ---
+      duration_ms: 0.539135
+      type: 'test'
+      ...
+    # Subtest: 把直播间高意向观察结果转成人工确认评论草稿，不暴露自动评论入口
+    ok 3 - 把直播间高意向观察结果转成人工确认评论草稿，不暴露自动评论入口
+      ---
+      duration_ms: 0.309597
+      type: 'test'
+      ...
+    # Subtest: 低意向直播间观察结果不会进入人工确认队列，避免刷屏骚扰
+    ok 4 - 低意向直播间观察结果不会进入人工确认队列，避免刷屏骚扰
+      ---
+      duration_ms: 0.449287
+      type: 'test'
+      ...
+    # Subtest: 可批量接入只读控制台人工确认队列，并保留 S1 场景归类
+    ok 5 - 可批量接入只读控制台人工确认队列，并保留 S1 场景归类
+      ---
+      duration_ms: 0.806874
+      type: 'test'
+      ...
+    # Subtest: 把小红书搜索结果只读卡片灌入S1人工确认队列并跳过低意向项
+    ok 6 - 把小红书搜索结果只读卡片灌入S1人工确认队列并跳过低意向项
+      ---
+      duration_ms: 0.744848
+      type: 'test'
+      ...
+    # Subtest: 小红书搜索结果触发人工接管时不生成草稿
+    ok 7 - 小红书搜索结果触发人工接管时不生成草稿
+      ---
+      duration_ms: 0.246689
+      type: 'test'
+      ...
+    # Subtest: 把小红书只读详情批量灌入人工确认队列并跳过风控项
+    ok 8 - 把小红书只读详情批量灌入人工确认队列并跳过风控项
+      ---
+      duration_ms: 0.771066
+      type: 'test'
+      ...
+    1..8
+ok 12 - S1直播间/热点线索人工确认草稿
+  ---
+  duration_ms: 7.309069
+  type: 'suite'
+  ...
+# Subtest: 平台配置模型 PlatformProfile
+    # Subtest: 从最小输入创建平台配置，并默认登录态 unknown
+    ok 1 - 从最小输入创建平台配置，并默认登录态 unknown
+      ---
+      duration_ms: 1.646238
+      type: 'test'
+      ...
+    # Subtest: 依据登录态检测结果更新配置登录态和冷却时间
+    ok 2 - 依据登录态检测结果更新配置登录态和冷却时间
+      ---
+      duration_ms: 0.266146
+      type: 'test'
+      ...
+    1..2
+ok 13 - 平台配置模型 PlatformProfile
+  ---
+  duration_ms: 3.174918
+  type: 'suite'
+  ...
+# Subtest: 小红书登录态检测契约
+    # Subtest: 无 userDataDir 时返回可恢复的 expired，而不是抛未知异常
+    ok 1 - 无 userDataDir 时返回可恢复的 expired，而不是抛未知异常
+      ---
+      duration_ms: 0.317241
+      type: 'test'
+      ...
+    # Subtest: 有 userDataDir 时只返回安全占位状态，不声称真实登录成功
+    ok 2 - 有 userDataDir 时只返回安全占位状态，不声称真实登录成功
+      ---
+      duration_ms: 0.57962
+      type: 'test'
+      ...
+    1..2
+ok 14 - 小红书登录态检测契约
+  ---
+  duration_ms: 1.282199
+  type: 'suite'
+  ...
+# Subtest: 平台注册表
+    # Subtest: 按平台名称注册并读取适配器
+    ok 1 - 按平台名称注册并读取适配器
+      ---
+      duration_ms: 2.611577
+      type: 'test'
+      ...
+    # Subtest: 重复注册同一平台时抛出错误
+    ok 2 - 重复注册同一平台时抛出错误
+      ---
+      duration_ms: 0.709753
+      type: 'test'
+      ...
+    1..2
+ok 15 - 平台注册表
+  ---
+  duration_ms: 4.913676
+  type: 'suite'
+  ...
+# Subtest: 控制台只读总览
+    # Subtest: 汇总任务、队列、审计证据、人工确认草稿和 CDP 风控态，且不暴露执行入口
+    ok 1 - 汇总任务、队列、审计证据、人工确认草稿和 CDP 风控态，且不暴露执行入口
+      ---
+      duration_ms: 5.192444
+      type: 'test'
+      ...
+    # Subtest: 检测到登录或风控时在总览中提示人工接管并保持只读安全边界
+    ok 2 - 检测到登录或风控时在总览中提示人工接管并保持只读安全边界
+      ---
+      duration_ms: 0.760096
+      type: 'test'
+      ...
+    1..2
+ok 16 - 控制台只读总览
+  ---
+  duration_ms: 7.290624
+  type: 'suite'
+  ...
+# Subtest: 风险检测器
+    # Subtest: 默认配置未启用模拟时返回无风险
+    ok 1 - 默认配置未启用模拟时返回无风险
+      ---
+      duration_ms: 4.354393
+      type: 'test'
+      ...
+    # Subtest: 模拟验证码检测
+    ok 2 - 模拟验证码检测
+      ---
+      duration_ms: 0.536058
+      type: 'test'
+      ...
+    # Subtest: 模拟频率限制检测
+    ok 3 - 模拟频率限制检测
+      ---
+      duration_ms: 0.271656
+      type: 'test'
+      ...
+    # Subtest: 模拟登录要求检测
+    ok 4 - 模拟登录要求检测
+      ---
+      duration_ms: 0.181227
+      type: 'test'
+      ...
+    # Subtest: 模拟身份验证检测
+    ok 5 - 模拟身份验证检测
+      ---
+      duration_ms: 0.428218
+      type: 'test'
+      ...
+    # Subtest: 模拟冷却期检测
+    ok 6 - 模拟冷却期检测
+      ---
+      duration_ms: 0.552159
+      type: 'test'
+      ...
+    # Subtest: 概率配置在范围内生效
+    ok 7 - 概率配置在范围内生效
+      ---
+      duration_ms: 0.683034
+      type: 'test'
+      ...
+    # Subtest: 概率被限制在0-1范围内
+    ok 8 - 概率被限制在0-1范围内
+      ---
+      duration_ms: 0.690897
+      type: 'test'
+      ...
+    1..8
+ok 17 - 风险检测器
+  ---
+  duration_ms: 10.982003
+  type: 'suite'
+  ...
+# Subtest: 小红书适配器风险检测
+    # Subtest: 执行时检测到风险返回人工接管错误
+    ok 1 - 执行时检测到风险返回人工接管错误
+      ---
+      duration_ms: 116.638711
+      type: 'test'
+      ...
+    1..1
+ok 18 - 小红书适配器风险检测
+  ---
+  duration_ms: 117.297388
+  type: 'suite'
+  ...
+# Subtest: 运行队列内存模型
+    # Subtest: enqueue 后进入等待中，list/get/summary 可观察队列状态
+    ok 1 - enqueue 后进入等待中，list/get/summary 可观察队列状态
+      ---
+      duration_ms: 3.104134
+      type: 'test'
+      ...
+    # Subtest: startNext 一次只允许一个执行中任务，完成后才启动下一个
+    ok 2 - startNext 一次只允许一个执行中任务，完成后才启动下一个
+      ---
+      duration_ms: 0.634582
+      type: 'test'
+      ...
+    # Subtest: pause 将执行中任务暂停，resume 回到等待中并可重新被 startNext 启动
+    ok 3 - pause 将执行中任务暂停，resume 回到等待中并可重新被 startNext 启动
+      ---
+      duration_ms: 0.482178
+      type: 'test'
+      ...
+    # Subtest: markHumanRequired 让执行中任务进入需人工，阻塞后续启动直到取消/失败/完成
+    ok 4 - markHumanRequired 让执行中任务进入需人工，阻塞后续启动直到取消/失败/完成
+      ---
+      duration_ms: 0.355563
+      type: 'test'
+      ...
+    # Subtest: 失败和取消写入终态，终态不可重新开始或变更
+    ok 5 - 失败和取消写入终态，终态不可重新开始或变更
+      ---
+      duration_ms: 1.012487
+      type: 'test'
+      ...
+    # Subtest: 拒绝重复 id 和非法状态流转
+    ok 6 - 拒绝重复 id 和非法状态流转
+      ---
+      duration_ms: 0.390157
+      type: 'test'
+      ...
+    1..6
+ok 19 - 运行队列内存模型
+  ---
+  duration_ms: 8.614412
+  type: 'suite'
+  ...
+# Subtest: S1.1 模板生成 5 类素材且字段完整
+ok 20 - S1.1 模板生成 5 类素材且字段完整
+  ---
+  duration_ms: 3.571967
+  type: 'test'
+  ...
+# Subtest: S1.1 含"私域/报价"等关键词时风险升级为 medium 且需人工确认
+ok 21 - S1.1 含"私域/报价"等关键词时风险升级为 medium 且需人工确认
+  ---
+  duration_ms: 1.458413
+  type: 'test'
+  ...
+# Subtest: S1.1 含"医疗/贷款"等关键词时风险升级为 high
+ok 22 - S1.1 含"医疗/贷款"等关键词时风险升级为 high
+  ---
+  duration_ms: 0.497728
+  type: 'test'
+  ...
+# Subtest: S1.1 可按 kinds 选生成部分素材
+ok 23 - S1.1 可按 kinds 选生成部分素材
+  ---
+  duration_ms: 1.62875
+  type: 'test'
+  ...
+# Subtest: S1.1 InMemoryS1AigcAssetStore 可保存、按 id 查询、统计
+ok 24 - S1.1 InMemoryS1AigcAssetStore 可保存、按 id 查询、统计
+  ---
+  duration_ms: 0.480986
+  type: 'test'
+  ...
+# Subtest: S1.1 markAssetUsed 不会重复记录同一发布任务
+ok 25 - S1.1 markAssetUsed 不会重复记录同一发布任务
+  ---
+  duration_ms: 0.220742
+  type: 'test'
+  ...
+# Subtest: S1.1 formatS1AigcContentPackPanel 包含必要字段
+ok 26 - S1.1 formatS1AigcContentPackPanel 包含必要字段
+  ---
+  duration_ms: 0.341737
+  type: 'test'
+  ...
+# Subtest: S1.3 默认 4 类策略已注册
+ok 27 - S1.3 默认 4 类策略已注册
+  ---
+  duration_ms: 2.826518
+  type: 'test'
+  ...
+# Subtest: S1.3 关键词命中：关键词回复策略命中"起号"
+ok 28 - S1.3 关键词命中：关键词回复策略命中"起号"
+  ---
+  duration_ms: 0.651805
+  type: 'test'
+  ...
+# Subtest: S1.3 命中硬风险关键词时升级为 high 且 requireHumanConfirmation
+ok 29 - S1.3 命中硬风险关键词时升级为 high 且 requireHumanConfirmation
+  ---
+  duration_ms: 0.291353
+  type: 'test'
+  ...
+# Subtest: S1.3 转化引导策略在 0-6 点被禁用
+ok 30 - S1.3 转化引导策略在 0-6 点被禁用
+  ---
+  duration_ms: 0.485365
+  type: 'test'
+  ...
+# Subtest: S1.3 转化引导命中"加微信"硬风险时升级为 high
+ok 31 - S1.3 转化引导命中"加微信"硬风险时升级为 high
+  ---
+  duration_ms: 0.27898
+  type: 'test'
+  ...
+# Subtest: S1.3 run 成功时把评论草稿入队 human-confirmation-queue（type=comment）
+ok 32 - S1.3 run 成功时把评论草稿入队 human-confirmation-queue（type=comment）
+  ---
+  duration_ms: 0.881482
+  type: 'test'
+  ...
+# Subtest: S1.3 未命中关键词时 run 返回 rejectedReason 且不入队
+ok 33 - S1.3 未命中关键词时 run 返回 rejectedReason 且不入队
+  ---
+  duration_ms: 0.400687
+  type: 'test'
+  ...
+# Subtest: S1.3 凌晨命中时 run 返回 rejectedReason 且不入队
+ok 34 - S1.3 凌晨命中时 run 返回 rejectedReason 且不入队
+  ---
+  duration_ms: 0.228335
+  type: 'test'
+  ...
+# Subtest: S1.3 策略 id 不存在时 run 返回 rejectedReason
+ok 35 - S1.3 策略 id 不存在时 run 返回 rejectedReason
+  ---
+  duration_ms: 0.38654
+  type: 'test'
+  ...
+# Subtest: S1.3 formatS1CommentStrategyPanel 包含必要字段
+ok 36 - S1.3 formatS1CommentStrategyPanel 包含必要字段
+  ---
+  duration_ms: 0.726444
+  type: 'test'
+  ...
+# Subtest: S1.4 记录 + 列表
+ok 37 - S1.4 记录 + 列表
+  ---
+  duration_ms: 2.236148
+  type: 'test'
+  ...
+# Subtest: S1.4 聚合按 refType/refId 汇总并算点击/转化/负反馈率
+ok 38 - S1.4 聚合按 refType/refId 汇总并算点击/转化/负反馈率
+  ---
+  duration_ms: 1.247601
+  type: 'test'
+  ...
+# Subtest: S1.4 风险等级取 max
+ok 39 - S1.4 风险等级取 max
+  ---
+  duration_ms: 0.593366
+  type: 'test'
+  ...
+# Subtest: S1.4 优化器：无数据时返回 no_data 建议
+ok 40 - S1.4 优化器：无数据时返回 no_data 建议
+  ---
+  duration_ms: 0.488266
+  type: 'test'
+  ...
+# Subtest: S1.4 优化器：低点击率 + 高风险命中 + 高负反馈率均触发
+ok 41 - S1.4 优化器：低点击率 + 高风险命中 + 高负反馈率均触发
+  ---
+  duration_ms: 0.720357
+  type: 'test'
+  ...
+# Subtest: S1.4 全部健康时给出"保持节奏"建议
+ok 42 - S1.4 全部健康时给出"保持节奏"建议
+  ---
+  duration_ms: 0.381361
+  type: 'test'
+  ...
+# Subtest: S1.4 formatS1FeedbackAggregatePanel/formatS1OptimizationPanel 必要字段
+ok 43 - S1.4 formatS1FeedbackAggregatePanel/formatS1OptimizationPanel 必要字段
+  ---
+  duration_ms: 0.431023
+  type: 'test'
+  ...
+# Subtest: S1 总览 buildS1Overview 4 张卡片齐全
+ok 44 - S1 总览 buildS1Overview 4 张卡片齐全
+  ---
+  duration_ms: 5.095496
+  type: 'test'
+  ...
+# Subtest: S1.1 卡片数据来自 AIGC store，不写死
+ok 45 - S1.1 卡片数据来自 AIGC store，不写死
+  ---
+  duration_ms: 0.887984
+  type: 'test'
+  ...
+# Subtest: S1.2 卡片数据来自账号 + 任务 store
+ok 46 - S1.2 卡片数据来自账号 + 任务 store
+  ---
+  duration_ms: 0.611791
+  type: 'test'
+  ...
+# Subtest: S1.3 卡片数据来自策略 + 草稿队列
+ok 47 - S1.3 卡片数据来自策略 + 草稿队列
+  ---
+  duration_ms: 0.698255
+  type: 'test'
+  ...
+# Subtest: S1.4 卡片数据来自反馈 store
+ok 48 - S1.4 卡片数据来自反馈 store
+  ---
+  duration_ms: 0.866861
+  type: 'test'
+  ...
+# Subtest: S1 总览安全边界 + 摘要均存在
+ok 49 - S1 总览安全边界 + 摘要均存在
+  ---
+  duration_ms: 0.943878
+  type: 'test'
+  ...
+# Subtest: S1 formatS1OverviewPanel 输出包含 4 张卡片
+ok 50 - S1 formatS1OverviewPanel 输出包含 4 张卡片
+  ---
+  duration_ms: 0.590771
+  type: 'test'
+  ...
+# Subtest: S1.2 账号 upsert/list/filterByPlatform/filterByTag
+ok 51 - S1.2 账号 upsert/list/filterByPlatform/filterByTag
+  ---
+  duration_ms: 2.072252
+  type: 'test'
+  ...
+# Subtest: S1.2 blocked 账号不可派单并附原因
+ok 52 - S1.2 blocked 账号不可派单并附原因
+  ---
+  duration_ms: 0.452734
+  type: 'test'
+  ...
+# Subtest: S1.2 cooldown 期内不可派单，过期后可派单
+ok 53 - S1.2 cooldown 期内不可派单，过期后可派单
+  ---
+  duration_ms: 0.296623
+  type: 'test'
+  ...
+# Subtest: S1.2 超过日配额不可派单
+ok 54 - S1.2 超过日配额不可派单
+  ---
+  duration_ms: 0.302013
+  type: 'test'
+  ...
+# Subtest: S1.2 列表可按健康度过滤
+ok 55 - S1.2 列表可按健康度过滤
+  ---
+  duration_ms: 0.862041
+  type: 'test'
+  ...
+# Subtest: S1.2 countByPlatform 正确聚合
+ok 56 - S1.2 countByPlatform 正确聚合
+  ---
+  duration_ms: 0.772686
+  type: 'test'
+  ...
+# Subtest: S1.2 consumeQuota 增加 usedToday 并刷新 health
+ok 57 - S1.2 consumeQuota 增加 usedToday 并刷新 health
+  ---
+  duration_ms: 0.56359
+  type: 'test'
+  ...
+# Subtest: S1.2 创建发布任务成功并把状态置为 previewing/approval_required
+ok 58 - S1.2 创建发布任务成功并把状态置为 previewing/approval_required
+  ---
+  duration_ms: 3.729226
+  type: 'test'
+  ...
+# Subtest: S1.2 含 high 风险资产时任务需人工确认且状态 approval_required
+ok 59 - S1.2 含 high 风险资产时任务需人工确认且状态 approval_required
+  ---
+  duration_ms: 0.406047
+  type: 'test'
+  ...
+# Subtest: S1.2 账号 blocked/不存在/超配额时拒绝创建
+ok 60 - S1.2 账号 blocked/不存在/超配额时拒绝创建
+  ---
+  duration_ms: 0.947125
+  type: 'test'
+  ...
+# Subtest: S1.2 素材不存在时拒绝创建
+ok 61 - S1.2 素材不存在时拒绝创建
+  ---
+  duration_ms: 0.345073
+  type: 'test'
+  ...
+# Subtest: S1.2 previewS1PublishTask 输出试运行预览且 dryRun=true
+ok 62 - S1.2 previewS1PublishTask 输出试运行预览且 dryRun=true
+  ---
+  duration_ms: 0.546899
+  type: 'test'
+  ...
+# Subtest: S1.2 InMemoryS1PublishTaskStore 可保存/按状态聚合
+ok 63 - S1.2 InMemoryS1PublishTaskStore 可保存/按状态聚合
+  ---
+  duration_ms: 0.480756
+  type: 'test'
+  ...
+# Subtest: S1.2 toAutomationTask 把 S1 任务映射为 AutomationTask（dryRun=true）
+ok 64 - S1.2 toAutomationTask 把 S1 任务映射为 AutomationTask（dryRun=true）
+  ---
+  duration_ms: 0.487659
+  type: 'test'
+  ...
+# Subtest: read-only-dashboard 接入 s1Overview 后渲染包含 4 张 S1 卡片
+ok 65 - read-only-dashboard 接入 s1Overview 后渲染包含 4 张 S1 卡片
+  ---
+  duration_ms: 4.243437
+  type: 'test'
+  ...
+# Subtest: read-only-dashboard 未接入 s1Overview 时给出降级提示
+ok 66 - read-only-dashboard 未接入 s1Overview 时给出降级提示
+  ---
+  duration_ms: 0.330566
+  type: 'test'
+  ...
+# Subtest: read-only-dashboard 既有结构未被破坏
+ok 67 - read-only-dashboard 既有结构未被破坏
+  ---
+  duration_ms: 0.19889
+  type: 'test'
+  ...
+# Subtest: S1.1-S1.3 搜索结果只产出 comment 草稿，不混入 publish/follow/like
+ok 68 - S1.1-S1.3 搜索结果只产出 comment 草稿，不混入 publish/follow/like
+  ---
+  duration_ms: 2.456629
+  type: 'test'
+  ...
+# Subtest: S2.1-S2.3 私信线索只产出 direct_message 草稿 + WeFlow 承接契约，低意向被拒
+ok 69 - S2.1-S2.3 私信线索只产出 direct_message 草稿 + WeFlow 承接契约，低意向被拒
+  ---
+  duration_ms: 0.457422
+  type: 'test'
+  ...
+# Subtest: S1 + S2 端到端串联：2 条草稿汇总、统计、零真实外发
+ok 70 - S1 + S2 端到端串联：2 条草稿汇总、统计、零真实外发
+  ---
+  duration_ms: 1.081915
+  type: 'test'
+  ...
+# Subtest: 任务管理器控制台闭环
+    # Subtest: 创建任务后状态为 created
+    ok 1 - 创建任务后状态为 created
+      ---
+      duration_ms: 2.082744
+      type: 'test'
+      ...
+    # Subtest: 预览任务后 dryRun=true 生成预览结果
+    ok 2 - 预览任务后 dryRun=true 生成预览结果
+      ---
+      duration_ms: 7.995942
+      type: 'test'
+      ...
+    # Subtest: dryRun=true 预览后可直接执行试运行
+    ok 3 - dryRun=true 预览后可直接执行试运行
+      ---
+      duration_ms: 1.603393
+      type: 'test'
+      ...
+    # Subtest: dryRun=false 未确认时执行被拦截
+    ok 4 - dryRun=false 未确认时执行被拦截
+      ---
+      duration_ms: 0.921227
+      type: 'test'
+      ...
+    # Subtest: 确认后执行 dryRun=false 任务
+    ok 5 - 确认后执行 dryRun=false 任务
+      ---
+      duration_ms: 1.134327
+      type: 'test'
+      ...
+    # Subtest: 标记需人工后任务进入 human_required 状态
+    ok 6 - 标记需人工后任务进入 human_required 状态
+      ---
+      duration_ms: 0.440986
+      type: 'test'
+      ...
+    # Subtest: listTasks 返回所有任务副本
+    ok 7 - listTasks 返回所有任务副本
+      ---
+      duration_ms: 0.33281
+      type: 'test'
+      ...
+    1..7
+ok 71 - 任务管理器控制台闭环
+  ---
+  duration_ms: 16.108525
+  type: 'suite'
+  ...
+# Subtest: 人工接管操作
+    # Subtest: 打开浏览器人工处理保持需人工状态
+    ok 1 - 打开浏览器人工处理保持需人工状态
+      ---
+      duration_ms: 0.76947
+      type: 'test'
+      ...
+    # Subtest: 我已处理，重新检测恢复任务执行
+    ok 2 - 我已处理，重新检测恢复任务执行
+      ---
+      duration_ms: 0.368637
+      type: 'test'
+      ...
+    # Subtest: 终止并记录原因进入 cancelled 状态
+    ok 3 - 终止并记录原因进入 cancelled 状态
+      ---
+      duration_ms: 0.333401
+      type: 'test'
+      ...
+    # Subtest: 非需人工状态不能执行人工接管操作
+    ok 4 - 非需人工状态不能执行人工接管操作
+      ---
+      duration_ms: 0.111447
+      type: 'test'
+      ...
+    1..4
+ok 72 - 人工接管操作
+  ---
+  duration_ms: 2.02512
+  type: 'suite'
+  ...
+# Subtest: 任务状态模型
+    # Subtest: 创建任务时默认进入 created 状态并保留安全字段
+    ok 1 - 创建任务时默认进入 created 状态并保留安全字段
+      ---
+      duration_ms: 1.670753
+      type: 'test'
+      ...
+    # Subtest: 允许按设计链路从创建流转到预览完成和待审批
+    ok 2 - 允许按设计链路从创建流转到预览完成和待审批
+      ---
+      duration_ms: 0.411917
+      type: 'test'
+      ...
+    # Subtest: 禁止 created 直接进入 running
+    ok 3 - 禁止 created 直接进入 running
+      ---
+      duration_ms: 0.426124
+      type: 'test'
+      ...
+    # Subtest: 禁止 preview_ready 未确认直接进入 running
+    ok 4 - 禁止 preview_ready 未确认直接进入 running
+      ---
+      duration_ms: 0.178382
+      type: 'test'
+      ...
+    # Subtest: 终态 completed、failed、cancelled 不能继续跳转
+    ok 5 - 终态 completed、failed、cancelled 不能继续跳转
+      ---
+      duration_ms: 0.326709
+      type: 'test'
+      ...
+    # Subtest: 状态变化可写入审计事件
+    ok 6 - 状态变化可写入审计事件
+      ---
+      duration_ms: 0.506835
+      type: 'test'
+      ...
+    1..6
+ok 73 - 任务状态模型
+  ---
+  duration_ms: 4.683958
+  type: 'suite'
+  ...
+# Subtest: S2.2 私信线索转 WeFlow 承接 → 人工确认队列
+    # Subtest: 把高意向线索生成草稿并入队，always-requires-human + externalActionAllowed=false
+    ok 1 - 把高意向线索生成草稿并入队，always-requires-human + externalActionAllowed=false
+      ---
+      duration_ms: 1.878551
+      type: 'test'
+      ...
+    # Subtest: 过滤低意向线索，避免进入 WeFlow 承接与人工确认队列
+    ok 2 - 过滤低意向线索，避免进入 WeFlow 承接与人工确认队列
+      ---
+      duration_ms: 1.081876
+      type: 'test'
+      ...
+    # Subtest: 空输入必须返回空数组，不能向确认队列塞入占位草稿
+    ok 3 - 空输入必须返回空数组，不能向确认队列塞入占位草稿
+      ---
+      duration_ms: 0.209871
+      type: 'test'
+      ...
+    # Subtest: 汇总草稿按平台+优先级分组，便于控制台只读总览
+    ok 4 - 汇总草稿按平台+优先级分组，便于控制台只读总览
+      ---
+      duration_ms: 0.347006
+      type: 'test'
+      ...
+    1..4
+ok 74 - S2.2 私信线索转 WeFlow 承接 → 人工确认队列
+  ---
+  duration_ms: 4.784716
+  type: 'suite'
+  ...
+# Subtest: S2.2 JSONL 线索导入（fetcher 注入）
+    # Subtest: 从 fetcher 读取的 JSONL 解析合法行，忽略空行与非法行
+    ok 1 - 从 fetcher 读取的 JSONL 解析合法行，忽略空行与非法行
+      ---
+      duration_ms: 0.636737
+      type: 'test'
+      ...
+    # Subtest: fetcher 抛错时抛出可识别的 import 错误
+    ok 2 - fetcher 抛错时抛出可识别的 import 错误
+      ---
+      duration_ms: 0.48845
+      type: 'test'
+      ...
+    # Subtest: 默认 fetcher 走 fs.promises.readFile 读取本地文件
+    ok 3 - 默认 fetcher 走 fs.promises.readFile 读取本地文件
+      ---
+      duration_ms: 16.723168
+      type: 'test'
+      ...
+    1..3
+ok 75 - S2.2 JSONL 线索导入（fetcher 注入）
+  ---
+  duration_ms: 18.957702
+  type: 'suite'
+  ...
+# Subtest: S2.2 私信线索转 WeFlow 承接契约
+    # Subtest: 把高意向社媒私信线索转成 WeFlow 联系人画像、跟进任务和人工确认草稿，不自动发送
+    ok 1 - 把高意向社媒私信线索转成 WeFlow 联系人画像、跟进任务和人工确认草稿，不自动发送
+      ---
+      duration_ms: 2.177596
+      type: 'test'
+      ...
+    # Subtest: 拒绝低意向线索进入 WeFlow 承接，避免批量骚扰私信
+    ok 2 - 拒绝低意向线索进入 WeFlow 承接，避免批量骚扰私信
+      ---
+      duration_ms: 0.633801
+      type: 'test'
+      ...
+    # Subtest: 把高意向私信线索转成DYQ下发给WeFlow的安全草稿任务种子
+    ok 3 - 把高意向私信线索转成DYQ下发给WeFlow的安全草稿任务种子
+      ---
+      duration_ms: 0.246469
+      type: 'test'
+      ...
+    1..3
+ok 76 - S2.2 私信线索转 WeFlow 承接契约
+  ---
+  duration_ms: 4.736796
+  type: 'suite'
+  ...
+1..76
+# tests 167
+# suites 25
+# pass 167
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4294.718191

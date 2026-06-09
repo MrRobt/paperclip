@@ -1,0 +1,16 @@
+[INFO] 输出目录: /root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round44-20260607-c-claw-api/smoke
+[INFO] 后端地址: http://127.0.0.1:48080
+[INFO] 登录凭证来源: /mnt/e/code/dyq/.claude/rules/testing-credentials.md（仅使用环境变量，日志脱敏）
+[HTTP] health 200 /actuator/health
+[PASS] health HTTP=200
+[HTTP] register 200 /api/claw-device/register
+[PASS] register HTTP=200
+[PASS] register 返回设备令牌: ***PirTqf
+[HTTP] heartbeat 200 /api/claw-device/heartbeat
+[PASS] heartbeat HTTP=200
+[HTTP] pending 200 /api/claw-device/devices/r44-claw-api-1780782937/pending-tasks
+[PASS] pending HTTP=200
+[HTTP] admin_login 200 /admin-api/system/auth/login
+[PASS] admin_login HTTP=200
+[WARN] 管理后台登录未返回令牌，跳过设备列表校验
+[DONE] 摘要: /root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round44-20260607-c-claw-api/smoke/summary.md

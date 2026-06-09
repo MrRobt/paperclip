@@ -1,0 +1,16 @@
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+trace-id: 
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/vnd.spring-boot.actuator.v3+json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Sat, 06 Jun 2026 10:45:51 GMT
+
+{"status":"UP","components":{"db":{"status":"UP","components":{"dynamicDataSource":{"status":"UP","components":{"MASTER":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}},"SHARDING":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}}}},"masterDataSource":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}},"shardingDataSource":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}}}},"diskSpace":{"status":"UP","details":{"total":1000168484864,"free":17088065536,"threshold":10485760,"path":"/mnt/e/code/dyq/dyq-server/.","exists":true}},"ping":{"status":"UP"},"rabbit":{"status":"UP","components":{"aigcRabbitTemplate":{"status":"UP","details":{"version":"3.13.7"}},"rabbitTemplate":{"status":"UP","details":{"version":"3.13.7"}}}},"redis":{"status":"UP","details":{"version":"7.0.15"}},"sandbox":{"status":"UP","details":{"module":"sandbox","runningInstances":0,"message":"沙箱模块就绪，暂无运行中实例"}},"ssl":{"status":"UP","details":{"validChains":[],"invalidChains":[]}}}}

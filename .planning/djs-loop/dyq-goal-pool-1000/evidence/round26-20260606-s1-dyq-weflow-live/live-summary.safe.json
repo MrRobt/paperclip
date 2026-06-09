@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "base": "http://127.0.0.1:48080",
+  "credentialsSource": "/mnt/e/code/dyq/.claude/rules/testing-credentials.md",
+  "deviceId": "weflow-round26-s1-1780758892",
+  "checks": {
+    "health": {
+      "httpStatus": 200,
+      "status": "UP"
+    },
+    "register": {
+      "httpStatus": 200,
+      "code": 0,
+      "hasDeviceToken": true,
+      "tokenLength": 204
+    },
+    "heartbeat": {
+      "httpStatus": 200,
+      "code": 0
+    },
+    "adminLogin": {
+      "httpStatus": 200,
+      "code": 0,
+      "hasAccessToken": true
+    },
+    "adminExecute": {
+      "httpStatus": 200,
+      "code": 0,
+      "taskUuid": "7365f8dc4def4af8a6baa99d6d8e841a"
+    },
+    "pendingToSafeDraftResult": {
+      "httpStatus": 200,
+      "code": 0
+    }
+  },
+  "s1Draft": {
+    "taskId": "s1-live-lead-xiaohongshu-数字人直播间搭建报价清单",
+    "platform": "xiaohongshu",
+    "businessScenario": "S1直播间截流",
+    "riskLevel": "high",
+    "target": "https://www.xiaohongshu.com/explore/round26-s1-live-lead",
+    "contentLength": 32
+  },
+  "seedSafety": {
+    "taskType": "wechat.message.prepare_text",
+    "requiresHumanConfirmation": true,
+    "externalActionAllowed": false
+  },
+  "safeDraft": {
+    "status": "prepared",
+    "commandType": "wechat.message.prepare_text",
+    "sessionName": "https://www.xiaohongshu.com/explore/round26-s1-live-lead",
+    "draftTextLength": 113,
+    "requiresHumanConfirmation": true,
+    "sendActionExecuted": false,
+    "manualTakeoverRequired": true
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "base": "http://127.0.0.1:48080",
+  "deviceId": "weflow-round20-s2-1780753715",
+  "seed": {
+    "taskType": "wechat.message.prepare_text",
+    "mode": "auto",
+    "sourcePlatform": "xiaohongshu",
+    "sourceUserId": "round20-live-lead",
+    "requiresHumanConfirmation": true,
+    "externalActionAllowed": false
+  },
+  "checks": {
+    "register": {
+      "httpStatus": 200,
+      "code": 0,
+      "hasDeviceToken": true,
+      "tokenLength": 204
+    },
+    "heartbeat": {
+      "httpStatus": 200,
+      "code": 0
+    },
+    "adminLogin": {
+      "httpStatus": 200,
+      "code": 0,
+      "hasAccessToken": true
+    },
+    "adminExecute": {
+      "httpStatus": 200,
+      "code": 0,
+      "taskUuid": "daaf83af75044c2bb333cd4ea57197bf"
+    },
+    "pendingToSafeDraftResult": {
+      "httpStatus": 200,
+      "code": 0
+    }
+  },
+  "safeDraft": {
+    "status": "prepared",
+    "commandType": "wechat.message.prepare_text",
+    "sessionName": "第20轮高意向客户",
+    "draftTextLength": 97,
+    "requiresHumanConfirmation": true,
+    "sendActionExecuted": false,
+    "manualTakeoverRequired": true
+  }
+}

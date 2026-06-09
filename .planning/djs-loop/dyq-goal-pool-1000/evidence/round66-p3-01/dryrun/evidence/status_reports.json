@@ -1,0 +1,30 @@
+[
+  {
+    "taskId": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+    "deviceId": "pokeclaw-p3p01-20260607-133319",
+    "traceId": "trace-782fbbe6",
+    "status": "RECEIVED",
+    "occurredAtMillis": 1780810399628,
+    "message": "端侧已接收任务，进入状态机"
+  },
+  {
+    "taskId": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+    "deviceId": "pokeclaw-p3p01-20260607-133319",
+    "traceId": "trace-782fbbe6",
+    "status": "RUNNING",
+    "occurredAtMillis": 1780810399678,
+    "message": "SkillMapper 匹配 launch_app；进入模拟执行（不真操作手机）: 打开设置查看电量"
+  },
+  {
+    "taskId": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+    "deviceId": "pokeclaw-p3p01-20260607-133319",
+    "traceId": "trace-782fbbe6",
+    "status": "SUCCEEDED",
+    "occurredAtMillis": 1780810399748,
+    "message": "模拟执行完成: 已打开应用",
+    "artifacts": [
+      "mock://launch_app/settings",
+      "screenshot_p3-01.png"
+    ]
+  }
+]

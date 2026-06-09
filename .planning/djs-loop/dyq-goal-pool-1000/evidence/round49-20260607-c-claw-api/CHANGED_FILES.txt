@@ -1,0 +1,30 @@
+# Round 49 2026-06-07 TC-API 1 子卡 t_e1d06efd (C1.1-C1.6 接口契约)
+#
+# 本卡 scope 与父卡 t_76dcfaf8 (round48-20260607-c-claw) 100% 重叠。
+# 完整 15 文件 + diff 详情见父卡：
+#   /root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round48-20260607-c-claw/CHANGED_FILES.txt
+#
+# 本卡 readonly 复核确认就位的接口契约（仅验证、不再修改）：
+# - dyq-module-claw-biz .../controller/admin/statistics/ClawStatisticsController.java
+#     GET /admin-api/claw/statistics/mainline-overview
+#     GET /admin-api/claw/statistics/summary
+# - dyq-module-claw-biz .../controller/admin/device/ClawDeviceController.java
+#     GET /admin-api/claw/device/list
+#     GET /admin-api/claw/device/{id}/tasks
+# - dyq-module-claw-biz .../service/statistics/ClawStatisticsService[Impl].java
+# - dyq-module-claw-biz .../service/device/ClawDeviceService[Impl].java
+# - dyq-module-claw-biz .../dal/mysql/device/ClawDeviceMapper.java
+# - dyq-module-claw-biz .../dal/mysql/device/ClawDeviceTaskMapper.java
+# - dyq-module-claw-biz .../dal/mysql/experience/ClawExperienceMapper.java
+# - dyq-module-claw-biz .../dal/dataobject/experience/ClawExperienceDO.java
+# - dyq-module-claw-biz .../enums/ClawDeviceTaskStatusEnum.java
+# - dyq-module-claw-biz .../config/ClawDeviceProperties.java
+# - dyq-module-claw-biz .../mq/producer/ClawEventPublisher.java
+# - dyq-module-claw-api .../constants/ClawMqConstants.java
+# - dyq-module-claw-biz src/test/.../ClawStatisticsServiceTest.java
+# - dyq-module-claw-biz src/test/.../ClawDeviceServiceTest.java
+# - dyq-module-claw-biz src/test/.../controller/admin/ClawAdminControllerPathPrefixTest.java
+#
+# 真实改动文件清单 = 父卡 15 个 M 文件 + 1 accountmarket 错误码 + 1 accountmarket pom
+# 提交号: 未提交（r49 硬红线: 不推、不动 dyq git、不重启 48080、不修 csMessageServiceImpl）
+# 阻塞: mvn 工具链反复 95+ 分钟受 csMessageServiceImpl webSocketHandler 注入根因阻塞（不属本卡 scope）

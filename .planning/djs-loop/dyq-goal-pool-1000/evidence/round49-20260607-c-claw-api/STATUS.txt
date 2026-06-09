@@ -1,0 +1,7 @@
+r49 IMMEDIATE_HANDOFF
+reason: mvn 工具链反复 95+ 分钟受 csMessageServiceImpl webSocketHandler BeanNotOfRequiredTypeException 阻塞（属 dyq-module-cs-conversation owner，不在本卡 scope）；本卡 scope 与父卡 t_76dcfaf8 (round48-20260607-c-claw) 100% 重叠，接口契约已在父卡写完并落父卡 evidence
+changed_files: 见父卡 CHANGED_FILES.txt (15 M 文件 + 1 accountmarket 错误码 + 1 pom)
+tests_run: 0（不再开 mvn 工具链；遵守主控 r49 硬红线）
+committed: false（不推、不动 dyq git、不重启 48080、不修 csMessageServiceImpl）
+curl_48080: 未跑（48080 未 LISTEN）
+next: 主控/owner 解 csMessageServiceImpl + accountmarket 两个 enum 后，r50+ worker 重启 mvn -pl dyq-server test 并 curl /admin-api/claw/statistics/mainline-overview 完成验收

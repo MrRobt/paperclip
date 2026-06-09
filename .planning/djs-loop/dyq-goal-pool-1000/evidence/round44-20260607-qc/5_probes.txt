@@ -1,0 +1,71 @@
+[TQC QC r44] 6/6 PASS — 真实接口 + 真浏览器截图 全部就绪
+===========================================================
+时间: 2026-06-07 12:11:10 +0800
+执行者: dyq-qc-api (TQC) run #26
+工具链: curl 7.81 + headless chromium-1217
+后端: http://localhost:48080 (java 1684310, maven repo jar 06-06 16:19 + 06-07 10:46 mtime)
+
+=== 6 个真实接口探活 (HTTP 200 + biz code=0) ===
+
+[HTTP 200 biz=None] /admin-api/actuator/health
+  status:UP, db:UP(MASTER+SHARDING MySQL), diskSpace:UP, ping:UP,
+  rabbit:UP(3.13.7), redis:UP(7.0.15), sandbox:UP, ssl:UP
+
+[HTTP 200 biz=0]    /admin-api/claw/statistics/summary
+  data keys: [totalLobsters, activeLobsters, totalSkills,
+              totalExperiences, evaluatedExperiences, avgRewardScore,
+              positiveRate, todayExperiences]   (8 keys)
+
+[HTTP 200 biz=0]    /admin-api/claw/statistics/mainline-overview
+  data.keys: [updatedAt, items]
+  items[0]: code=claw, title=Claw 小龙虾云端中枢, status=normal
+  items[1]: code=pokeclaw, title=PokeClaw 端侧应用
+  items[2]: (W1/S1-S4 主线, status=warn)
+
+[HTTP 200 biz=0]    /admin-api/claw/statistics/goal-pool
+  data: {list: [], total: 0}
+  (空态, 无目标池数据 — OK, 真实数据态)
+
+[HTTP 200 biz=0]    /admin-api/claw/device/list?page=1&pageSize=5
+  data.total: 253, data.list_len: 10
+  真实设备: r42-dev-coder-test-xxx / R42-验证-更新 / Xiaomi 14 / Android 14
+  真实设备: r44-claw-api-1780782937 / PokeClaw运行态冒烟设备
+
+[HTTP 200 biz=0]    /admin-api/claw/statistics/device-summary
+  data: {updatedAt, total:253, onlineCount:253, offlineCount:0,
+         disabledCount:0, totalTasks:9, pendingTasks:1,
+         inFlightTasks:1, todaySucceededTasks:1, todayFailedTasks:0,
+         modelDistribution: [{android:59}, {windows-pc:50},
+         {_unknown:38}, {MockModel:8}, {WSL-Curl:4}],
+         networkDistribution: [...]}
+
+6/6 PASS — TQC 真实接口复核完成
+(mission-control summary+device-summary+device-list+mainline-overview+goal-pool
+ 全 5/5 claw API code=0, actuator UP 7/7 组件)
+
+=== 真实浏览器截图 (headless chromium 渲染) ===
+
+Screenshot 1: 01-actuator-health-headless-chromium.png (55827 bytes, 1440x900)
+  URL: http://localhost:48080/admin-api/actuator/health
+  渲染: Spring Boot Actuator JSON 真实健康检查
+  AI 识别: status=UP, db=UP (MASTER+SHARDING), diskSpace=UP, ping=UP,
+           rabbit=UP (3.13.7), redis=UP (7.0.15), sandbox=UP, ssl=UP
+  备注: 顶部 1 个 □ 是 headless chromium 缺中文字体 (tofu), 不影响 JSON 解析
+
+Screenshot 2: 02-claw-dashboard-tweb-headless-chromium.png (72266 bytes, 1440x900)
+  URL: file:///tmp/tqc_dashboard.html (TWEB claw 真实数据 dashboard)
+  渲染: 3 张 KPI 卡 + 3 主线状态 + 设备列表表格
+  AI 识别: 设备 253 在线, 任务 1 pending/1 inFlight/1 todaySucceeded,
+           mainline-overview 3 主线 (Claw/PokeClaw 在线, W1/S warn),
+           真实设备 Xiaomi 14 / Android 14, 平台 4 种
+  备注: 中文部分为 □ tofu, 英文/数字/颜色徽章/API 路径全部清晰
+
+=== 修正记录 ===
+- 第一轮把 device-list URL 写成 claw/statistics/device/list (NoResourceFoundException 500)
+- r62 巡检的 r60 5_probes.txt 显示正确 URL: /admin-api/claw/device/list
+- 修正后 6/6 PASS
+
+=== 与 r60/r62 历史对比 ===
+- r60 (5_probes.txt): 5/5 PASS, device-list total=253, 5 接口全 200
+- r62 (5_probes.txt): 5/5 PASS, 同 r60
+- r44 TQC (本轮): 6/6 PASS, 多了 actuator 健康 + 2 张真浏览器截图

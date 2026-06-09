@@ -1,0 +1,19 @@
+By status:
+  triage    0
+  todo      1
+  scheduled  0
+  ready     0
+  running   9
+  blocked   0
+  done      1
+
+By assignee:
+  dyq-claw-api          running=2
+  dyq-claw-device       running=1
+  dyq-mq-infra          running=1
+  dyq-qc-api            todo=1
+  dyq-web-admin         running=1
+  my-profile            done=1
+  pokeclaw-agent        running=1
+  social-agent          running=2
+  weflow-agent          running=1

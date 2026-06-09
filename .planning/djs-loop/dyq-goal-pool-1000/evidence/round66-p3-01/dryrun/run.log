@@ -1,0 +1,38 @@
+[13:33:19] ==========================================
+[13:33:19] P3-01 端侧任务领取/执行/证据回传
+[13:33:19] ==========================================
+[13:33:19] OUT_DIR     = /mnt/e/code/PokeClaw/artifacts/p3-01-20260607-133500
+[13:33:19] DEVICE_ID   = pokeclaw-p3p01-20260607-133319
+[13:33:19] USE_MOCK    = True
+[13:33:19] BASE_URL    = http://127.0.0.1:18221
+[13:33:19] PUSH_RESULT = False
+[13:33:19] [1/9] start mock backend (port=18221)
+[13:33:19]   -> mock pid=1704663
+[13:33:19] [2/9] 设备注册 deviceId=pokeclaw-p3p01-20260607-133319
+[13:33:19]   -> 01_register status=200 body_bytes=213
+[13:33:19]   -> token=mock-device-token-373b1f2c
+[13:33:19] [3/9] 拉取云端任务清单
+[13:33:19]   -> 02_pending_tasks status=200 body_bytes=375
+[13:33:19]   -> 拉取到 1 个任务，选定 fbeb0052-225b-4f18-8495-dc97f8b4af63
+[13:33:19]   -> 指令摘要: 打开设置查看电量
+[13:33:19]   -> 模拟截图已落 /mnt/e/code/PokeClaw/artifacts/p3-01-20260607-133500/screenshots/state_evidence.txt
+[13:33:19] [5/9] 端侧 cloudnode 模拟执行
+[13:33:19]   -> traceId=trace-782fbbe6 finalStatus=SUCCEEDED
+[13:33:19] [6/9] 心跳一次
+[13:33:19]   -> 03_heartbeat status=200 body_bytes=127
+[13:33:19] [7/9] 跳过真实上报 (PUSH_REAL_RESULT=0)，仅把要上报的 body 落 evidence
+[13:33:19]   -> 04_submit_result status=200 body_bytes=59
+[13:33:19] [8/9] 跳过 experience 上报 (PUSH_REAL_RESULT=0)
+[13:33:19]   -> 05_submit_experience status=200 body_bytes=31
+[13:33:19] [9/9] 二次拉取，验证任务已被消费/移出 pending
+[13:33:19]   -> 06_pending_tasks_after status=200 body_bytes=375
+[13:33:19]   -> 剩余 pending 任务数 = 1 (mock 实现不会自动从队列删除；真实后端应为 0)
+[13:33:19] [门禁] 契约与一致性检查
+[13:33:19]   [PASS] 契约自检 7/7 通过
+[13:33:19] [门禁] SKIP_ANDROID_BUILD=1，跳过 gradle test
+[13:33:19] ==========================================
+[13:33:19] P3-01 完成，产物: /mnt/e/code/PokeClaw/artifacts/p3-01-20260607-133500
+[13:33:19]   summary     -> /mnt/e/code/PokeClaw/artifacts/p3-01-20260607-133500/summary.md
+[13:33:19]   summary.json-> /mnt/e/code/PokeClaw/artifacts/p3-01-20260607-133500/summary.json
+[13:33:19] ==========================================
+[13:33:19] [CLEANUP] 停止 mock

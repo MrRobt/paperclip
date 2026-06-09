@@ -1,0 +1,11 @@
+✓ t_f34d0b72  done      my-profile            T0 主控: C/P/W/S 二级 Kanban 目标池总控
+● t_76dcfaf8  running   dyq-claw-api          TC C层后端：Claw云端中枢C1/C2运行态接口与设备治理闭环
+● t_e1d06efd  running   dyq-claw-api          TC-API 1：C1.1-C1.6 mainline-overview / device/list / summary 真接口契约
+● t_d3a551ca  running   dyq-claw-device       TC-DEV 2：C2.1-C2.5 设备注册/心跳/任务状态机闭环
+● t_cc8e238c  running   dyq-mq-infra          TC-MQ 3：MQ/Infra 异步任务幂等与跨模块解耦
+● t_c0cda541  running   dyq-web-admin         TWEB 前端：三主线/端侧运行状态管理后台可见验收
+● t_268bac49  running   pokeclaw-agent        TP PokeClaw：P1.1-P2.4 端云任务领取、执行结果与截图证据闭环
+● t_047931ef  running   weflow-agent          TW WeFlow：W1.1-W2.4 设备节点、消息事件与安全草稿回复闭环
+● t_d91a0d0c  running   social-agent          TS12 社媒：S1.1-S2.3 线索到 WeFlow 安全草稿与人工确认队列
+● t_72a3badc  running   social-agent          TS34 商城养号：S3.3 / S4.1-S4.2 AI 客服、账号矩阵与设备绑定契约
+◻ t_968faf75  todo      dyq-qc-api            TQC QC：C/P/W/S 二级任务覆盖率与真实闭环复核

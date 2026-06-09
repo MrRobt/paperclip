@@ -1,0 +1,24 @@
+STATUS: COMPLETE
+
+任务 ID：t_57014b0f
+轮次：r60 owner-3
+收口人：dyq-claw-api worker (PID 1687069, run 25)
+收口时间：2026-06-07 11:20 +0800
+
+实现：✓ 完成（ClawStatisticsController + Service/Impl + Mapper + VO + 单测）
+5 探测：✓ 5/5 PASS（主控 r60 亲验 11:16）
+单测：✓ 5/5 PASS（10:38 心跳记）
+mvn install：✓ 5m42s BUILD SUCCESS（10:48）
+48080 重启：✓ java 1684310 持续运行 48080 LISTEN
+maven repo jar：✓ 10:46 mtime 更新（648615 bytes）
+
+关键修复点：goal-pool endpoint 从 500 (NoResourceFoundException) → 200 code=0 total=0 ✓
+
+git commit：⚠️ .git/index.lock 死锁阻塞（0 字节 8h+，ps 无 git 进程）
+- 主控 5 分钟决策期 11:20-11:25
+- 备选方案 A：手动清 lock + commit 本卡 6 文件
+- 备选方案 B：等主控人工清
+
+证据 3 件套：✓ RUN_LOG.md / EVIDENCE.md / STATUS.txt
+证据路径：/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round60-20260607-claw-biz-goal-pool/
+TQC 子卡 t_968faf75：等待本卡 11 parents done 后 auto-promote 到 ready

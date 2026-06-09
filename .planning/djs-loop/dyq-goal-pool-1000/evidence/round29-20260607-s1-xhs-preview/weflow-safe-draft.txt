@@ -1,0 +1,9 @@
+$ python3 scripts/test_weflow_dyq_safe_draft.py
+# workdir: /mnt/d/work/code/WeFlow
+# exit: 0
+
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK

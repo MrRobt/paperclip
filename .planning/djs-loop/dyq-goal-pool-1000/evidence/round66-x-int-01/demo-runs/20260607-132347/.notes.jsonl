@@ -1,0 +1,4 @@
+{"scenario":"A","desc":"云端冒烟","status":"PASS","log":"scenario_a_health.log"}
+{"scenario":"B","desc":"端云契约","status":"FAIL","log":"scenario_b_endcloud.log","exitCode":2}
+{"scenario":"C","desc":"WeFlow安全草稿","status":"PASS","log":"scenario_c_weflow_safe.log"}
+{"scenario":"D","desc":"社媒→WeFlow","status":"PASS","log":"scenario_d_social_to_weflow.log"}

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "goal": "C1.1-C1.6 Claw 运行态接口契约",
+  "deviceStatus": "online_with_registered_device",
+  "adbOnlineCount": 1,
+  "cloudLoopContract": "PASS",
+  "operatorDashboard": "artifacts/round44-20260607-c-claw-api/operator-dashboard.md",
+  "nextOperatorAction": "C1.1-C1.6 接口契约已就绪，等待 Web 端调用 mainline-overview 看板与 device 列表联动。",
+  "safetyBoundary": [
+    "不自动发送微信、短信、私信或评论",
+    "不写真实生产数据",
+    "只读取本轮证据目录下的 operator-status.json，不引用未授权路径"
+  ]
+}

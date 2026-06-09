@@ -1,0 +1,6 @@
+E..E
+ERROR: test_pending_tasks_响应可抽取第一个任务并生成安全草稿
+AttributeError: module 'weflow_dyq_device_register' has no attribute 'extract_first_pending_task'
+ERROR: test_结果回传请求包含真实签名头且签名可复算
+AttributeError: module 'weflow_dyq_device_register' has no attribute 'build_signed_result_request'
+FAILED (errors=2)

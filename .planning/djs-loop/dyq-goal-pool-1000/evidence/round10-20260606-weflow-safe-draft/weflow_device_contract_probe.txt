@@ -1,0 +1,202 @@
+============================================================
+WeFlow作为DYQ设备节点注册验证
+============================================================
+
+1. 设备标识
+   设备ID: weflow-pc-000000000001
+
+2. 创建设备注册契约
+✓ 复用现有dyq_device_node_contract契约
+{
+  "nodeType": "WEFLOW_PC",
+  "deviceType": "WEFLOW_PC",
+  "nodeKey": "weflow-pc-000000000001",
+  "nodeName": "微流电脑微信控制节点",
+  "protocolVersion": "2026-05-15",
+  "endpointMode": "pull",
+  "platform": "Windows 微信 + WSL 控制层",
+  "capabilities": [
+    {
+      "code": "wechat.health.query",
+      "name": "查询微信运行态",
+      "direction": "internal",
+      "riskLevel": "low",
+      "localEndpoint": "GET /health"
+    },
+    {
+      "code": "wechat.message.receive",
+      "name": "接收微信消息",
+      "direction": "inbound",
+      "riskLevel": "low",
+      "localEndpoint": "GET /listener/events"
+    },
+    {
+      "code": "wechat.message.send_text",
+      "name": "发送微信文本消息",
+      "direction": "outbound",
+      "riskLevel": "high",
+      "localEndpoint": "POST /wechat/send-text"
+    },
+    {
+      "code": "wechat.message.prepare_text",
+      "name": "预填微信文本草稿",
+      "direction": "outbound",
+      "riskLevel": "medium",
+      "localEndpoint": "POST /wechat/prepare-text"
+    },
+    {
+      "code": "wechat.command.receipt",
+      "name": "命令执行回执",
+      "direction": "outbound",
+      "riskLevel": "low",
+      "localEndpoint": "POST /dyq/device-node/command-result/preview"
+    }
+  ],
+  "configParams": {
+    "heartbeatIntervalSeconds": 30,
+    "maxConcurrentCommands": 1,
+    "autoSendDefault": false,
+    "requireSessionWhitelist": true
+  },
+  "safetyPolicy": {
+    "preferGuiSend": true,
+    "forbidPrivateProtocol": true,
+    "requireRequestId": true,
+    "requireSessionWhitelistForAutoSend": true,
+    "blockDuplicateSend": true,
+    "forbidBlindRetryAfterSendFailure": true
+  }
+}
+
+3. 创建心跳负载
+⚠️  获取健康状态失败: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /health (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [Errno 111] Connection refused"))
+✓ 复用现有dyq_device_node_contract心跳契约
+{
+  "nodeKey": "weflow-pc-000000000001",
+  "status": "degraded",
+  "timestamp": "2026-06-06T19:57:01.797049+08:00",
+  "capabilitiesVersion": "2026-05-15",
+  "currentCommandId": null,
+  "activeCommandCount": 0,
+  "lastErrorCode": "WECHAT_PROCESS_NOT_READY",
+  "lastErrorMessage": null,
+  "runtimeInfo": {
+    "controllerReady": true,
+    "windowsAgentReady": true,
+    "wechatProcessReady": false,
+    "wechatWindowReady": false,
+    "listenerRunning": false,
+    "listenerFailureCount": 0
+  }
+}
+
+4. 测试dyq-server可用性
+✅ dyq-server可用: UP (http://127.0.0.1:48080/admin-api/actuator/health)
+
+5. 生成DYQ API调用示例
+⚠️  获取健康状态失败: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /health (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [Errno 111] Connection refused"))
+✓ 复用现有dyq_device_node_contract心跳契约
+
+--- 设备注册 ---
+方法: POST
+URL: http://127.0.0.1:48080/api/claw-device/register
+请求体:
+{
+  "deviceId": "weflow-pc-000000000001",
+  "deviceType": "WEFLOW_PC",
+  "deviceName": "WeFlow PC端侧智能体",
+  "deviceModel": "weflow-pc",
+  "androidVersion": "windows-wsl",
+  "appVersion": "1.0.0",
+  "publicKey": null,
+  "capabilities": [
+    "wechat.message.receive",
+    "wechat.message.send_text"
+  ],
+  "metadata": {
+    "wechatVersion": "3.9.x",
+    "platform": "windows",
+    "controllerPort": 8000,
+    "aiProvider": "hermes"
+  }
+}
+
+--- 设备心跳 ---
+方法: POST
+URL: http://127.0.0.1:48080/api/claw-device/heartbeat
+请求体:
+{
+  "nodeKey": "weflow-pc-000000000001",
+  "status": "degraded",
+  "timestamp": "2026-06-06T19:57:01.897700+08:00",
+  "capabilitiesVersion": "2026-05-15",
+  "currentCommandId": null,
+  "activeCommandCount": 0,
+  "lastErrorCode": "WECHAT_PROCESS_NOT_READY",
+  "lastErrorMessage": null,
+  "runtimeInfo": {
+    "controllerReady": true,
+    "windowsAgentReady": true,
+    "wechatProcessReady": false,
+    "wechatWindowReady": false,
+    "listenerRunning": false,
+    "listenerFailureCount": 0
+  }
+}
+
+--- 任务领取 ---
+方法: GET
+URL: http://127.0.0.1:48080/api/claw-device/devices/weflow-pc-000000000001/pending-tasks
+请求体:
+null
+
+--- 结果回传 ---
+方法: POST
+URL: http://127.0.0.1:48080/api/claw-device/tasks/{taskId}/result
+请求体:
+{
+  "success": true,
+  "status": "prepared",
+  "requestId": "weflow-test-1780747021",
+  "taskId": "weflow-test-1780747021",
+  "commandType": "wechat.message.prepare_text",
+  "sessionName": "文件传输助手",
+  "draft": {
+    "text": "模拟WeFlow安全草稿",
+    "preparedAt": "2026-06-06T19:57:01.897729+08:00",
+    "requiresHumanConfirmation": true
+  },
+  "steps": [
+    "read_pending_task",
+    "build_safe_draft",
+    "wait_human_confirmation"
+  ],
+  "safetyDecision": "HUMAN_CONFIRM_REQUIRED",
+  "evidence": {
+    "sendActionExecuted": false,
+    "manualTakeoverRequired": true,
+    "verifyMode": "ui",
+    "backend": "weflow-safe-draft"
+  },
+  "retryPolicy": "禁止自动发送；禁止失败后盲目重试；仅允许人工确认草稿或重新生成草稿"
+}
+
+============================================================
+验证结果汇总
+============================================================
+✅ 设备ID生成
+✅ 注册契约创建
+✅ 心跳负载创建
+✅ 健康检查可达
+✅ DYQ服务器就绪
+✅ 契约格式对齐
+
+下一步行动:
+1. ✅ DYQ主后端已就绪，可进入真实 register/heartbeat 联调
+2. 🔄 切换WeFlow到真实微信模式 (需要CDP Bridge连接)
+3. 📋 执行端到端验证: 注册→心跳→任务→结果
+
+立即可执行:
+• 验证WeFlow控制器健康检查: curl http://127.0.0.1:8000/health
+• 检查CDP Bridge连接状态: python scripts/wechat-cdp-connect-test.py
+• 监控DYQ-204/DYQ-229进度

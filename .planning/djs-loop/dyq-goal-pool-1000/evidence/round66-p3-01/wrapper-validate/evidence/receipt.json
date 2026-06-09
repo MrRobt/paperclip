@@ -1,0 +1,16 @@
+{
+  "requestId": "req-ca835796",
+  "taskId": "ac76c073-8e5b-48c5-9744-ff06a3cd21b8",
+  "deviceId": "pokeclaw-p3p01-20260607-133446",
+  "traceId": "trace-ae118950",
+  "accepted": true,
+  "finalStatus": "SUCCEEDED",
+  "retryable": false,
+  "errorCode": "NONE",
+  "message": "模拟执行完成: 已打开应用",
+  "artifacts": [
+    "mock://launch_app/settings",
+    "screenshot_p3-01.png"
+  ],
+  "occurredAtMillis": 1780810486971
+}

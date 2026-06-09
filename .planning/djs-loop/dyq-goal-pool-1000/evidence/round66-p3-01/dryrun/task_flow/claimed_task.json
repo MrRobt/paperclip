@@ -1,0 +1,13 @@
+{
+  "command": "打开设置查看电量",
+  "createdAt": 1780810399577,
+  "mode": "TASK",
+  "payload": {
+    "action": "open_app",
+    "packageName": "com.android.settings"
+  },
+  "priority": "NORMAL",
+  "taskUuid": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+  "type": "SIMPLE_ACTION",
+  "uuid": "fbeb0052-225b-4f18-8495-dc97f8b4af63"
+}

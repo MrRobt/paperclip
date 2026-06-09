@@ -1,0 +1,4 @@
+
+> yudao-ui-admin-vue3@2.6.0-snapshot ts:check /mnt/e/code/ai-ui-admin-vue3aa
+> vue-tsc --noEmit
+

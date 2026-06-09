@@ -207,7 +207,7 @@ function InviteSummaryPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <MetaCard label="Company" value="Acme Robotics" />
+        <MetaCard label="nav.company" value="Acme Robotics" />
         <MetaCard label="Invited by" value="Board User" />
         <MetaCard label="Requested access" value={requestedAccess} />
         <MetaCard label="Invite expires" value="Mar 7, 2027" />

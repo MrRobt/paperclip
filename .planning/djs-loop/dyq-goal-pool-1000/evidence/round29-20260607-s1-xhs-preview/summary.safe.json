@@ -1,0 +1,38 @@
+{
+  "round": 29,
+  "createdAt": "2026-06-07T00:21:09.508549",
+  "summary": [
+    {
+      "file": "preview.txt",
+      "command": "npm run s1:xhs-search-preview",
+      "workdir": "/mnt/d/work/code/social-media-web-automation",
+      "exit": 0
+    },
+    {
+      "file": "test-xhs-search.txt",
+      "command": "npm test -- --test-name-pattern=\"小红书搜索结果\"",
+      "workdir": "/mnt/d/work/code/social-media-web-automation",
+      "exit": 0
+    },
+    {
+      "file": "typecheck.txt",
+      "command": "npm run typecheck",
+      "workdir": "/mnt/d/work/code/social-media-web-automation",
+      "exit": 0
+    },
+    {
+      "file": "weflow-safe-draft.txt",
+      "command": "python3 scripts/test_weflow_dyq_safe_draft.py",
+      "workdir": "/mnt/d/work/code/WeFlow",
+      "exit": 0
+    },
+    {
+      "file": "dyq-health.txt",
+      "command": "python3 - <<'PY'\nimport urllib.request\nr=urllib.request.urlopen(\"http://127.0.0.1:48080/admin-api/actuator/health\",timeout=5)\nprint(\"HTTP\",r.status)\nprint(r.read().decode()[:800])\nPY",
+      "workdir": "/mnt/e/code/dyq",
+      "exit": 0
+    }
+  ],
+  "socialCommit": "c2c4c71",
+  "safety": "只生成S1人工确认评论草稿；未执行真实评论、私信、关注、点赞；CDP未发现小红书标签，未强行打开或绕过登录风控。"
+}

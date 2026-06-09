@@ -2,6 +2,7 @@ import { NavLink } from "@/lib/router";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { cn } from "../lib/utils";
 import { useSidebar } from "../context/SidebarContext";
+import { useTranslation } from "@/i18n";
 import type { LucideIcon } from "lucide-react";
 
 interface SidebarNavItemProps {
@@ -32,6 +33,7 @@ export function SidebarNavItem({
   liveCount,
 }: SidebarNavItemProps) {
   const { isMobile, setSidebarOpen } = useSidebar();
+  const { t } = useTranslation();
 
   return (
     <NavLink
@@ -55,7 +57,7 @@ export function SidebarNavItem({
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_0_2px_hsl(var(--background))]" />
         )}
       </span>
-      <span className="flex-1 truncate">{label}</span>
+      <span className="flex-1 truncate">{label.includes(".") ? t(label) : label}</span>
       {textBadge && (
         <span
           className={cn(

@@ -1,0 +1,39 @@
+[18:35:40] ==========================================
+[18:35:40] P1/P2 端侧任务领取/执行/证据回传
+[18:35:40] ==========================================
+[18:35:40] OUT_DIR     = /tmp/qc3-01-p3-01-replay
+[18:35:40] DEVICE_ID   = pokeclaw-p1p2-20260607-183540
+[18:35:40] USE_MOCK    = True
+[18:35:40] BASE_URL    = http://127.0.0.1:18221
+[18:35:40] PUSH_RESULT = False
+[18:35:40] [1/9] start mock backend (port=18221)
+[18:35:40]   -> mock pid=1729400
+[18:35:40] [2/9] 设备注册 deviceId=pokeclaw-p1p2-20260607-183540
+[18:35:40]   -> 01_register status=200 body_bytes=212
+[18:35:40]   -> token=mock-device-token-e9f5a995
+[18:35:40] [3/9] 拉取云端任务清单
+[18:35:40]   -> 02_pending_tasks status=200 body_bytes=375
+[18:35:40]   -> 拉取到 1 个任务，选定 72293b25-a240-4969-a019-6b791131e5b9
+[18:35:40]   -> 指令摘要: 打开设置查看电量
+[18:35:40]   -> 模拟截图已落 /tmp/qc3-01-p3-01-replay/screenshots/state_evidence.txt
+[18:35:40] [5/9] 端侧 cloudnode 模拟执行
+[18:35:40]   -> traceId=trace-1cc235f9 finalStatus=SUCCEEDED
+[18:35:40] [6/9] 心跳一次
+[18:35:40]   -> 03_heartbeat status=200 body_bytes=127
+[18:35:40] [7/9] 跳过真实上报 (PUSH_REAL_RESULT=0)，仅把要上报的 body 落 evidence
+[18:35:40]   -> 04_submit_result status=200 body_bytes=59
+[18:35:40] [8/9] 跳过 experience 上报 (PUSH_REAL_RESULT=0)
+[18:35:40]   -> 05_submit_experience status=200 body_bytes=31
+[18:35:40] [9/9] 二次拉取，验证任务已被消费/移出 pending
+[18:35:40]   -> 06_pending_tasks_after status=200 body_bytes=375
+[18:35:40]   -> 剩余 pending 任务数 = 1 (mock 实现不会自动从队列删除；真实后端应为 0)
+[18:35:40] [门禁] 契约与一致性检查
+[18:35:40]   [PASS] 契约自检 7/7 通过
+[18:35:40] [门禁] Android JVM 单测（CloudExecutorNodeContractTest）
+[18:36:10]   -> gradle test PASS
+[18:36:10] ==========================================
+[18:36:10] P1/P2 端云闭环完成，产物: /tmp/qc3-01-p3-01-replay
+[18:36:10]   summary     -> /tmp/qc3-01-p3-01-replay/summary.md
+[18:36:10]   summary.json-> /tmp/qc3-01-p3-01-replay/summary.json
+[18:36:10] ==========================================
+[18:36:10] [CLEANUP] 停止 mock

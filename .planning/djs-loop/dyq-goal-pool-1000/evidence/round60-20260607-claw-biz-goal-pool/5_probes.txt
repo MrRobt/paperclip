@@ -1,0 +1,7 @@
+[HTTP 200 biz=None]  /admin-api/actuator/health
+[HTTP 200 biz=0]     /admin-api/claw/statistics/goal-pool  data.total=0
+[HTTP 200 biz=0]     /admin-api/claw/statistics/mainline-overview  data.keys=['updatedAt', 'items']
+[HTTP 200 biz=0]     /admin-api/claw/statistics/summary  data.keys=['totalLobsters', 'activeLobsters', 'totalSkills', 'totalExperiences', 'evaluatedExperiences']
+[HTTP 200 biz=0]     /admin-api/claw/device/list  data.total=253
+
+5/5 PASS — owner-3 (t_57014b0f) 关键修复点 goal-pool 200 code=0 闭环

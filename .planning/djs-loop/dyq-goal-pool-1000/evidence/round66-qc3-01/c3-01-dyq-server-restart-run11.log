@@ -1,0 +1,21 @@
+ Starting DyqServerApplication using Java 17.0.19 with PID 1739914 (/mnt/e/code/dyq/dyq-server/target/classes started by root in /mnt/e/code/dyq/dyq-server)
+ The following 1 profile is active: "dev"
+[register] 注册任务执行器, taskTypeCode=profile_modify, executor=资料修改执行器
+ [CloudphoneBatchProfileModify MQ] 创建执行交换机: dyq.cloudphone.task.batch-profile-modify.exchange
+ [CloudphoneBatchProfileModify MQ] 创建执行队列: dyq.cloudphone.task.batch-profile-modify.queue
+ [CloudphoneBatchProfileModify MQ] 绑定执行队列, routingKey: dyq.cloudphone.task.batch-profile-modify
+ [CloudphoneBatchProfileModify MQ] 创建死信交换机: dyq.cloudphone.task.batch-profile-modify.exchange.dlx
+ [CloudphoneBatchProfileModify MQ] 创建死信队列: dyq.cloudphone.task.batch-profile-modify.queue.dlq
+ [CloudphoneBatchProfileModify MQ] 绑定死信队列, routingKey: dyq.cloudphone.task.batch-profile-modify.dlq
+ [CloudphoneBatchSocialProfileImport MQ] 创建执行交换机: dyq.cloudphone.task.batch-social-profile-import.exchange
+ [CloudphoneBatchSocialProfileImport MQ] 创建执行队列: dyq.cloudphone.task.batch-social-profile-import.queue
+ [CloudphoneBatchSocialProfileImport MQ] 绑定执行队列, routingKey: dyq.cloudphone.task.batch-social-profile-import
+ [CloudphoneBatchSocialProfileImport MQ] 创建死信交换机: dyq.cloudphone.task.batch-social-profile-import.exchange.dlx
+ [CloudphoneBatchSocialProfileImport MQ] 创建死信队列: dyq.cloudphone.task.batch-social-profile-import.queue.dlq
+ [CloudphoneBatchSocialProfileImport MQ] 绑定死信队列, routingKey: dyq.cloudphone.task.batch-social-profile-import.dlq
+ [CloudphoneMetricsCollect MQ] 创建账号资料执行队列: dyq.cloudphone.metrics-collect.profile.queue
+ [CloudphoneMetricsCollect MQ] 绑定账号资料执行队列, routingKey: dyq.cloudphone.metrics-collect.profile
+ [CloudphoneMetricsCollect MQ] 创建账号资料死信队列: dyq.cloudphone.metrics-collect.profile.queue.dlq
+ [CloudphoneMetricsCollect MQ] 绑定账号资料死信队列, routingKey: dyq.cloudphone.metrics-collect.profile.dlq
+ Tomcat started on port 48080 (http) with context path '/'
+ Started DyqServerApplication in 542.268 seconds (process running for 556.174)

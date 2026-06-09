@@ -1,0 +1,9 @@
+[env] DYQ_BASE_URL=http://127.0.0.1:48080
+[env] TENANT_ID=1
+[env] EVIDENCE_DIR=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo-runs/20260607-132347
+[env] DEMO_HOME=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo
+[A1] 准备调用 http://127.0.0.1:48080/admin-api/actuator/health
+[A1] HTTP=200（期望 200）
+[A2] 准备调用 Paperclip scripts/c1_claw_device_smoke.py
+[A2][SKIP] 冒烟脚本不存在（/root/paperclip-work/paperclip/scripts/c1_claw_device_smoke.py），QC3-01 时再补
+[场景A 完成] 健康 / register / heartbeat 落点齐备

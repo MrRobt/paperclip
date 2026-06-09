@@ -1,0 +1,70 @@
+{
+  "round": "round44-20260607-weflow",
+  "timestamp": "2026-06-07",
+  "taskCode": "W1+W2",
+  "subGoals": ["W1.1", "W1.2", "W1.3", "W1.4", "W2.1", "W2.2", "W2.5-401-handler"],
+  "commits": [
+    "0e90573 docs(W2.5): 补全 EVIDENCE 提交号",
+    "614cedc feat(W2.5): 真实后端 401/异常处理封装与 15 用例单测",
+    "0b586fd feat(W1W2): 设备节点能力/微信心跳计数/草稿审查链/GUI安全确认",
+    "684e8aa feat(W1验收): 汇总W1.1~W1.4基线证据包"
+  ],
+  "repo": {
+    "path": "/mnt/d/work/code/WeFlow",
+    "branch": "main",
+    "head": "0e90573"
+  },
+  "verification": {
+    "typecheck": {"command": "npm run typecheck", "ok": true, "errors": 0},
+    "test": {
+      "command": "npm test",
+      "ok": true,
+      "total": 71,
+      "breakdown": {
+        "dyq-cloud-task.test.cjs": 38,
+        "draft-decision-filter.test.cjs": 11,
+        "safety-confirm-route.test.cjs": 7,
+        "dyq-cloud-http-error.test.cjs": 15
+      }
+    }
+  },
+  "deliverables": {
+    "w1_baseline": {
+      "evidenceBundle": ".planning/audit/runs/20260607-040800-w1-bundle/w1-summary.json",
+      "contractInterfaces": ".planning/audit/runs/20260607-040800-w1-bundle/w1-contract-interfaces.txt"
+    },
+    "w1.3_deviceNode": {
+      "service": "electron/services/dyqCloudTaskService.ts",
+      "registerBody": {"deviceType": "WEFLOW", "capabilities": ["wechat-receive", "wechat-send", "wechat-image"]}
+    },
+    "w1.4_heartbeatWechatCounters": {
+      "service": "electron/services/dyqCloudTaskService.ts",
+      "counters": ["wechatReceiveCount", "lastContactSession", "lastContactSessionName", "lastEnqueueAt"],
+      "hook": "messagePushService.recordEnqueueEvent"
+    },
+    "w2.1_draftFilter": {
+      "service": "electron/services/wechat/draftDecisionFilter.ts",
+      "blacklistKeywords": ["代付","充值","银行卡","验证码","中奖","兼职","刷单","转账"],
+      "whitelistKeywords": ["谢谢","收到","好的","已确认","明白","了解","没问题"],
+      "policy": "blacklist hits force prepare_only; whitelist allows auto_send; mixed takes stricter"
+    },
+    "w2.2_guiConfirm": {
+      "page": "src/pages/SafetyConfirmPage.tsx",
+      "route": "/safety/confirm",
+      "ipc": ["wechatControl:listDrafts", "wechatControl:confirmDraft", "wechatControl:rejectDraft"],
+      "gate": "main.ts confirmDraft refuses auto_send tasks (ACTION_IN_PROGRESS)"
+    },
+    "w2.5_401Handler": {
+      "class": "DyqCloudHttpError",
+      "kinds": ["unauthorized", "forbidden", "server", "network", "client", "unknown"],
+      "policy": "401/403 clears tokenState for re-register; 5xx/network retain token; client errors retain token",
+      "tickIntegration": "tick() preserves [kind] label in lastError via toStatusMessage()"
+    }
+  },
+  "safetyBoundaries": {
+    "externalSendAllowed": false,
+    "sendActionExecuted": false,
+    "cloudReportOnly": true
+  },
+  "status": "COMPLETE"
+}

@@ -1,0 +1,23 @@
+编译命令: mvn -pl dyq-module-claw/dyq-module-claw-api -am compile -DskipTests -o
+退出码: 0 (EXIT=0)
+耗时: 06:44 min (Wall Clock)
+结果: BUILD SUCCESS
+
+Reactor 摘要:
+- dyq ................................................ SUCCESS [  3.014 s]
+- dyq-framework ...................................... SUCCESS [  1.346 s]
+- dyq-common ......................................... SUCCESS [04:35 min]
+- dyq-module-infra ................................... SUCCESS [  1.341 s]
+- dyq-module-infra-api ............................... SUCCESS [01:00 min]
+- dyq-module-claw .................................... SUCCESS [  1.340 s]
+- dyq-module-claw-api ................................ SUCCESS [ 49.070 s]
+
+关键日志:
+[INFO] Compiling 40 source files with javac [forked debug target 17] to target/classes
+[INFO] BUILD SUCCESS
+
+说明:
+- 编译 40 个源文件 = 已有 30 个 + 本轮新增 10 个契约文件
+- 不破坏 dyq-common / dyq-module-infra-api 等上游模块
+- dyq-server test 不会受 -api 纯契约影响（-api 不参与运行时装配，未注册 @Service）
+- 默认安全：本轮不写 @Service 实现，不动 DB / MQ

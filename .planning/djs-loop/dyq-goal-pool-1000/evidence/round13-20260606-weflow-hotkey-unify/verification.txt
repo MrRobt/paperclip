@@ -1,0 +1,30 @@
+第13轮 W2.2 WeFlow真实退出快捷键执行层统一验证
+时间：2026-06-06 20:27:23 +0800
+
+改动范围：
+- /mnt/d/work/code/WeFlow/wechat-controller/windows_agent/services/hotkey.py
+- /mnt/d/work/code/WeFlow/wechat-controller/windows_agent/services/listener.py
+- /mnt/d/work/code/WeFlow/wechat-controller/windows_agent/app.py
+- /mnt/d/work/code/WeFlow/wechat-controller/tests/windows_agent/test_hotkey_monitor.py
+- /mnt/d/work/code/WeFlow/wechat-controller/tests/windows_agent/test_listener_hotkey_stop.py
+
+推进点：
+- 将 Windows Agent 实际监听从旧 Ctrl+1 统一为 AGENTS.md 与运行安全接口声明的 Ctrl+Alt+Q。
+- app.py 改为创建 CtrlAltQHotkeyMonitor。
+- ListenerService 热键停止原因改为 hotkey:ctrl+alt+q。
+- 保留 CtrlOneHotkeyMonitor 兼容别名，避免旧导入立即断裂。
+
+验证命令：
+python -m pytest wechat-controller/tests/windows_agent/test_hotkey_monitor.py wechat-controller/tests/windows_agent/test_listener_hotkey_stop.py wechat-controller/tests/controller/test_dyq_device_node_contract.py -q && python -m py_compile wechat-controller/windows_agent/services/hotkey.py wechat-controller/windows_agent/services/listener.py wechat-controller/windows_agent/app.py wechat-controller/controller/services/dyq_device_node_contract.py && git diff --check -- wechat-controller/windows_agent/services/hotkey.py wechat-controller/windows_agent/services/listener.py wechat-controller/windows_agent/app.py wechat-controller/tests/windows_agent/test_hotkey_monitor.py wechat-controller/tests/windows_agent/test_listener_hotkey_stop.py
+
+验证结果：
+......                                                                   [100%]
+6 passed in 1.30s
+
+提交：
+770d852 fix(微信端侧): 统一安全退出快捷键
+
+安全判定：
+- 未执行真实微信发送。
+- 运行安全接口仍声明 externalSendAllowed=false。
+- 本轮只把“声明的退出键”与“真实监听实现”对齐，推进 W2.2 前置门禁。

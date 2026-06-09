@@ -1,0 +1,2 @@
+命令：python -m py_compile controller/services/dyq_device_node_contract.py tests/controller/test_dyq_device_node_contract.py
+命令：git diff --check -- wechat-controller/controller/services/dyq_device_node_contract.py wechat-controller/tests/controller/test_dyq_device_node_contract.py

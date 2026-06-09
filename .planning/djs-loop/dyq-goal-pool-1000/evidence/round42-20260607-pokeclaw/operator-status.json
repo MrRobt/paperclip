@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "goal": "P1/P2 PokeClaw端侧闭环",
+  "deviceStatus": "no_online_device",
+  "adbOnlineCount": 0,
+  "cloudLoopContract": "PASS",
+  "operatorDashboard": "/mnt/e/code/PokeClaw/artifacts/dyq28-local-loop/20260607-052459/operator-dashboard.md",
+  "operatorDashboardHtml": "/mnt/e/code/PokeClaw/artifacts/dyq28-local-loop/20260607-052459/operator-dashboard.html",
+  "cloudOverviewSummary": {
+    "source": "operator-status.json",
+    "runtimeChecks": [
+      {
+        "label": "设备在线",
+        "value": "0 台",
+        "status": "warning"
+      },
+      {
+        "label": "端侧契约",
+        "value": "通过",
+        "status": "normal"
+      },
+      {
+        "label": "状态来源",
+        "value": "operator-status.json",
+        "status": "normal"
+      },
+      {
+        "label": "可浏览看板",
+        "value": "operator-dashboard.html",
+        "status": "normal"
+      }
+    ]
+  },
+  "nextOperatorAction": "先接入真机或ReDroid，再执行真实任务领取",
+  "safetyBoundary": [
+    "不自动发送微信、短信、私信或评论",
+    "不写真实生产数据",
+    "无在线设备时只生成本地样例证据，不伪装真机验收"
+  ],
+  "taskStateMachine": {
+    "states": [
+      "SUCCESS",
+      "FAILED",
+      "RUNNING",
+      "CANCELLED"
+    ],
+    "counts": {
+      "SUCCESS": 0,
+      "FAILED": 0,
+      "RUNNING": 0,
+      "CANCELLED": 0
+    },
+    "lastTaskId": "no_task",
+    "source": "device-empty-or-sample-not-fake",
+    "note": "ADB 在线=0，状态机为契约化样例，不假装真机任务"
+  }
+}

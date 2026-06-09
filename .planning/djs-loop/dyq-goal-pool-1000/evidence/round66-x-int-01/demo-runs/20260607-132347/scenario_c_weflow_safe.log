@@ -1,0 +1,12 @@
+[env] DYQ_BASE_URL=http://127.0.0.1:48080
+[env] TENANT_ID=1
+[env] EVIDENCE_DIR=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo-runs/20260607-132347
+[env] DEMO_HOME=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo
+[C1] 准备跑 WeFlow 设备 register/heartbeat
+[C1] register/heartbeat 通过
+[C2] 准备跑 WeFlow 安全草稿单测
+[C2] 安全草稿单测通过
+[C3][SKIP] 真实集成脚本不存在：/mnt/d/work/code/WeFlow/scripts/test_weflow_dyq_integration.py
+[C4] 准备探测 /dyq/device-node/runtime-safety
+[C4] 契约落点：/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo-runs/20260607-132347/C4_runtime_safety.json
+[场景C 完成] WeFlow 安全草稿契约落点齐备

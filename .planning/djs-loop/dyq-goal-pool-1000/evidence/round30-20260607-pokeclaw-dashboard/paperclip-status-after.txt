@@ -1,0 +1,6 @@
+ M .planning/djs-loop/dyq-goal-pool-1000/EVIDENCE.md
+ M .planning/djs-loop/dyq-goal-pool-1000/IMPLEMENTATION_PLAN.md
+ M .planning/djs-loop/dyq-goal-pool-1000/RUN_LOG.md
+ M ui/src/App.tsx
+ M ui/src/components/Sidebar.tsx
+ M ui/src/pages/IssueDetail.tsx

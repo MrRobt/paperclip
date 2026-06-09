@@ -1,0 +1,7 @@
+register_http= 200
+register_code= 0
+token_present= True
+pending_http= 200
+pending_code= 0
+pending_data_type= list
+pending_count= 0

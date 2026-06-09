@@ -1,0 +1,21 @@
+=== git status --short @ r49 立即 handoff ===
+git status err: Command '['git', '-C', '/mnt/e/code/dyq', 'status', '--short']' timed out after 15 seconds
+
+=== 父卡 t_76dcfaf8 r48 handoff 17 M 文件清单 (C1/C2 claw-biz 范围) ===
+dyq-module-claw/dyq-module-claw-api/src/main/java/com/douyouqu/dyq/module/claw/constants/ClawMqConstants.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/config/ClawDeviceProperties.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/controller/admin/statistics/ClawStatisticsController.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/dataobject/experience/ClawExperienceDO.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/device/ClawDeviceMapper.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/device/ClawDeviceTaskMapper.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/experience/ClawExperienceMapper.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/enums/ClawDeviceTaskStatusEnum.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/mq/producer/ClawEventPublisher.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceService.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceServiceImpl.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/statistics/ClawStatisticsService.java
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/statistics/ClawStatisticsServiceImpl.java
+dyq-module-claw/dyq-module-claw-biz/src/test/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceServiceTest.java
+dyq-module-claw/dyq-module-claw-biz/src/test/java/com/douyouqu/dyq/module/claw/service/experience/ClawExperienceServiceTest.java
+dyq-module-accountmarket/dyq-module-accountmarket-api/src/main/java/com/douyouqu/dyq/module/accountmarket/enums/ErrorCodeConstants.java
+dyq-module-accountmarket/dyq-module-accountmarket-biz/pom.xml

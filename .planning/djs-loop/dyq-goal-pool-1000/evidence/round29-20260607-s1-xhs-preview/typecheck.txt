@@ -1,0 +1,6 @@
+$ npm run typecheck
+# workdir: /mnt/d/work/code/social-media-web-automation
+# exit: 0
+
+> social-media-web-automation@0.1.0 typecheck
+> tsc --noEmit

@@ -1,0 +1,20 @@
+{
+  "mode": "auto",
+  "taskType": "wechat.message.prepare_text",
+  "command": "S1直播间截流小红书只读详情转WeFlow安全草稿 taskType=wechat.message.prepare_text sessionName=https://www.xiaohongshu.com/explore/round26-s1-live-lead text=我整理过数字人直播间搭建、获客和报价清单，可由人工确认后再回复。 sourcePlatform=xiaohongshu sourceContentId=s1-live-lead-xiaohongshu-数字人直播间搭建报价清单",
+  "payload": {
+    "taskType": "wechat.message.prepare_text",
+    "sessionName": "https://www.xiaohongshu.com/explore/round26-s1-live-lead",
+    "text": "我整理过数字人直播间搭建、获客和报价清单，可由人工确认后再回复。",
+    "sourcePlatform": "xiaohongshu",
+    "sourceContentId": "s1-live-lead-xiaohongshu-数字人直播间搭建报价清单",
+    "businessScenario": "S1直播间截流",
+    "riskLevel": "high",
+    "reviewNote": "S1 直播间/热点线索截流：只读观察结果已转为人工确认评论草稿。 锚点：数字人直播间搭建报价清单 意向：数字人直播、直播间搭建、报价、私域转化、获客｜分数 0.93 观察：数字人直播间搭建报价清单｜想做本地生活数字人直播间，关注搭建周期、报价和私域转化。｜多少钱可以做一套数字人直播间？｜需要直播间搭建和获客方案。｜可以私信发一下报价吗？ 安全边界：仅生成评论草稿并进入人工确认队列，不自动评论、不私信、不关注、不点赞、不绕过登录或风控"
+  },
+  "safety": {
+    "externalActionAllowed": false,
+    "requiresHumanConfirmation": true,
+    "boundary": "S1只读线索只生成WeFlow安全草稿，不自动评论、不私信、不关注、不点赞、不绕过登录或风控"
+  }
+}

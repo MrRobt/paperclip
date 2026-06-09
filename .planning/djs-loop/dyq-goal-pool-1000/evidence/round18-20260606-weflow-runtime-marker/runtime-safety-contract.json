@@ -1,0 +1,34 @@
+{
+  "httpStatus": 200,
+  "payload": {
+    "runningMarker": {
+      "visible": true,
+      "projectName": "WeFlow",
+      "mode": "托管",
+      "connectedTargets": [
+        "微信",
+        "DYQ后端"
+      ],
+      "displayText": "WeFlow｜托管｜微信、DYQ后端｜Ctrl+Alt+Q 安全退出｜真实发送前人工确认",
+      "statusText": "WeFlow 托管运行中，真实发送前必须人工确认",
+      "desktopEvidenceRequired": true,
+      "verificationChecklist": [
+        "桌面可见项目名",
+        "桌面可见托管模式",
+        "桌面可见连接对象",
+        "桌面可见退出快捷键"
+      ]
+    },
+    "exitHotkey": {
+      "key": "Ctrl+Alt+Q",
+      "safeStopActions": [
+        "停止自动化循环",
+        "释放微信控制",
+        "写入退出日志"
+      ]
+    },
+    "externalSendAllowed": false,
+    "reason": "未完成桌面运行标记截图与退出快捷键实测前，禁止进入外部可见发送动作",
+    "timestamp": "2026-06-06T21:22:58.227925+08:00"
+  }
+}

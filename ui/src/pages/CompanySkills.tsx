@@ -739,7 +739,7 @@ function CatalogDetailPane({
   loadingPrimaryAction: boolean;
 }) {
   if (!skill) {
-    return <EmptyState icon={Boxes} message="Select a catalog skill to inspect." />;
+    return <EmptyState icon={Boxes} message="skills.selectCatalog" />;
   }
 
   const installedHash = installedSkill?.originHash ?? null;
@@ -2230,7 +2230,7 @@ export function CompanySkills() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Boxes} message="Select a company to manage skills." />;
+    return <EmptyState icon={Boxes} message="skills.selectCompany" />;
   }
 
   function handleAddSkillSource() {

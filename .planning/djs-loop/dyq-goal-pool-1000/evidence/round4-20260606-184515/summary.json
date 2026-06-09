@@ -1,0 +1,15 @@
+{
+  "round": 4,
+  "evidenceDir": "/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round4-20260606-184515",
+  "health_http": 200,
+  "health_status": "UP",
+  "has_nacos_config": false,
+  "db": "UP",
+  "redis": "UP",
+  "rabbit": "UP",
+  "smoke_passed": true,
+  "register_code": 0,
+  "heartbeat_code": 0,
+  "pendingTaskCount": 0,
+  "skillVersion": 0
+}

@@ -1,0 +1,35 @@
+{
+  "overallExitCode": 2,
+  "failedScenario": "B",
+  "scenarios": [
+    {
+      "scenario": "A",
+      "desc": "云端冒烟",
+      "status": "PASS",
+      "log": "scenario_a_health.log"
+    },
+    {
+      "scenario": "B",
+      "desc": "端云契约",
+      "status": "FAIL",
+      "log": "scenario_b_endcloud.log",
+      "exitCode": 2
+    },
+    {
+      "scenario": "C",
+      "desc": "WeFlow安全草稿",
+      "status": "PASS",
+      "log": "scenario_c_weflow_safe.log"
+    },
+    {
+      "scenario": "D",
+      "desc": "社媒→WeFlow",
+      "status": "PASS",
+      "log": "scenario_d_social_to_weflow.log"
+    }
+  ],
+  "evidenceDir": "/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo-runs/20260607-132347",
+  "tenantId": "1",
+  "dyqBaseUrl": "http://127.0.0.1:48080",
+  "note": "X-INT-01 演示入口串联结果；不真实外发，不强推。"
+}

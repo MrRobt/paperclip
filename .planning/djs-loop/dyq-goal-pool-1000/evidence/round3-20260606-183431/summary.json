@@ -1,0 +1,9 @@
+{
+  "health_http": 200,
+  "health_status": "UP",
+  "has_nacos_config": false,
+  "smoke_passed": true,
+  "register_code": 0,
+  "heartbeat_code": 0,
+  "pendingTaskCount": 0
+}

@@ -1,0 +1,39 @@
+{
+  "body": {
+    "success": true,
+    "status": "reported",
+    "taskId": "task-event-round16",
+    "requestId": "req-round16",
+    "eventType": "wechat.message.receive",
+    "event": {
+      "eventId": "evt-round16",
+      "sessionName": "文件传输助手",
+      "sender": "主人",
+      "messages": [
+        "第16轮微信事件云端上报验证"
+      ],
+      "latestMessage": "第16轮微信事件云端上报验证",
+      "occurredAt": "2026-06-06T12:16:00+00:00",
+      "raw": {}
+    },
+    "steps": [
+      "read_listener_event",
+      "build_cloud_event_report",
+      "submit_signed_result"
+    ],
+    "evidence": {
+      "sendActionExecuted": false,
+      "manualTakeoverRequired": false,
+      "cloudReportOnly": true,
+      "backend": "weflow-event-report"
+    },
+    "retryPolicy": "仅允许重新上报同一事件；不得因上报失败触发微信发送或自动回复"
+  },
+  "request": {
+    "method": "POST",
+    "path": "/api/claw-device/tasks/task-event-round16/result",
+    "hasSignature": true,
+    "sendActionExecuted": false,
+    "cloudReportOnly": true
+  }
+}

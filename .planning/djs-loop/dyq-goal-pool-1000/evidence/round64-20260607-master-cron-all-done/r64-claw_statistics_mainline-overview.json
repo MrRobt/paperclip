@@ -1,0 +1,124 @@
+{
+  "code": 0,
+  "data": {
+    "updatedAt": "2026-06-07T12:40:33.987320007",
+    "items": [
+      {
+        "code": "claw",
+        "title": "Claw 小龙虾云端中枢",
+        "description": "负责沙箱、任务编排、经验汇总、自主迭代和运维管理。",
+        "status": "normal",
+        "statusText": "已有后台接口",
+        "metrics": [
+          {
+            "label": "核心入口",
+            "value": "指挥台"
+          },
+          {
+            "label": "体验重点",
+            "value": "小白可用"
+          }
+        ],
+        "runtimeChecks": null,
+        "routePath": "/claw/home",
+        "nextAction": "继续补齐错误态、空态和新手引导。"
+      },
+      {
+        "code": "pokeclaw",
+        "title": "PokeClaw 端侧应用",
+        "description": "负责设备注册、任务下发、结果回传和端云协同。",
+        "status": "warning",
+        "statusText": "等待证据路径配置",
+        "metrics": [
+          {
+            "label": "设备入口",
+            "value": "已接入"
+          },
+          {
+            "label": "联调重点",
+            "value": "结果回传"
+          }
+        ],
+        "runtimeChecks": [
+          {
+            "label": "设备在线",
+            "value": "0 台",
+            "status": "warning"
+          },
+          {
+            "label": "端侧契约",
+            "value": "通过",
+            "status": "normal"
+          },
+          {
+            "label": "状态来源",
+            "value": "operator-status.json",
+            "status": "normal"
+          },
+          {
+            "label": "可浏览看板",
+            "value": "operator-dashboard.html",
+            "status": "normal"
+          }
+        ],
+        "routePath": "/claw/devices",
+        "nextAction": "先配置 POKECLAW_OPERATOR_STATUS_PATH 指向端侧证据包，再接入真机或 ReDroid。"
+      },
+      {
+        "code": "weflow",
+        "title": "weflow 微信控制器",
+        "description": "负责稳定接收微信消息，优先图形界面回复，并作为设备节点接入。",
+        "status": "pending",
+        "statusText": "WEFLOW_NODE_CONFIG_PATH 未配置：未读取",
+        "metrics": [
+          {
+            "label": "设备节点",
+            "value": "未配置"
+          },
+          {
+            "label": "接口契约",
+            "value": "待补齐"
+          },
+          {
+            "label": "健康端口",
+            "value": "未启动"
+          },
+          {
+            "label": "回复方式",
+            "value": "图形界面优先"
+          }
+        ],
+        "runtimeChecks": [
+          {
+            "label": "node.json",
+            "value": "node.json",
+            "status": "warning"
+          },
+          {
+            "label": "设备 ID",
+            "value": "-",
+            "status": "warning"
+          },
+          {
+            "label": "节点版本",
+            "value": "-",
+            "status": "warning"
+          },
+          {
+            "label": "能力列表",
+            "value": "-",
+            "status": "warning"
+          },
+          {
+            "label": "健康探活 18700",
+            "value": "未连通",
+            "status": "warning"
+          }
+        ],
+        "routePath": "/claw/devices",
+        "nextAction": "先配置 WEFLOW_NODE_CONFIG_PATH 指向 wechat-controller/controller/config/node.json，再启动 Windows Agent 监听 18700。"
+      }
+    ]
+  },
+  "msg": ""
+}

@@ -1,0 +1,11 @@
+$ python3 - <<'PY'
+import urllib.request
+r=urllib.request.urlopen("http://127.0.0.1:48080/admin-api/actuator/health",timeout=5)
+print("HTTP",r.status)
+print(r.read().decode()[:800])
+PY
+# workdir: /mnt/e/code/dyq
+# exit: 0
+
+HTTP 200
+{"status":"UP","components":{"db":{"status":"UP","components":{"dynamicDataSource":{"status":"UP","components":{"MASTER":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}},"SHARDING":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}}}},"masterDataSource":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}},"shardingDataSource":{"status":"UP","details":{"database":"MySQL","validationQuery":"isValid()"}}}},"diskSpace":{"status":"UP","details":{"total":1000168484864,"free":17085599744,"threshold":10485760,"path":"/mnt/e/code/dyq/dyq-server/.","exists":true}},"ping":{"status":"UP"},"rabbit":{"status":"UP","components":{"aigcRabbitTemplate":{"status":"UP","details":{"version":"3.13.7"}},"rabbitTemplate":{"status":"UP","

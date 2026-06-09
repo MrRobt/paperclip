@@ -1,0 +1,75 @@
+{
+  "eventReport": {
+    "success": true,
+    "status": "reported",
+    "taskId": "task-event-round17",
+    "requestId": "evt-round17",
+    "eventType": "wechat.message.receive",
+    "event": {
+      "eventId": "evt-round17",
+      "sessionName": "文件传输助手",
+      "sender": "主人",
+      "messages": [
+        "第17轮微信事件签名回传验证"
+      ],
+      "latestMessage": "第17轮微信事件签名回传验证",
+      "occurredAt": "2026-06-06T13:17:00+00:00",
+      "raw": {}
+    },
+    "steps": [
+      "read_listener_event",
+      "build_cloud_event_report",
+      "submit_signed_result"
+    ],
+    "evidence": {
+      "sendActionExecuted": false,
+      "manualTakeoverRequired": false,
+      "cloudReportOnly": true,
+      "backend": "weflow-event-report"
+    },
+    "retryPolicy": "仅允许重新上报同一事件；不得因上报失败触发微信发送或自动回复"
+  },
+  "signedRequest": {
+    "method": "POST",
+    "url": "http://127.0.0.1:48080/api/claw-device/tasks/task-event-round17/result",
+    "path": "/api/claw-device/tasks/task-event-round17/result",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "***",
+      "X-Claw-Timestamp": "1780000000000",
+      "X-Claw-Nonce": "round17-event-submit",
+      "X-Claw-Signature": "9fff39785b3fa6e18d619d73acb7d1d4fe7eaa07ce5c93349c9c7595c4600248"
+    },
+    "hasSignature": true,
+    "body": {
+      "success": true,
+      "status": "reported",
+      "taskId": "task-event-round17",
+      "requestId": "evt-round17",
+      "eventType": "wechat.message.receive",
+      "event": {
+        "eventId": "evt-round17",
+        "sessionName": "文件传输助手",
+        "sender": "主人",
+        "messages": [
+          "第17轮微信事件签名回传验证"
+        ],
+        "latestMessage": "第17轮微信事件签名回传验证",
+        "occurredAt": "2026-06-06T13:17:00+00:00",
+        "raw": {}
+      },
+      "steps": [
+        "read_listener_event",
+        "build_cloud_event_report",
+        "submit_signed_result"
+      ],
+      "evidence": {
+        "sendActionExecuted": false,
+        "manualTakeoverRequired": false,
+        "cloudReportOnly": true,
+        "backend": "weflow-event-report"
+      },
+      "retryPolicy": "仅允许重新上报同一事件；不得因上报失败触发微信发送或自动回复"
+    }
+  }
+}

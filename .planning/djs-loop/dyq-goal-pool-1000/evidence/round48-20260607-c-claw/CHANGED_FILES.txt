@@ -1,0 +1,52 @@
+# Round 48 2026-06-07 TC C层后端 (Claw云端中枢) 改动清单
+
+## 工作区
+- /mnt/e/code/dyq (branch: dev)
+- 不强推、不删stash、不重启48080
+
+## 改动文件 (M, 15 个全部在 dyq-module-claw/ 内)
+
+```
+dyq-module-claw/dyq-module-claw-api/src/main/java/com/douyouqu/dyq/module/claw/constants/ClawMqConstants.java                                            |   10 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/config/ClawDeviceProperties.java                                          |    6 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/controller/admin/statistics/ClawStatisticsController.java                  |   80 +--
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/dataobject/experience/ClawExperienceDO.java                             |    6 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/device/ClawDeviceMapper.java                                     |   37 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/device/ClawDeviceTaskMapper.java                                 |   62 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/dal/mysql/experience/ClawExperienceMapper.java                            |   15 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/enums/ClawDeviceTaskStatusEnum.java                                        |    6 +-
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/mq/producer/ClawEventPublisher.java                                        |   75 ++-
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceService.java                                      |   18 +
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceServiceImpl.java                                  |   54 +-
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/statistics/ClawStatisticsService.java                              |   49 +-
+dyq-module-claw/dyq-module-claw-biz/src/main/java/com/douyouqu/dyq/module/claw/service/statistics/ClawStatisticsServiceImpl.java                         |  575 +++++++++++++++++----
+dyq-module-claw/dyq-module-claw-biz/src/test/java/com/douyouqu/dyq/module/claw/service/device/ClawDeviceServiceTest.java                                  |  153 +++++-
+dyq-module-claw/dyq-module-claw-biz/src/test/java/com/douyouqu/dyq/module/claw/service/experience/ClawExperienceServiceTest.java                          |    3 +
+```
+
+合计 985 insertions / 164 deletions (15 files)。另含 1 个 accountmarket 错误码 + pom 调整（28 行内 C 层依赖传递）。
+
+## C1/C2 范围对照
+
+- C1.1 设备注册 / 状态查询 / 列表：`ClawDeviceService.listDevices/page/page` / `ClawDeviceServiceImpl` / `ClawDeviceMapper`
+- C1.2 设备心跳 / 任务派发 / 结果回传：`ClawDeviceTaskMapper` / `ClawDeviceServiceImpl.dispatchTask/heartbeat/reportResult`
+- C1.3 主线运行态总览：`ClawStatisticsController.getMainlineOverview` -> `ClawStatisticsServiceImpl.getMainlineOverview`
+- C1.4 经验/等级/进化统计：`ClawStatisticsServiceImpl`（575 行扩展主体）
+- C1.5 MQ 事件生产者：`ClawEventPublisher`（重写 75 行）
+- C1.6 设备属性配置：`ClawDeviceProperties` / `ClawMqConstants`
+- C2.1-C2.5 设备治理闭环：注册 → 任务派发 → 心跳 → 状态机 → 结果回传，Mapper+Service 已对齐
+
+## 提交号
+
+**未提交**。原因：
+- 48080 spring-boot:run 子进程被多 worker 长时间 mvn install / mvn test 阻塞抢占，bean 注入（`CsMessageServiceImpl` 期望 `CsConversationWebSocketHandler`，实际拿到 `WebSocketSessionHandlerDecorator`）与 `dyq-module-accountmarket-biz` 缺 `AccountMarketSocialDeviceBindTypeEnum/StatusEnum` 编译失败，工具链反复打断。
+- r48 主控明令：5 分钟内无新动作立即 kanban_complete，不再追 mvn 工具链。
+- 不在 master cron kill spring-boot 进程（r48 硬红线）。
+- 改文件未进 stash（按 r47/r48 主控硬红线）。
+- 完整 diff 落 evidence，r49 之后由主控 + 新 worker 接力提交 / 拆片。
+
+## 验证状态
+
+- mvn test：未跑（被工具链阻塞，主控已 5 次重申禁止再开长链命令）
+- curl /admin-api/actuator/health：未跑（48080 进程未正常启动，r48 主控 07:14 已确认端口未 LISTEN）
+- git log --oneline -5：本地 dev 分支原有 0067c9b5e（小龙虾运行态冒烟）、b94ef4afd（健康检查修复）、58be31d8f（设备链路核心逻辑合入）等

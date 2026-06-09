@@ -1,0 +1,12 @@
+{
+  "taskId": "p3-01-claim-execute-evidence",
+  "deviceId": "pokeclaw-p3p01-20260607-133319",
+  "baseUrl": "http://127.0.0.1:18221",
+  "useMockBackend": "True",
+  "pushRealResult": "False",
+  "claimedTaskUuid": "fbeb0052-225b-4f18-8495-dc97f8b4af63",
+  "instruction": "打开设置查看电量",
+  "androidTest": "skipped",
+  "gateFailCount": 0,
+  "timestamp": "20260607-133319"
+}

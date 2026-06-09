@@ -1448,16 +1448,16 @@ function AgentOverview({
 
       {/* Charts */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <ChartCard title="Run Activity" subtitle="Last 14 days">
+        <ChartCard title="dashboard.runActivity" subtitle="dashboard.last14Days">
           <RunActivityChart runs={runs} />
         </ChartCard>
-        <ChartCard title="Issues by Priority" subtitle="Last 14 days">
+        <ChartCard title="dashboard.issuesByPriority" subtitle="dashboard.last14Days">
           <PriorityChart issues={assignedIssues} />
         </ChartCard>
-        <ChartCard title="Issues by Status" subtitle="Last 14 days">
+        <ChartCard title="dashboard.issuesByStatus" subtitle="dashboard.last14Days">
           <IssueStatusChart issues={assignedIssues} />
         </ChartCard>
-        <ChartCard title="Success Rate" subtitle="Last 14 days">
+        <ChartCard title="dashboard.successRate" subtitle="dashboard.last14Days">
           <SuccessRateChart runs={runs} />
         </ChartCard>
       </div>

@@ -1,0 +1,12 @@
+[env] DYQ_BASE_URL=http://127.0.0.1:48080
+[env] TENANT_ID=1
+[env] EVIDENCE_DIR=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo-runs/20260607-132347
+[env] DEMO_HOME=/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round66-x-int-01/demo
+[D1] 准备跑 weflow-lead-handoff 单测
+[D1] weflow-lead-handoff 通过
+[D2] 准备跑 live-room-lead-handoff 单测
+[D2] live-room-lead-handoff 通过
+[D3] 草稿下发到 DYQ→WeFlow 由 C3-01/W3-01 联合执行；本轮仅占位
+[D4] 准备跑控制台只读总览单测
+[D4] 控制台只读总览通过
+[场景D 完成] 社媒→WeFlow 安全草稿落点齐备

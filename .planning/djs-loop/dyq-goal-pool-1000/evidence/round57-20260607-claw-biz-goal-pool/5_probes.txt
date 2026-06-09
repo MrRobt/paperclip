@@ -1,0 +1,5 @@
+[200 code=None] actuator/health: code=None
+[200 code=401] claw/statistics/goal-pool (关键修复点): code=401
+[200 code=401] claw/statistics/mainline-overview: code=401
+[200 code=401] claw/statistics/summary: code=401
+[200 code=401] claw/device/list: code=401

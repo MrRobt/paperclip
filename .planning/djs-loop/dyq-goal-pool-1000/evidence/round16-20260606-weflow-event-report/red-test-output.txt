@@ -1,0 +1,10 @@
+..E....
+======================================================================
+ERROR: test_微信监听事件可封装为云端上报结果且不触发发送 (__main__.WeFlowDyqSafeDraftTest.test_微信监听事件可封装为云端上报结果且不触发发送)
+----------------------------------------------------------------------
+AttributeError: module 'weflow_dyq_device_register' has no attribute 'create_wechat_event_report_result'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.005s
+
+FAILED (errors=1)

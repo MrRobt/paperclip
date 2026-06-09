@@ -1,0 +1,30 @@
+{
+  "round": 15,
+  "time": "2026-06-06T20:49:54.016627+08:00",
+  "baseUrl": "http://127.0.0.1:48080",
+  "deviceId": "weflow-round15-1780750190",
+  "register": {
+    "httpStatus": 200,
+    "code": 0,
+    "hasToken": true
+  },
+  "heartbeat": {
+    "httpStatus": 200,
+    "code": 0,
+    "pendingTaskCount": 0
+  },
+  "adminExecute": {
+    "httpStatus": 200,
+    "code": 0,
+    "taskUuid": "640d01d67542415f920047c7664e169f"
+  },
+  "processed": {
+    "taskId": "640d01d67542415f920047c7664e169f",
+    "safeDraftStatus": "prepared",
+    "sessionName": "文件传输助手",
+    "sendActionExecuted": false,
+    "manualTakeoverRequired": true,
+    "submitHttpStatus": 200,
+    "submitCode": 0
+  }
+}

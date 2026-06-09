@@ -1,0 +1,10 @@
+{
+  "deviceId": "weflow-round9-1780746437",
+  "registerHttp": 200,
+  "registerCode": 0,
+  "hasDeviceToken": true,
+  "heartbeatHttp": 200,
+  "heartbeatCode": 0,
+  "pendingTaskCount": 0,
+  "passed": true
+}

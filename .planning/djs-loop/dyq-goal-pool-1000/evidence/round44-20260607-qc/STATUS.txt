@@ -1,0 +1,36 @@
+STATUS: COMPLETE
+TASK_ID: t_968faf75
+RUN_ID: 26
+EXECUTED_BY: dyq-qc-api
+TIME: 2026-06-07 12:14 +0800
+OUTCOME: PASS
+
+=== COMPLETION CHECK ===
+- [x] 真实 curl 跑 /admin-api/claw/statistics/mainline-overview 200 code=0
+- [x] 真实 curl 跑 /admin-api/claw/device/list 200 code=0 (修正 URL 后)
+- [x] 真实 curl 跑 /admin-api/claw/statistics/summary 200 code=0
+- [x] 真实 curl 跑 /admin-api/claw/statistics/goal-pool 200 code=0
+- [x] 真实 curl 跑 /admin-api/claw/statistics/device-summary 200 code=0
+- [x] 真实 curl 跑 /admin-api/actuator/health 200 7/7 组件 UP
+- [x] 至少 1 个真实浏览器截图（headless chromium-1217）
+  - 01-actuator-health-headless-chromium.png
+  - 02-claw-dashboard-tweb-headless-chromium.png
+- [x] 覆盖率报告 ≥ 80% (本轮 90% 契约)
+- [x] 缺卡建议落到 QC 报告
+- [x] 证据目录：/root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round44-20260607-qc/
+
+=== EVIDENCE ===
+DIR: /root/paperclip-work/paperclip/.planning/djs-loop/dyq-goal-pool-1000/evidence/round44-20260607-qc/
+FILES:
+  - 01-actuator-health-headless-chromium.png (55827 B)
+  - 02-claw-dashboard-tweb-headless-chromium.png (72266 B)
+  - 5_probes.txt (3503 B, 6/6 PASS)
+  - REPORT.md (10522 B, 覆盖率 90%, 缺卡建议 5 项)
+  - STATUS.txt (本文件)
+
+=== FINAL TQC VERDICT ===
+6/6 后端真实接口 200 + code=0 PASS
+2 张真浏览器截图就绪
+C/P/W/S 二级任务契约 90% 覆盖
+真实闭环 0%~70% (受真机/合规门限制约)
+TQC 任务自评 PASS, 等待 master 决策 review-required 三卡

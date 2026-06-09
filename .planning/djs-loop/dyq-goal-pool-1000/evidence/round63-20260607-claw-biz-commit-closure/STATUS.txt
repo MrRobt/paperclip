@@ -1,0 +1,10 @@
+STATUS: COMPLETE
+
+owner-3 t_57014b0f run 29
+commit 6ec1376eb6817ac91d673770c6cb00566cbc8932
+5/5 probes PASS (r60+r62 两次主控亲验)
+5 files +745 -138
+mvn jar 10:46 648615 bytes
+48080 PID 1684310 LISTEN
+.git/index.lock 已清
+goal-pool endpoint 闭环 → TQC t_968faf75 auto-promote

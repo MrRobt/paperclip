@@ -176,7 +176,7 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Paperclip. Set up your first company and agent to get started."
+          message="dashboard.welcome"
           action="Get Started"
           onAction={openOnboarding}
         />
@@ -241,7 +241,7 @@ export function Dashboard() {
             <MetricCard
               icon={Bot}
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
-              label="Agents Enabled"
+              label="dashboard.agentsEnabled"
               to="/agents"
               description={
                 <span>
@@ -254,7 +254,7 @@ export function Dashboard() {
             <MetricCard
               icon={CircleDot}
               value={data.tasks.inProgress}
-              label="Tasks In Progress"
+              label="dashboard.tasksInProgress"
               to="/issues"
               description={
                 <span>
@@ -266,7 +266,7 @@ export function Dashboard() {
             <MetricCard
               icon={DollarSign}
               value={formatCents(data.costs.monthSpendCents)}
-              label="Month Spend"
+              label="dashboard.monthSpend"
               to="/costs"
               description={
                 <span>
@@ -279,7 +279,7 @@ export function Dashboard() {
             <MetricCard
               icon={ShieldCheck}
               value={data.pendingApprovals + data.budgets.pendingApprovals}
-              label="Pending Approvals"
+              label="dashboard.pendingApprovals"
               to="/approvals"
               description={
                 <span>
@@ -292,16 +292,16 @@ export function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <ChartCard title="Run Activity" subtitle="Last 14 days">
+            <ChartCard title="dashboard.runActivity" subtitle="dashboard.last14Days">
               <RunActivityChart activity={data.runActivity} />
             </ChartCard>
-            <ChartCard title="Issues by Priority" subtitle="Last 14 days">
+            <ChartCard title="dashboard.issuesByPriority" subtitle="dashboard.last14Days">
               <PriorityChart issues={issues ?? []} />
             </ChartCard>
-            <ChartCard title="Issues by Status" subtitle="Last 14 days">
+            <ChartCard title="dashboard.issuesByStatus" subtitle="dashboard.last14Days">
               <IssueStatusChart issues={issues ?? []} />
             </ChartCard>
-            <ChartCard title="Success Rate" subtitle="Last 14 days">
+            <ChartCard title="dashboard.successRate" subtitle="dashboard.last14Days">
               <SuccessRateChart activity={data.runActivity} />
             </ChartCard>
           </div>

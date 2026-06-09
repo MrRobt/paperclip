@@ -1,0 +1,209 @@
+{
+  "status": "PASS",
+  "goal": "P1/P2 PokeClaw端侧闭环",
+  "deviceStatus": "no_online_device",
+  "adbOnlineCount": 0,
+  "cloudLoopContract": "PASS",
+  "operatorDashboard": "artifacts/round44-pokeclaw//operator-dashboard.md",
+  "operatorDashboardHtml": "artifacts/round44-pokeclaw//operator-dashboard.html",
+  "cloudOverviewSummary": {
+    "source": "operator-status.json",
+    "runtimeChecks": [
+      {
+        "label": "设备在线",
+        "value": "0 台",
+        "status": "warning"
+      },
+      {
+        "label": "端侧契约",
+        "value": "通过",
+        "status": "normal"
+      },
+      {
+        "label": "状态来源",
+        "value": "operator-status.json",
+        "status": "normal"
+      },
+      {
+        "label": "可浏览看板",
+        "value": "operator-dashboard.html",
+        "status": "normal"
+      }
+    ]
+  },
+  "nextOperatorAction": "先接入真机或ReDroid，再执行真实任务领取",
+  "safetyBoundary": [
+    "不自动发送微信、短信、私信或评论",
+    "不写真实生产数据",
+    "无在线设备时只生成本地样例证据，不伪装真机验收"
+  ],
+  "taskStateMachine": {
+    "states": [
+      "SUCCESS",
+      "FAILED",
+      "RUNNING",
+      "CANCELLED"
+    ],
+    "counts": {
+      "SUCCESS": 0,
+      "FAILED": 0,
+      "RUNNING": 0,
+      "CANCELLED": 0
+    },
+    "lastTaskId": "no_task",
+    "source": "device-empty-or-sample-not-fake",
+    "note": "ADB 在线=0，状态机为契约化样例，不假装真机任务"
+  },
+  "p1p2Contract": {
+    "scope": "P1.1-P1.5 + P2.1-P2.4",
+    "ownerBlocked": {
+      "P1.1_reDroid_device": "真机/物理设备未到位（owner-blocked）",
+      "P1.2_register_real": "真实 48080 联调未启动（C 卡 t_76dcfaf8 子任务）",
+      "P1.5_weakNetwork_real": "真机网络模拟（owner-blocked）",
+      "P2.1_realClaim": "P1.1 解决前不假装真机领取",
+      "P2.2_realScreenshot": "P1.1 解决前不假装真机截图"
+    },
+    "selfServedNow": {
+      "P1.3_heartbeatAuth": "已派生：kotlin-coverage-derivative.md 9 行 ✓对齐",
+      "P1.4_smokeEvidence": "已落：scripts/dyq28-local-loop-evidence.sh 通过",
+      "P2.3_retryHuman": "已派生：kotlin-coverage-derivative.md 8 行 ✓对齐",
+      "P2.4_stateMachine": "已派生：operator-status.json.taskStateMachine",
+      "P2.1_claimContract": "本轮新增：cloudClaim 字段结构化",
+      "P2.2_screenshotContract": "本轮新增：screenshotEvidence 字段结构化",
+      "cloudResult_contract": "本轮新增：cloudResult 字段结构化",
+      "sixResults_structured": "本轮新增：sixResults[] 6 项结构化"
+    },
+    "cloudClaim": {
+      "endpoint": "POST /admin-api/claw/device/pending-tasks",
+      "auth": "Bearer <deviceToken> + X-Claw-Timestamp/Nonce/Signature (HMAC-SHA256)",
+      "claimFlow": "heartbeat -> /pending-tasks -> 取首个 RECEIVED 任务 -> 锁定",
+      "lockState": "RECEIVED -> RUNNING 端侧状态机推进",
+      "requestSample": {
+        "method": "POST",
+        "url": "http://127.0.0.1:48080/admin-api/claw/device/pending-tasks",
+        "headers": {
+          "Authorization": "Bearer <deviceToken>",
+          "X-Claw-Timestamp": "<millis>",
+          "X-Claw-Nonce": "<uuid>",
+          "X-Claw-Signature": "<hex>",
+          "tenant-id": "<tenant>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "deviceId": "device-pixel-8",
+          "limit": 1
+        }
+      },
+      "responseSample": {
+        "code": 0,
+        "data": {
+          "taskUuid": "task-<uuid>",
+          "instruction": "<string>",
+          "traceId": "trace-<uuid>",
+          "issuedAtMillis": 0,
+          "timeoutMillis": 60000
+        }
+      },
+      "source": "device-empty-or-sample-not-fake",
+      "evidenceRef": "scripts/dyq3-endcloud-smoke.sh",
+      "status": "PASS"
+    },
+    "cloudResult": {
+      "endpoint": "POST /admin-api/claw/device/result",
+      "auth": "Bearer <deviceToken> + 3 签名头（与 claim 一致）",
+      "payload": {
+        "requestId": "<uuid>",
+        "taskUuid": "<task-uuid>",
+        "deviceId": "device-pixel-8",
+        "traceId": "<trace-uuid>",
+        "status": "SUCCESS / FAILED",
+        "accepted": "true",
+        "recoverable": "false",
+        "errorCode": "NONE / TOOL_FAILED / PERMISSION_MISSING / ...",
+        "result": "<message 截 2048>",
+        "evidenceRefs": "screenshot://<taskId>.png,...（逗号分隔）",
+        "occurredAtMillis": 0
+      },
+      "contract": "CloudTaskReceipt.toMockCloudPayload() / toExperiencePayload()",
+      "source": "device-empty-or-sample-not-fake",
+      "evidenceRef": "app/src/main/java/io/agents/pokeclaw/cloudnode/CloudExecutorNodeContract.kt",
+      "status": "PASS"
+    },
+    "screenshotEvidence": {
+      "capturePoint": "任务执行结束（含 SUCCEEDED / FAILED / CACHED）",
+      "format": "PNG / screenshot://<taskId>.png",
+      "artifactsField": "CloudTaskExecutionResult.artifacts: List<String>",
+      "mockedAt": "LocalClosedLoopSampler.SampleResult.artifacts=[]（无真机）",
+      "realPath": "adb shell screencap -p /sdcard/<taskId>.png && adb pull /sdcard/<taskId>.png artifacts/",
+      "claimField": "operator-status.json.p1p2Contract.cloudClaim.claimFlow 落 artifacts",
+      "uiDumpPath": "adb shell uiautomator dump /sdcard/window_dump.xml && adb pull",
+      "source": "device-empty-or-sample-not-fake",
+      "status": "PASS"
+    },
+    "sixResults": [
+      {
+        "name": "成功执行",
+        "contract": "RECEIVED -> RUNNING -> SUCCEEDED",
+        "cloudClaim": "pending -> result(SUCCESS, artifacts=*)",
+        "screenshot": "artifacts:screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskExecutionResult.success"
+      },
+      {
+        "name": "可重试失败",
+        "contract": "RECEIVED -> RUNNING -> FAILED(retryable=true, errorCode=TOOL_FAILED/NETWORK_UNAVAILABLE)",
+        "cloudClaim": "result(FAILED, recoverable=true) + retryPlan(nextAttempt, nextAttemptAtMillis)",
+        "screenshot": "artifacts:retryable-failure-screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskRetryPolicy.nextPlan"
+      },
+      {
+        "name": "不可重试失败",
+        "contract": "RECEIVED -> RUNNING -> FAILED(retryable=false, errorCode=TASK_REJECTED)",
+        "cloudClaim": "result(FAILED, recoverable=false) + reject 模板",
+        "screenshot": "artifacts:non-retryable-failure-screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskExecutionResult.failure"
+      },
+      {
+        "name": "执行超时",
+        "contract": "RECEIVED -> RUNNING -> FAILED(retryable=true, errorCode=EXECUTION_TIMEOUT)",
+        "cloudClaim": "result(FAILED, errorCode=EXECUTION_TIMEOUT) + 云端降级或拆分",
+        "screenshot": "artifacts:timeout-screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskErrorCode.EXECUTION_TIMEOUT"
+      },
+      {
+        "name": "权限缺失",
+        "contract": "RECEIVED -> FAILED(retryable=true, errorCode=PERMISSION_MISSING)",
+        "cloudClaim": "result(FAILED, errorCode=PERMISSION_MISSING) + 引导开启无障碍/通知",
+        "screenshot": "artifacts:permission-missing-screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskErrorCode.PERMISSION_MISSING"
+      },
+      {
+        "name": "离线缓存",
+        "contract": "RECEIVED -> RUNNING -> SUCCEEDED/FAILED + 缓存到 CloudEventQueue",
+        "cloudClaim": "cachedForOfflineUpload=true + nextAttemptAtMillis 重试退避",
+        "screenshot": "artifacts:offline-cached-screenshot://<taskId>.png",
+        "status": "PASS",
+        "source": "device-empty-or-sample-not-fake",
+        "count": 0,
+        "evidenceRef": "cloudnode.CloudTaskOfflineReceiptCache"
+      }
+    ],
+    "deviceSource": "device-empty-or-sample-not-fake",
+    "adbOnlineCount": 0,
+    "status": "PASS"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "mode": "auto",
+  "taskType": "wechat.message.prepare_text",
+  "command": "S2.2高意向私信线索转WeFlow安全草稿 taskType=wechat.message.prepare_text sessionName=第20轮高意向客户 text=你好，我先把你的数字人直播代运营需求整理成方案草稿，稍后由人工确认后再回复你。 sourcePlatform=xiaohongshu sourceUserId=round20-live-lead",
+  "payload": {
+    "taskType": "wechat.message.prepare_text",
+    "sessionName": "第20轮高意向客户",
+    "text": "你好，我先把你的数字人直播代运营需求整理成方案草稿，稍后由人工确认后再回复你。",
+    "sourcePlatform": "xiaohongshu",
+    "sourceUserId": "round20-live-lead",
+    "sourceNoteUrl": "https://www.xiaohongshu.com/explore/round20-live-note",
+    "intentTags": [
+      "数字人直播",
+      "代运营",
+      "询价"
+    ],
+    "intentScore": 0.92,
+    "weflowContactProfile": {
+      "externalId": "round20-live-lead",
+      "displayName": "第20轮高意向客户",
+      "sourcePlatform": "xiaohongshu",
+      "profileUrl": "https://www.xiaohongshu.com/user/profile/round20-live-lead",
+      "tags": [
+        "source:xiaohongshu",
+        "intent:数字人直播",
+        "intent:代运营",
+        "intent:询价",
+        "priority:high"
+      ],
+      "lastMessage": "想了解数字人直播代运营和报价",
+      "intentScore": 0.92,
+      "collectedAt": "2026-06-06T21:45:00+08:00"
+    }
+  },
+  "safety": {
+    "externalActionAllowed": false,
+    "requiresHumanConfirmation": true,
+    "boundary": "仅生成 WeFlow 承接任务与私信草稿，不点击发送、不关注、不点赞、不绕过登录或风控"
+  }
+}

@@ -1,0 +1,5 @@
+M scripts/test_weflow_dyq_safe_draft.py
+ M scripts/weflow-dyq-device-register.py
+ scripts/test_weflow_dyq_safe_draft.py | 32 ++++++++++++++++++++++++++++++++
+ scripts/weflow-dyq-device-register.py | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+)

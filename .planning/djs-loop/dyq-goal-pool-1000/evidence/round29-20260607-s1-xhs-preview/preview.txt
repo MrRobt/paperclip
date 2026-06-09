@@ -1,0 +1,38 @@
+$ npm run s1:xhs-search-preview
+# workdir: /mnt/d/work/code/social-media-web-automation
+# exit: 0
+
+> social-media-web-automation@0.1.0 s1:xhs-search-preview
+> tsx examples/s1-xiaohongshu-search-preview.ts
+
+人工确认队列
+说明: 仅展示待确认草稿；复制后由人工在真实浏览器中发送。
+1. 评论草稿｜xiaohongshu｜风险 high
+   任务: s1-live-lead-xiaohongshu-search-0
+   目标: https://www.xiaohongshu.com/explore/demo-high
+   内容: 我整理过一份数字人直播间搭建和获客清单，可以人工确认后再回复。
+安全边界: 系统不会发布、评论、私信、关注或点赞。
+
+结构化摘要
+{
+  "source": "inline-fallback",
+  "keyword": "数字人直播",
+  "inputCount": 2,
+  "acceptedCount": 1,
+  "rejectedCount": 1,
+  "requiresHuman": false,
+  "reason": "none",
+  "safetyBoundary": "只读搜索结果生成 S1 人工确认评论草稿；不自动评论、不私信、不关注、不点赞、不绕过登录或风控。",
+  "drafts": [
+    {
+      "id": "draft-1",
+      "taskId": "s1-live-lead-xiaohongshu-search-0",
+      "businessScenario": "S1直播间截流",
+      "platform": "xiaohongshu",
+      "type": "comment",
+      "riskLevel": "high",
+      "target": "https://www.xiaohongshu.com/explore/demo-high",
+      "contentPreview": "我整理过一份数字人直播间搭建和获客清单，可以人工确认后再回复。"
+    }
+  ]
+}
