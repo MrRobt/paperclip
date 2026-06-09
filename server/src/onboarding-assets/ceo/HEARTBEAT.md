@@ -54,6 +54,13 @@ Status quick guide:
 - Use `paperclip-create-agent` skill when hiring new agents.
 - Assign work to the right agent for the job.
 
+## 6.1 Execution Channel Compliance（合规检查）
+
+On every heartbeat, verify no active violations of the Execution Channel Policy:
+- No sub2api/sb2 PTY sessions should be running for DYQ-related coding tasks.
+- No cron jobs or skill prompts should reference `sub2api-deployed-service` or `dyq-sb2`.
+- If violations are found, remove them immediately per the Enforcement Procedure in AGENTS.md Section 4.3.
+
 ## 7. Fact Extraction
 
 1. Check for new conversations since last extraction.
