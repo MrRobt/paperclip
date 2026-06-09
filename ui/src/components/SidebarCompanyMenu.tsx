@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Archive,
   Check,
   ChevronsUpDown,
   GripVertical,
@@ -128,6 +129,34 @@ function SortableCompanyItem({
   );
 }
 
+function ArchivedCompanyItem({
+  company,
+  isSelected,
+  onSelect,
+}: {
+  company: Company;
+  isSelected: boolean;
+  onSelect: (company: Company) => void;
+}) {
+  return (
+    <DropdownMenuItem
+      onSelect={() => onSelect(company)}
+      className={cn("min-w-0 gap-2 py-2", isSelected && "bg-accent text-accent-foreground")}
+    >
+      <WorkspaceIcon company={company} />
+      <span className="min-w-0 flex-1 truncate">{company.name}</span>
+      <span className="inline-flex shrink-0 items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+        <Archive className="size-3" />
+        只读
+      </span>
+      <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+        {company.issuePrefix}
+      </span>
+      {isSelected ? <Check className="size-4 text-muted-foreground" /> : null}
+    </DropdownMenuItem>
+  );
+}
+
 export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompanyMenuProps = {}) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -149,6 +178,10 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
   );
   const sidebarCompanies = useMemo(
     () => companies.filter((company) => company.status !== "archived"),
+    [companies],
+  );
+  const archivedCompanies = useMemo(
+    () => companies.filter((company) => company.status === "archived"),
     [companies],
   );
   const { data: session } = useQuery({
@@ -184,8 +217,8 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
 
   function selectCompany(company: Company) {
     const pathPrefix = location.pathname.split("/")[1]?.toUpperCase();
-    const isCompanyRoute = sidebarCompanies.some((sidebarCompany) => (
-      sidebarCompany.issuePrefix.toUpperCase() === pathPrefix
+    const isCompanyRoute = companies.some((knownCompany) => (
+      knownCompany.issuePrefix.toUpperCase() === pathPrefix
     ));
     const shouldLeaveCurrentRoute = company.id !== selectedCompany?.id
       && (location.pathname.startsWith("/instance/") || isCompanyRoute);
@@ -275,7 +308,23 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
             </SortableContext>
           </DndContext>
           {orderedCompanies.length === 0 ? (
-            <DropdownMenuItem disabled>No workspaces</DropdownMenuItem>
+            <DropdownMenuItem disabled>暂无活跃公司</DropdownMenuItem>
+          ) : null}
+          {!isEditingOrder && archivedCompanies.length > 0 ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="px-2 py-1 text-[11px] font-semibold uppercase text-muted-foreground">
+                已归档公司（只读）
+              </DropdownMenuLabel>
+              {archivedCompanies.map((company) => (
+                <ArchivedCompanyItem
+                  key={company.id}
+                  company={company}
+                  isSelected={company.id === selectedCompany?.id}
+                  onSelect={selectCompany}
+                />
+              ))}
+            </>
           ) : null}
         </div>
         <DropdownMenuSeparator />

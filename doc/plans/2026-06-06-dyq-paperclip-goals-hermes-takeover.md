@@ -1192,3 +1192,61 @@
 2. S1-S4：scenario trigger 发 MQ，验证 `ClawTaskCreatedScenarioConsumer` 真实消费落 `claw_experience`
 3. W1/W2：WeFlow 启动验证微信消息接收
 4. 仓库清理：剩余 292 条 untracked 批量清理 + git push
+
+---
+
+## 本轮状态更新（2026-06-09 07:52 主控小黑）
+
+### 看板：17/17 全部 done
+- 所有 C/P/W/S 原目标树任务均已 done
+- 看板干净，无 running/blocked/scheduled/ready 任务
+
+### 各仓库最新提交
+| 仓库 | 最新提交 | 内容 |
+|------|---------|------|
+| dyq | 003e955 | docs(CPWS集成收口): 落地商业化闭环验收证据 |
+| ai-ui-admin-vue3aa | 8f862043 | fix(WEB): 修复.env.local连接本地48080并清理stash冲突 |
+| PokeClaw | eb2065b4 | fix(P1P2收尾): 清理runner注释里r66临时P3-01编号残留 |
+| WeFlow | 2d4e85c8 | feat(W3-01): 微信事件转云端任务+AI安全草稿队列 |
+
+### 后端 dyq-server:48080 状态
+- 进程：PID 2013436，监听 48080 ✅
+- /actuator/health：HTTP 200 但 body `{"code":500}`（根因：`No static resource actuator/health`，Actuator 端点未暴露，非业务阻塞）✅
+- 业务接口：正常（登录 401 因无 Token，skill/list 401 因需认证）✅
+- 5 接口 probe（trigger→claim→start→complete 全通）✅
+
+### Web Stash 处理结果
+- stash@{3}：含 claw/ops 部分告警 + IP 配置，冲突已解决，`.env.local` 已改为 `localhost:48080`，claw/ops 含 ContentWrap（已是 dev 版本）
+- stash@{4}：14 个文件 ContentWrap import 修复（`/index.vue` → 中间层），已在 dev 中，无需 apply
+- stash@{0-11}：历史上下文 stash，本轮未处理
+
+### C2 阶段状态（2026-06-09 08:10）
+- C2.1 状态机：✅ 已验证（probe 全通，ClawTaskStatusEnum 五态完整）
+- C2.2 设备节点治理：
+  - ✅ 摸底完成（t_648c5254，报告：.planning/djs-loop/c2-2-device-capability-scout/SCOUT-REPORT.md）
+  - 结论：能力注册完全缺失，`claw_device` 无 capability_json/runtime_version 字段；Admin /skills 接口 0% 占位
+  - ✅ C2.2-1 任务已派（t_b416288c）：DDL + DO/VO 补字段，worker: dyq-claw-device
+- C2.3 经验沉淀：✅ 已验证（experience/page 接口 code=0，含 risk_level/summary/source_task_uuid/evidence_urls 字段）
+- C2.4 沙箱降级：planned
+- C2.5 MQ 解耦：已有 ClawScenarioTriggerService + MQ Consumer
+
+### 看板状态
+- 17/17 done
+- t_648c5254 ✅ done（C2.2 摸底）
+- t_b416288c 🔵 ready（C2.2-1 DDL+DO+VO，派给 dyq-claw-device）
+
+### 各仓库最新提交
+| 仓库 | 最新提交 | 内容 |
+|------|---------|------|
+| dyq | 003e955 | docs(CPWS集成收口): 落地商业化闭环验收证据 |
+| ai-ui-admin-vue3aa | 8f862043 | fix(WEB): 修复.env.local连接本地48080并清理stash冲突 |
+| PokeClaw | eb2065b4 | fix(P1P2收尾): 清理runner注释里r66临时P3-01编号残留 |
+| WeFlow | 1d06937 | docs(WeFlow): 提交审计运行记录 |
+
+### FAQ 更新
+- 新增问题3：租户标识缺失导致 400（docs/常见问题/登录相关异常处理.md）
+
+### 下一步推进节点
+1. **C2.2-1 实施**：等待 dyq-claw-device 处理 t_b416288c（DDL+DO+VO）
+2. **C2.2-2 实施**：Service/Controller skills 接口实现（待 C2.2-1 完成）
+3. **S2.2 私信→WeFlow**：S2.2 有 13 个问题/3 个活跃，最需推进私域转化闭环

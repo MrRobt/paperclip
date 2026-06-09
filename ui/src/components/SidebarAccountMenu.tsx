@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen,
@@ -122,6 +122,16 @@ export function SidebarAccountMenu({
   const { theme, toggleTheme } = useTheme();
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
+  const [, forceUpdate] = useState(0);
+
+  // Subscribe to i18n language changes so the component re-renders when language is switched
+  useEffect(() => {
+    const handleLanguageChange = () => forceUpdate((n) => n + 1);
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => {
+      i18n.off("languageChanged", handleLanguageChange);
+    };
+  }, []);
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -223,7 +233,7 @@ export function SidebarAccountMenu({
                 external
                 onClick={() => setOpen(false)}
               />
-              <LanguageMenu currentLanguage={i18n.language} onSelect={() => setOpen(false)} />
+              <LanguageMenu currentLanguage={i18n.language} onCloseMenu={() => setOpen(false)} />
               <MenuAction
                 label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                 description="Toggle the app appearance."
@@ -306,7 +316,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
   fa: "فارسی",
 };
 
-function LanguageMenu({ currentLanguage, onSelect }: { currentLanguage: string; onSelect: () => void }) {
+function LanguageMenu({ currentLanguage, onCloseMenu }: { currentLanguage: string; onCloseMenu: () => void }) {
   const [open, setOpen] = useState(false);
 
   const currentLabel = LANGUAGE_LABELS[currentLanguage] ?? LANGUAGE_LABELS[currentLanguage.split("-")[0]] ?? currentLanguage;
@@ -341,9 +351,11 @@ function LanguageMenu({ currentLanguage, onSelect }: { currentLanguage: string; 
                 isActive && "bg-accent font-medium",
               )}
               onClick={() => {
-                void changeLanguage(locale);
-                setOpen(false);
-                onSelect();
+                changeLanguage(locale);
+                setTimeout(() => {
+                  setOpen(false);
+                  onCloseMenu();
+                }, 50);
               }}
             >
               <span className={cn("flex-1", isActive ? "text-foreground" : "text-muted-foreground")}>
