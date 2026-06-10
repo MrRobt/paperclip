@@ -692,7 +692,14 @@
       "idx": 98,
       "version": "7",
       "when": 1780986319349,
-      "tag": "0098_add_task_decomposition_metadata",
+      "tag": "0098_add_legion_git_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1780986319349,
+      "tag": "0099_add_task_decomposition_metadata",
       "breakpoints": true
     }
   ]
