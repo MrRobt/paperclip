@@ -54,5 +54,160 @@
   "settings": {
     "language": "Language",
     "languageDescription": "Select interface display language"
+  },
+  "orchestrator": {
+    "title": "Orchestrator",
+    "subtitle": "Goal tree, task dependencies, file locks and dispatch decisions at a glance",
+    "tick": "Run a tick",
+    "ticking": "Running...",
+    "noCompanySelected": "Select a company first",
+    "selectCompanyFirst": "Pick a company before running the orchestrator",
+    "recentRuns": "Recent runs",
+    "recentRunsSubtitle": "Input snapshot and decision summary per tick",
+    "noRunsYet": "No runs yet. Click the button at the top right to trigger one.",
+    "dailyReport": "Daily Report",
+    "dailyReportSubtitle": "Today's decisions, dispatches and file-lock changes",
+    "dailyReportEmpty": "No daily report yet. Run a tick to generate one.",
+    "copyMarkdown": "Copy Markdown",
+    "chartsTitle": "Historical Charts",
+    "chartsSubtitle": "30-day trend, section coverage, daily report presence and recent latency",
+    "dailyTicks": "Daily Tick Count",
+    "dailyTicksSubtitle": "Total / successful / failed",
+    "sectionCoverage": "Section Coverage",
+    "sectionCoverageSubtitle": "% of runs where each section is non-empty",
+    "dailyReportCoverage": "Daily Report Coverage",
+    "dailyReportCoverageSubtitle": "Days with a daily report vs days with runs",
+    "recentDurations": "Recent Run Durations",
+    "recentDurationsSubtitle": "Histogram of last 50 runs"
+  },
+  "fileLocks": {
+    "title": "File Locks",
+    "subtitle": "Each agent task must declare and acquire its file paths before editing",
+    "noCompanySelected": "Select a company first",
+    "filterTask": "Task ID",
+    "filterFile": "File path",
+    "taskIdPlaceholder": "task_xxx",
+    "filePathPlaceholder": "src/foo.ts",
+    "clearFilters": "Clear filters",
+    "empty": "No active locks",
+    "conflict": "Conflict",
+    "holders": "{{count}} holder(s)",
+    "releaseSucceeded": "Released",
+    "releaseFailed": "Release failed",
+    "releaseCount": "Released {{count}} lock(s)"
+  },
+  "projectContext": {
+    "noCompanySelected": "Select a company first",
+    "emptyTitle": "Project memory not initialised",
+    "emptyDescription": "Run an orchestrator tick or edit context to populate this view."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "noAgents": "You don't have any agents yet.",
+    "createAgent": "Create one now",
+    "agentsEnabled": "Agents enabled",
+    "tasksInProgress": "Tasks in progress",
+    "monthSpend": "Spend this month",
+    "pendingApprovals": "Pending approvals",
+    "awaitingReview": "Awaiting committee review",
+    "unlimitedBudget": "Unlimited budget",
+    "runActivity": "Run activity",
+    "issuesByPriority": "Issues by priority",
+    "issuesByStatus": "Issues by status",
+    "successRate": "Success rate",
+    "last14Days": "Last 14 days",
+    "recentActivity": "Recent activity",
+    "recentTasks": "Recent tasks",
+    "noTasks": "No tasks yet.",
+    "noRecentRuns": "No recent agent runs.",
+    "noRecentIssues": "No recent issues.",
+    "activeBudgetIncident": "active budget incident(s)",
+    "pendingBudgetApprovals": "pending budget approval(s)",
+    "agentsPaused": "agent(s) paused",
+    "projectsPaused": "project(s) paused",
+    "openBudgets": "View budgets",
+    "welcome": "Welcome to Paperclip. Create your first company and agent to start automating work.",
+    "selectCompany": "Create or select a company to view the dashboard."
+  },
+  "activity": {
+    "noActivity": "No activity yet.",
+    "selectCompany": "Select a company to view activity.",
+    "boardCreated": "Board created on"
+  },
+  "agents": {
+    "selectCompany": "Select a company to view agents."
+  },
+  "goals": {
+    "selectCompany": "Select a company to view goals."
+  },
+  "costs": {
+    "selectCompany": "Select a company to view costs."
+  },
+  "skills": {
+    "selectCompany": "Select a company to manage skills.",
+    "selectCatalog": "Select a catalog skill to inspect."
+  },
+  "nav": {
+    "issues": "Issues",
+    "routines": "Routines",
+    "goals": "Goals",
+    "legionTasks": "Legion Tasks",
+    "projects": "Projects",
+    "agents": "Agents",
+    "company": "Company",
+    "teamHealth": "Team Health",
+    "skills": "Skills",
+    "costs": "Costs",
+    "activity": "Activity",
+    "settings": "Settings",
+    "workspaces": "Workspaces"
+  },
+  "action": {
+    "newIssue": "New Issue",
+    "getStarted": "Get Started",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "save": "Save",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "details": "Details",
+    "advanced": "Advanced",
+    "basic": "Basic",
+    "restore": "Restore"
+  },
+  "agent": {
+    "session": "Session",
+    "mode": "Mode",
+    "managed": "Managed",
+    "external": "External",
+    "runHeartbeat": "Send Heartbeat",
+    "duplicate": "Duplicate Agent",
+    "resetSessions": "Reset Sessions",
+    "terminate": "Terminate"
+  },
+  "adapter": {
+    "localPath": "Install from local path",
+    "npm": "Install from npm",
+    "reload": "Reload adapter (hot swap)",
+    "remove": "Remove adapter",
+    "install": "Install adapter"
+  },
+  "status": {
+    "alpha": "Alpha",
+    "open": "Open",
+    "blocked": "Blocked",
+    "running": "Running",
+    "paused": "Paused",
+    "errors": "Errors",
+    "done": "Done",
+    "failed": "Failed"
+  },
+  "config": {
+    "revisions": "Config revisions"
   }
 }

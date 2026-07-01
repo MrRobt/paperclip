@@ -97,6 +97,9 @@ export function registerSkillProposeCommands(program: Command): void {
               proposedByKind: "human",
             },
           );
+          if (!response) {
+            throw new Error("No proposal response returned by server");
+          }
           if (ctx.json) {
             printOutput(response, { json: true });
             return;
@@ -155,6 +158,9 @@ export function registerSkillProposeCommands(program: Command): void {
               apiPath`/api/skill-proposals/${opts.id}/${action}`,
               { note: opts.note ?? null },
             );
+            if (!updated) {
+              throw new Error("No proposal decision response returned by server");
+            }
             if (ctx.json) {
               printOutput(updated, { json: true });
               return;

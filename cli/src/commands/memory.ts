@@ -100,6 +100,9 @@ export function registerMemoryCommands(program: Command): void {
         apiPath`/api/companies/${ctx.companyId}/memory/postmortems`,
         body,
       );
+      if (!record) {
+        throw new Error("No postmortem record returned by server");
+      }
       if (ctx.json) {
         printOutput(record, { json: true });
         return;

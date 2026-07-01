@@ -73,6 +73,9 @@ export function registerVerifyCommand(program: Command): void {
             skipLlmSummary: opts.skipLlmSummary,
           },
         );
+        if (!response) {
+          throw new Error("No verify response returned by server");
+        }
         if (ctx.json) {
           printOutput(response, { json: true });
           return;

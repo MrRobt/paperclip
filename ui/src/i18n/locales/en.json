@@ -100,5 +100,114 @@
   "settings": {
     "language": "Language",
     "languageDescription": "Select interface display language"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "noAgents": "You don't have any agents yet.",
+    "createAgent": "Create one now",
+    "agentsEnabled": "Agents enabled",
+    "tasksInProgress": "Tasks in progress",
+    "monthSpend": "Spend this month",
+    "pendingApprovals": "Pending approvals",
+    "awaitingReview": "Awaiting committee review",
+    "unlimitedBudget": "Unlimited budget",
+    "runActivity": "Run activity",
+    "issuesByPriority": "Issues by priority",
+    "issuesByStatus": "Issues by status",
+    "successRate": "Success rate",
+    "last14Days": "Last 14 days",
+    "recentActivity": "Recent activity",
+    "recentTasks": "Recent tasks",
+    "noTasks": "No tasks yet.",
+    "noRecentRuns": "No recent agent runs.",
+    "noRecentIssues": "No recent issues.",
+    "activeBudgetIncident": "active budget incident(s)",
+    "pendingBudgetApprovals": "pending budget approval(s)",
+    "agentsPaused": "agent(s) paused",
+    "projectsPaused": "project(s) paused",
+    "openBudgets": "View budgets",
+    "welcome": "Welcome to Paperclip. Create your first company and agent to start automating work.",
+    "selectCompany": "Create or select a company to view the dashboard."
+  },
+  "activity": {
+    "noActivity": "No activity yet.",
+    "selectCompany": "Select a company to view activity.",
+    "boardCreated": "Board created on"
+  },
+  "agents": {
+    "selectCompany": "Select a company to view agents."
+  },
+  "goals": {
+    "selectCompany": "Select a company to view goals."
+  },
+  "costs": {
+    "selectCompany": "Select a company to view costs."
+  },
+  "skills": {
+    "selectCompany": "Select a company to manage skills.",
+    "selectCatalog": "Select a catalog skill to inspect."
+  },
+  "nav": {
+    "issues": "Issues",
+    "routines": "Routines",
+    "goals": "Goals",
+    "legionTasks": "Legion Tasks",
+    "projects": "Projects",
+    "agents": "Agents",
+    "company": "Company",
+    "teamHealth": "Team Health",
+    "skills": "Skills",
+    "costs": "Costs",
+    "activity": "Activity",
+    "settings": "Settings",
+    "workspaces": "Workspaces"
+  },
+  "action": {
+    "newIssue": "New Issue",
+    "getStarted": "Get Started",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "save": "Save",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "details": "Details",
+    "advanced": "Advanced",
+    "basic": "Basic",
+    "restore": "Restore"
+  },
+  "agent": {
+    "session": "Session",
+    "mode": "Mode",
+    "managed": "Managed",
+    "external": "External",
+    "runHeartbeat": "Send Heartbeat",
+    "duplicate": "Duplicate Agent",
+    "resetSessions": "Reset Sessions",
+    "terminate": "Terminate"
+  },
+  "adapter": {
+    "localPath": "Install from local path",
+    "npm": "Install from npm",
+    "reload": "Reload adapter (hot swap)",
+    "remove": "Remove adapter",
+    "install": "Install adapter"
+  },
+  "status": {
+    "alpha": "Alpha",
+    "open": "Open",
+    "blocked": "Blocked",
+    "running": "Running",
+    "paused": "Paused",
+    "errors": "Errors",
+    "done": "Done",
+    "failed": "Failed"
+  },
+  "config": {
+    "revisions": "Config revisions"
   }
 }

@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { DeliveryControlPlanePage } from "./DeliveryControlPlanePage";
 
 const mockApi = vi.hoisted(() => ({
@@ -22,7 +23,12 @@ const mockCompanyState = vi.hoisted(() => ({ selectedCompanyId: "company-1" as s
 
 vi.mock("@/api/deliveryControlPlane", () => ({ deliveryControlPlaneApi: mockApi }));
 vi.mock("@/context/BreadcrumbContext", () => ({ useBreadcrumbs: () => ({ setBreadcrumbs: mockSetBreadcrumbs }) }));
-vi.mock("@/context/CompanyContext", () => ({ useCompany: () => ({ selectedCompanyId: mockCompanyState.selectedCompanyId }) }));
+vi.mock("@/context/CompanyContext", () => ({
+  useCompany: () => ({ selectedCompanyId: mockCompanyState.selectedCompanyId }),
+  // MarkdownBody reads company prefixes via the non-throwing variant; return
+  // null so it renders without a full CompanyProvider.
+  useOptionalCompany: () => null,
+}));
 vi.mock("@/lib/router", () => ({
   Link: ({ children, to, className }: { children: React.ReactNode; to: string; className?: string }) => <a href={to} className={className}>{children}</a>,
 }));
@@ -104,7 +110,7 @@ describe("DeliveryControlPlanePage", () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
     await act(async () => {
-      root.render(<QueryClientProvider client={queryClient}><DeliveryControlPlanePage /></QueryClientProvider>);
+      root.render(<QueryClientProvider client={queryClient}><ThemeProvider><DeliveryControlPlanePage /></ThemeProvider></QueryClientProvider>);
     });
     await flushReact();
     await flushReact();
