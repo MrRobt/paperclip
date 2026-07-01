@@ -701,6 +701,97 @@
       "when": 1780986319349,
       "tag": "0099_add_task_decomposition_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1781591119350,
+      "tag": "0100_verification_spec_and_task_verifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1781591119351,
+      "tag": "0101_legion_ci_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1781591119352,
+      "tag": "0102_pr_check_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1781591119353,
+      "tag": "0103_task_postmortems",
+      "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "7",
+      "when": 1781591119354,
+      "tag": "0104_skill_proposals",
+      "breakpoints": true
+    },
+    {
+      "idx": 112,
+      "version": "7",
+      "when": 1782883200000,
+      "tag": "0112_phases",
+      "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1782883200001,
+      "tag": "0113_tasks_structured_template",
+      "breakpoints": true
+    },
+    {
+      "idx": 114,
+      "version": "7",
+      "when": 1782883200002,
+      "tag": "0114_file_locks",
+      "breakpoints": true
+    },
+    {
+      "idx": 115,
+      "version": "7",
+      "when": 1782883200003,
+      "tag": "0115_interface_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1782883200004,
+      "tag": "0116_project_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 117,
+      "version": "7",
+      "when": 1782883200005,
+      "tag": "0117_runtime_leases",
+      "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1782883200006,
+      "tag": "0118_orchestrator_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1782883200007,
+      "tag": "0119_environment_leases",
+      "breakpoints": true
     }
   ]
 }
