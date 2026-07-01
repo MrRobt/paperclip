@@ -15,6 +15,9 @@ import {
   ShieldCheck,
   Bot,
   Activity,
+  Brain,
+  Lock,
+  FileSearch,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
@@ -102,6 +105,9 @@ export function Sidebar() {
           <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           <SidebarNavItem to="legion/tasks" label="军团任务" icon={Bot} />
           <SidebarNavItem to="delivery-control-plane" label="交付控制台" icon={Activity} />
+          <SidebarNavItem to="/orchestrator" label="主控控制台" icon={Brain} />
+          <SidebarNavItem to="/file-locks" label="文件锁" icon={Lock} />
+          <SidebarNavItem to="/project-context" label="项目记忆" icon={FileSearch} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}

@@ -54,5 +54,41 @@
   "settings": {
     "language": "Language",
     "languageDescription": "Select interface display language"
+  },
+  "orchestrator": {
+    "title": "主控控制台",
+    "subtitle": "目標樹、任務依賴、檔案鎖與派發決策一覽",
+    "tick": "執行一 Tick",
+    "ticking": "執行中...",
+    "noCompanySelected": "請先選擇公司",
+    "selectCompanyFirst": "請先選擇公司再執行主控",
+    "recentRuns": "近期主控回合",
+    "recentRunsSubtitle": "每次 Tick 的輸入與決策摘要",
+    "noRunsYet": "尚未執行任何 Tick，點擊右上角按鈕觸發。",
+    "dailyReport": "主控日报",
+    "dailyReportSubtitle": "當日決策、派發與檔案鎖變更彙總",
+    "dailyReportEmpty": "尚未生成日報；先執行一次 Tick。",
+    "copyMarkdown": "複製 Markdown"
+  },
+  "fileLocks": {
+    "title": "檔案鎖",
+    "subtitle": "每個 Agent 任務在改檔案前必須先宣告並鎖住路徑",
+    "noCompanySelected": "請先選擇公司",
+    "filterTask": "任務 ID",
+    "filterFile": "檔案路徑",
+    "taskIdPlaceholder": "task_xxx",
+    "filePathPlaceholder": "src/foo.ts",
+    "clearFilters": "清除篩選",
+    "empty": "目前沒有活躍鎖",
+    "conflict": "衝突",
+    "holders": "{{count}} 個持有者",
+    "releaseSucceeded": "已釋放",
+    "releaseFailed": "釋放失敗",
+    "releaseCount": "釋放了 {{count}} 個鎖"
+  },
+  "projectContext": {
+    "noCompanySelected": "請先選擇公司",
+    "emptyTitle": "尚未建立專案記憶",
+    "emptyDescription": "執行一次 orchestrator Tick 或編輯上下文後，這裡會顯示內容。"
   }
 }

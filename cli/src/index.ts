@@ -40,6 +40,9 @@ import { registerRoutineApiCommands } from "./commands/client/routine-api.js";
 import { registerAdapterCommands } from "./commands/client/adapter.js";
 import { registerAssetCommands } from "./commands/client/asset.js";
 import { registerSkillCommands } from "./commands/client/skill.js";
+import { registerVerifyCommand } from "./commands/verify.js";
+import { registerSkillProposeCommands } from "./commands/skill-propose.js";
+import { registerMemoryCommands } from "./commands/memory.js";
 import { cliVersion } from "./version.js";
 
 const program = new Command();
@@ -183,6 +186,9 @@ registerSkillsCommands(program);
 registerWorktreeCommands(program);
 registerEnvLabCommands(program);
 registerPluginCommands(program);
+registerVerifyCommand(program);
+registerSkillProposeCommands(program);
+registerMemoryCommands(program);
 
 const auth = program.command("auth").description("Authentication and bootstrap utilities");
 

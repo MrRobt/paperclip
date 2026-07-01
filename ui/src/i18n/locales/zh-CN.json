@@ -163,5 +163,41 @@
     "evidenceReady": "可复审证据",
     "evidenceMissing": "待补证据",
     "workProducts": "工作产物"
+  },
+  "orchestrator": {
+    "title": "主控控制台",
+    "subtitle": "目标树、任务依赖、文件锁与派发决策一屏总览",
+    "tick": "运行一 Tick",
+    "ticking": "运行中...",
+    "noCompanySelected": "请先选择公司",
+    "selectCompanyFirst": "请先选择公司",
+    "recentRuns": "最近的主控回合",
+    "recentRunsSubtitle": "每次 Tick 的输入与决策摘要",
+    "noRunsYet": "尚未运行任何 Tick，点击右上角运行。",
+    "dailyReport": "主控日报",
+    "dailyReportSubtitle": "当日决策、派发与文件锁变更汇总",
+    "dailyReportEmpty": "尚未生成日报；先运行一次 Tick。",
+    "copyMarkdown": "复制 Markdown"
+  },
+  "fileLocks": {
+    "title": "文件锁",
+    "subtitle": "每个 Agent 任务在改文件前必须先声明并锁住路径",
+    "noCompanySelected": "请先选择公司",
+    "filterTask": "任务 ID",
+    "filterFile": "文件路径",
+    "taskIdPlaceholder": "task_xxx",
+    "filePathPlaceholder": "src/foo.ts",
+    "clearFilters": "清空筛选",
+    "empty": "当前没有活跃锁",
+    "conflict": "冲突",
+    "holders": "{{count}} 个持有者",
+    "releaseSucceeded": "已释放",
+    "releaseFailed": "释放失败",
+    "releaseCount": "释放了 {{count}} 个锁"
+  },
+  "projectContext": {
+    "noCompanySelected": "请先选择公司",
+    "emptyTitle": "尚未建立项目记忆",
+    "emptyDescription": "运行一次 orchestrator Tick 或编辑上下文后这里会显示内容。"
   }
 }

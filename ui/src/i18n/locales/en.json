@@ -51,6 +51,42 @@
     "evidenceMissing": "Missing Evidence",
     "workProducts": "Work Products"
   },
+  "orchestrator": {
+    "title": "Orchestrator",
+    "subtitle": "Goal tree, task dependencies, file locks and dispatch decisions at a glance",
+    "tick": "Run a tick",
+    "ticking": "Running...",
+    "noCompanySelected": "Select a company first",
+    "selectCompanyFirst": "Pick a company before running the orchestrator",
+    "recentRuns": "Recent runs",
+    "recentRunsSubtitle": "Input snapshot and decision summary per tick",
+    "noRunsYet": "No runs yet. Click the button at the top right to trigger one.",
+    "dailyReport": "Daily Report",
+    "dailyReportSubtitle": "Today's decisions, dispatches and file-lock changes",
+    "dailyReportEmpty": "No daily report yet. Run a tick to generate one.",
+    "copyMarkdown": "Copy Markdown"
+  },
+  "fileLocks": {
+    "title": "File Locks",
+    "subtitle": "Each agent task must declare and acquire its file paths before editing",
+    "noCompanySelected": "Select a company first",
+    "filterTask": "Task ID",
+    "filterFile": "File path",
+    "taskIdPlaceholder": "task_xxx",
+    "filePathPlaceholder": "src/foo.ts",
+    "clearFilters": "Clear filters",
+    "empty": "No active locks",
+    "conflict": "Conflict",
+    "holders": "{{count}} holder(s)",
+    "releaseSucceeded": "Released",
+    "releaseFailed": "Release failed",
+    "releaseCount": "Released {{count}} lock(s)"
+  },
+  "projectContext": {
+    "noCompanySelected": "Select a company first",
+    "emptyTitle": "Project memory not initialised",
+    "emptyDescription": "Run an orchestrator tick or edit context to populate this view."
+  },
   "settings": {
     "language": "Language",
     "languageDescription": "Select interface display language"

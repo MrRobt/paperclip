@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@paperclipai/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-06-04T19:57:14.020Z",
+  "generatedAt": "2026-06-30T17:19:04.590Z",
   "skills": [
     {
       "id": "paperclipai:bundled:docs:doc-maintenance",
@@ -72,6 +72,79 @@
         }
       ],
       "contentHash": "sha256:88dc13560371fb364963782cb4f6eeb4090fcde92ee3774479428ed6b90e11c1"
+    },
+    {
+      "id": "paperclipai:bundled:paperclip-operations:legion-self-solving",
+      "key": "paperclipai/bundled/paperclip-operations/legion-self-solving",
+      "kind": "bundled",
+      "category": "paperclip-operations",
+      "slug": "legion-self-solving",
+      "name": "legion-self-solving",
+      "description": "Rules every Paperclip Legion agent must follow — fail-closed verification, structured postmortems, eval-gated self-modification, never assume \"looks correct\".",
+      "path": "catalog/bundled/paperclip-operations/legion-self-solving",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "engineer",
+        "qa",
+        "reviewer",
+        "pm"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "legion",
+        "self-solving",
+        "safety",
+        "verification"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 5847,
+          "sha256": "2b105c5c4ed8d972e175d60149904c45fc2c14d7c15c2b39e41a6b3685c34928"
+        }
+      ],
+      "contentHash": "sha256:0668ffd742ad7b3da9b07565039e274a738b5cf9cba1ef66c3df6a811e74fa53"
+    },
+    {
+      "id": "paperclipai:bundled:paperclip-operations:orchestrator-control-plane",
+      "key": "paperclipai/bundled/paperclip-operations/orchestrator-control-plane",
+      "kind": "bundled",
+      "category": "paperclip-operations",
+      "slug": "orchestrator-control-plane",
+      "name": "orchestrator-control-plane",
+      "description": "Rules every Paperclip orchestrator Agent must follow — maintain the goal tree, run the 8-state machine, enforce file locks, advance project_context, and emit the 9-section tick output. Companion to legion-self-solving (which governs executor Agents).",
+      "path": "catalog/bundled/paperclip-operations/orchestrator-control-plane",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "orchestrator",
+        "ceo"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "orchestrator",
+        "goal-tree",
+        "state-machine",
+        "file-locks",
+        "project-context"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 6893,
+          "sha256": "7494f111f210c9fe73ecac21936885052bedbd41deeb25ab0f4974328f81fe6b"
+        }
+      ],
+      "contentHash": "sha256:9e58e3a071fa212057738bffade02e13ed01b95ad22c22dba503dd9237c07a94"
     },
     {
       "id": "paperclipai:bundled:paperclip-operations:task-planning",
@@ -179,6 +252,41 @@
         }
       ],
       "contentHash": "sha256:0bd9a9fdc656d529e3f97c00cd504dcf72d3a4fecb8b0504ca2fe3e00d63287f"
+    },
+    {
+      "id": "paperclipai:bundled:quality:hard-verification-authoring",
+      "key": "paperclipai/bundled/quality/hard-verification-authoring",
+      "kind": "bundled",
+      "category": "quality",
+      "slug": "hard-verification-authoring",
+      "name": "hard-verification-authoring",
+      "description": "Author a structured verification_spec for a Paperclip Legion task so the verification-runner can execute real commands (tests, typecheck, lint, build, file-exists, http-probe, custom-exit-zero) and produce ground-truth evidence instead of LLM self-judgment.",
+      "path": "catalog/bundled/quality/hard-verification-authoring",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "engineer",
+        "qa",
+        "pm"
+      ],
+      "requires": [],
+      "tags": [
+        "verification",
+        "acceptance",
+        "automation",
+        "legion"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 5440,
+          "sha256": "fbf84b75e046798c07dcbe29fd5403443e1af8ea10fc68e30b04e5dce759fcc3"
+        }
+      ],
+      "contentHash": "sha256:be65c8f750a16cd984dbf0763cdbcf7ee340311c1fd59043b9794b5e6277d0bd"
     },
     {
       "id": "paperclipai:bundled:quality:qa-acceptance",

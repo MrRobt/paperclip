@@ -141,6 +141,18 @@ export async function validateCatalog(packageDir: string): Promise<BuildCatalogM
   }
 
   if (generatedText !== null) {
+    // Hard-fail on Phase 12 placeholder markers. Skills that were
+    // checked in with sentinel hashes (sizeBytes=0,
+    // sha256="REGENERATE_VIA_PNPM_BUILD_MANIFEST") must be regenerated
+    // before the manifest can pass validation. The build-catalog-manifest
+    // script computes real hashes; this guard prevents stale placeholders
+    // from silently shipping.
+    if (generatedText.includes("REGENERATE_VIA_PNPM_BUILD_MANIFEST")) {
+      errors.push(
+        "generated/catalog.json contains placeholder hashes (REGENERATE_VIA_PNPM_BUILD_MANIFEST). " +
+        "Run `pnpm --filter @paperclipai/skills-catalog build:manifest` to regenerate.",
+      );
+    }
     const expectedText = formatCatalogManifest(expected.manifest);
     if (generatedText !== expectedText) {
       errors.push("generated/catalog.json is stale. Run pnpm --filter @paperclipai/skills-catalog build:manifest.");

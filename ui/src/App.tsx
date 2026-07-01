@@ -9,6 +9,9 @@ import { Dashboard } from "./pages/Dashboard";
 import { DashboardLive } from "./pages/DashboardLive";
 import { TeamHealth } from "./pages/TeamHealth";
 import { DeliveryControlPlanePage } from "./pages/DeliveryControlPlanePage";
+import { OrchestratorControlPlanePage } from "./pages/OrchestratorControlPlane";
+import { FileLocksViewPage } from "./pages/FileLocksView";
+import { ProjectContextViewPage } from "./pages/ProjectContextView";
 import { LegionTasksPage } from "./pages/LegionTasks";
 import { LegionGoalDecomposePage } from "./pages/LegionGoalDecompose";
 import { Companies } from "./pages/Companies";
@@ -71,11 +74,14 @@ import { shouldRedirectCompanylessRouteToOnboarding } from "./lib/onboarding-rou
 function boardRoutes() {
   return (
     <>
-      <Route index element={<Navigate to="dashboard" replace />} />
+      <Route index element={<Navigate to="orchestrator" replace />} />
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="dashboard/live" element={<DashboardLive />} />
       <Route path="team-health" element={<TeamHealth />} />
       <Route path="delivery-control-plane" element={<DeliveryControlPlanePage />} />
+      <Route path="orchestrator" element={<OrchestratorControlPlanePage />} />
+      <Route path="file-locks" element={<FileLocksViewPage />} />
+      <Route path="project-context" element={<ProjectContextViewPage />} />
       <Route path="legion/tasks" element={<LegionTasksPage />} />
       <Route path="legion/goals/:goalId/decompose" element={<LegionGoalDecomposePage />} />
       <Route path="onboarding" element={<OnboardingRoutePage />} />
