@@ -22,7 +22,7 @@ export const orchestratorReportsApi = {
     if (opts?.runId) params.set("runId", opts.runId);
     const qs = params.toString();
     return api.get<OrchestratorDailyReport | null>(
-      `/api/orchestrator/reports/latest?companyId=${encodeURIComponent(companyId)}${qs ? `&${qs}` : ""}`,
+      `/orchestrator/reports/latest?companyId=${encodeURIComponent(companyId)}${qs ? `&${qs}` : ""}`,
     );
   },
 };

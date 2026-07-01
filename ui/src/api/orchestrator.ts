@@ -130,17 +130,17 @@ export const orchestratorApi = {
     orchestratorAgentId: string;
     triggerKind?: "manual" | "scheduled" | "event" | "escalation";
   }): Promise<OrchestratorTickOutput> {
-    return api.post<OrchestratorTickOutput>("/api/orchestrator/tick", input);
+    return api.post<OrchestratorTickOutput>("/orchestrator/tick", input);
   },
 
   async listRuns(companyId: string): Promise<OrchestratorRun[]> {
-    return api.get<OrchestratorRun[]>(`/api/orchestrator/runs?companyId=${encodeURIComponent(companyId)}`);
+    return api.get<OrchestratorRun[]>(`/orchestrator/runs?companyId=${encodeURIComponent(companyId)}`);
   },
 
   async getRunsTimeseries(companyId: string, window?: "7d" | "30d" | "90d"): Promise<OrchestratorRunsTimeseries> {
     const w = window ?? "30d";
     return api.get<OrchestratorRunsTimeseries>(
-      `/api/orchestrator/${encodeURIComponent(companyId)}/runs/timeseries?window=${w}`,
+      `/orchestrator/${encodeURIComponent(companyId)}/runs/timeseries?window=${w}`,
     );
   },
 
@@ -149,7 +149,7 @@ export const orchestratorApi = {
     if (filter?.taskId) params.set("taskId", filter.taskId);
     if (filter?.filePath) params.set("filePath", filter.filePath);
     const query = params.toString();
-    return api.get<FileLockRow[]>(`/api/file-locks${query ? `?${query}` : ""}`);
+    return api.get<FileLockRow[]>(`/file-locks${query ? `?${query}` : ""}`);
   },
 
   async acquireFileLocks(input: {
@@ -159,7 +159,7 @@ export const orchestratorApi = {
     lockType?: "exclusive" | "shared";
     expiryHours?: number;
   }): Promise<{ ok: boolean; acquired: string[]; conflicts?: string[]; expiresAt: string }> {
-    return api.post("/api/file-locks/acquire", input);
+    return api.post("/file-locks/acquire", input);
   },
 
   async releaseFileLocks(input: {
@@ -167,11 +167,11 @@ export const orchestratorApi = {
     files?: string[];
     reason?: string;
   }): Promise<{ released: string[] }> {
-    return api.post("/api/file-locks/release", input);
+    return api.post("/file-locks/release", input);
   },
 
   async getProjectContext(companyId: string): Promise<ProjectContextEntry | null> {
-    return api.get<ProjectContextEntry | null>(`/api/companies/${companyId}/project-context`);
+    return api.get<ProjectContextEntry | null>(`/companies/${companyId}/project-context`);
   },
 
   async putProjectContext(input: {
@@ -191,7 +191,7 @@ export const orchestratorApi = {
     updatedByAgentId?: string | null;
   }): Promise<ProjectContextEntry> {
     return api.put<ProjectContextEntry>(
-      `/api/companies/${input.companyId}/project-context`,
+      `/companies/${input.companyId}/project-context`,
       input,
     );
   },

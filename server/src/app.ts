@@ -17,6 +17,7 @@ import { projectRoutes } from "./routes/projects.js";
 import { issueRoutes } from "./routes/issues.js";
 import { issueTreeControlRoutes } from "./routes/issue-tree-control.js";
 import { controlPlaneRoutes } from "./routes/control-plane.js";
+import { orchestratorRoutes } from "./routes/orchestrator.js";
 import { commentDraftRoutes } from "./routes/comment-drafts.js";
 import { blockerPolicyRoutes } from "./routes/blocker-policies.js";
 import { modelHealthRoutes } from "./routes/model-health.js";
@@ -229,6 +230,7 @@ export async function createApp(
   }));
   api.use(issueTreeControlRoutes(db));
   api.use(controlPlaneRoutes(db));
+  api.use(orchestratorRoutes(db));
   api.use(commentDraftRoutes(db));
   api.use(blockerPolicyRoutes(db));
   api.use(modelHealthRoutes(db));
