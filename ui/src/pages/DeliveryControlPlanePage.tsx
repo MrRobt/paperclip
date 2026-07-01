@@ -5,6 +5,7 @@ import { Link } from "@/lib/router";
 import { Button } from "../components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { MarkdownView } from "../components/MarkdownView";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { useTranslation } from "@/i18n";
@@ -268,7 +269,7 @@ function DraftQueue({ drafts, onReplay }: { drafts: CommentDraft[]; onReplay: (d
               </div>
               <Button size="sm" variant="outline" onClick={() => onReplay(draft.id)}>{t("deliveryControlPlane.replayDraft")}</Button>
             </div>
-            <p className="mt-2 line-clamp-3 text-muted-foreground">{draft.body}</p>
+            <MarkdownView source={draft.body} className="mt-2 line-clamp-3 text-muted-foreground" />
           </div>
         ))}
       </div>

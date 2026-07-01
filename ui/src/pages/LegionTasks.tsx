@@ -5,6 +5,7 @@ import { legionApi, type LegionTask, type LegionHealth } from "@/api/legion";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/EmptyState";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { MarkdownView } from "@/components/MarkdownView";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useTranslation } from "@/i18n";
@@ -160,7 +161,7 @@ export function LegionTasksPage() {
                 <td className="px-4 py-2 text-muted-foreground">{idx + 1}</td>
                 <td className="px-4 py-2">
                   <div className="font-medium">{task.title}</div>
-                  <div className="text-xs text-muted-foreground truncate max-w-xs">{task.description}</div>
+                  <MarkdownView source={task.description ?? ""} className="text-xs text-muted-foreground truncate max-w-xs" />
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex flex-wrap gap-1">

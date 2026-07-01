@@ -6,6 +6,7 @@ import { legionApi, type LegionTask } from "@/api/legion";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/EmptyState";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { MarkdownView } from "@/components/MarkdownView";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useTranslation } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -136,7 +137,7 @@ export function LegionGoalDecomposePage() {
                   <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0", statusDot(task.status), "text-white")}>{idx + 1}</span>
                   <div>
                     <div className="font-medium">{task.title}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{task.description}</div>
+                    <MarkdownView source={task.description ?? ""} className="text-xs text-muted-foreground mt-1" />
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {parseSkills(task.requiredSkills).map(s => (
                         <span key={s} className="inline-flex rounded border border-border bg-muted px-1.5 py-0.5 text-xs">{s}</span>
