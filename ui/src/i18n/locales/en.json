@@ -64,7 +64,17 @@
     "dailyReport": "Daily Report",
     "dailyReportSubtitle": "Today's decisions, dispatches and file-lock changes",
     "dailyReportEmpty": "No daily report yet. Run a tick to generate one.",
-    "copyMarkdown": "Copy Markdown"
+    "copyMarkdown": "Copy Markdown",
+    "chartsTitle": "Historical Charts",
+    "chartsSubtitle": "30-day trend, section coverage, daily report presence and recent latency",
+    "dailyTicks": "Daily Tick Count",
+    "dailyTicksSubtitle": "Total / successful / failed",
+    "sectionCoverage": "Section Coverage",
+    "sectionCoverageSubtitle": "% of runs where each section is non-empty",
+    "dailyReportCoverage": "Daily Report Coverage",
+    "dailyReportCoverageSubtitle": "Days with a daily report vs days with runs",
+    "recentDurations": "Recent Run Durations",
+    "recentDurationsSubtitle": "Histogram of last 50 runs"
   },
   "fileLocks": {
     "title": "File Locks",

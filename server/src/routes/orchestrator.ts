@@ -6,7 +6,7 @@
  */
 
 import { Router } from "express";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import {
   fileLocks,
@@ -63,6 +63,132 @@ export function orchestratorRoutes(db: Db): Router {
     } catch (err) {
       console.error("orchestrator runs error:", err);
       res.status(500).json({ error: err instanceof Error ? err.message : "failed to list runs" });
+    }
+  });
+
+  /**
+   * Phase 30 — historical timeseries for the orchestrator control plane charts.
+   * Returns daily tick counts, section coverage, daily-report presence, and
+   * recent run durations for a given company.
+   */
+  router.get("/orchestrator/:companyId/runs/timeseries", async (req, res) => {
+    try {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+
+      // window: 30d | 7d | 90d (default 30d)
+      const windowDays = (() => {
+        const w = typeof req.query.window === "string" ? req.query.window : "30d";
+        if (w === "7d") return 7;
+        if (w === "90d") return 90;
+        return 30;
+      })();
+
+      const since = new Date();
+      since.setDate(since.getDate() - windowDays);
+
+      // 1) Daily ticks grouped by date + status
+      const dailyTicksRaw = await db.execute(sql`
+        SELECT
+          date_trunc('day', created_at AT TIME ZONE 'UTC')::date AS date,
+          status,
+          COUNT(*) AS count
+        FROM orchestrator_runs
+        WHERE company_id = ${companyId} AND created_at >= ${since.toISOString()}
+        GROUP BY 1, 2
+        ORDER BY 1 ASC
+      `) as unknown as Array<{ date: string; status: string; count: number }>;
+
+      // Build dailyTicks array — fill in zeros for missing date/status combos
+      const dateStatusMap = new Map<string, { total: number; successful: number; failed: number }>();
+      for (const row of dailyTicksRaw) {
+        const entry = dateStatusMap.get(row.date) ?? { total: 0, successful: 0, failed: 0 };
+        entry.total += Number(row.count);
+        if (row.status === "succeeded") entry.successful += Number(row.count);
+        else if (row.status === "failed") entry.failed += Number(row.count);
+        dateStatusMap.set(row.date, entry);
+      }
+      const dailyTicks = Array.from(dateStatusMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, v]) => ({ date, total: v.total, successful: v.successful, failed: v.failed }));
+
+      // 2) Section coverage — inspect the output sections across recent runs
+      const recentRuns = await db
+        .select({
+          decisions: orchestratorRuns.decisions,
+          dispatches: orchestratorRuns.dispatches,
+          fileLockActions: orchestratorRuns.fileLockActions,
+          contextSnapshot: orchestratorRuns.contextSnapshot,
+          dailyReport: orchestratorRuns.dailyReport,
+          summary: orchestratorRuns.summary,
+          errorMessage: orchestratorRuns.errorMessage,
+        })
+        .from(orchestratorRuns)
+        .where(and(
+          eq(orchestratorRuns.companyId, companyId),
+          gte(orchestratorRuns.createdAt, since),
+        ))
+        .orderBy(desc(orchestratorRuns.createdAt))
+        .limit(50);
+
+      const sectionCounts: Record<string, number> = {
+        decisions: 0,
+        dispatches: 0,
+        fileLockActions: 0,
+        contextSnapshot: 0,
+        dailyReport: 0,
+        summary: 0,
+        errorMessage: 0,
+      };
+      for (const run of recentRuns) {
+        if ((run.decisions as unknown[])?.length > 0) sectionCounts.decisions++;
+        if ((run.dispatches as unknown[])?.length > 0) sectionCounts.dispatches++;
+        if ((run.fileLockActions as unknown[])?.length > 0) sectionCounts.fileLockActions++;
+        if (run.contextSnapshot != null) sectionCounts.contextSnapshot++;
+        if (run.dailyReport) sectionCounts.dailyReport++;
+        if (run.summary) sectionCounts.summary++;
+        if (run.errorMessage) sectionCounts.errorMessage++;
+      }
+      const sectionCoverage: Record<string, number> = {};
+      const runCount = recentRuns.length || 1;
+      for (const [name, cnt] of Object.entries(sectionCounts)) {
+        sectionCoverage[name] = Math.round((cnt / runCount) * 100);
+      }
+
+      // 3) Daily report coverage — unique days with runs vs days with daily_report
+      const uniqueDaysWithRuns = new Set(dailyTicks.map(d => d.date)).size;
+      const uniqueDaysWithReport = new Set(
+        dailyTicksRaw.filter(r => r.status !== null).map(r => r.date)
+      ).size;
+      const dailyReportCoverage = { daysWithReport: uniqueDaysWithReport, daysTotal: uniqueDaysWithRuns };
+
+      // 4) Recent durations (last 50 runs) — derived from startedAt vs endedAt
+      const durationRows = await db.execute(sql`
+        SELECT
+          CASE
+            WHEN ended_at IS NOT NULL AND started_at IS NOT NULL
+            THEN EXTRACT(EPOCH FROM (ended_at - started_at)) * 1000
+            ELSE NULL
+          END AS duration_ms
+        FROM orchestrator_runs
+        WHERE company_id = ${companyId} AND created_at >= ${since.toISOString()} AND ended_at IS NOT NULL
+        ORDER BY created_at DESC
+        LIMIT 50
+      `) as unknown as Array<{ duration_ms: number | null }>;
+
+      const recentDurationsMs: number[] = durationRows
+        .map(r => r.duration_ms)
+        .filter((d): d is number => d != null);
+
+      res.json({
+        dailyTicks,
+        sectionCoverage,
+        dailyReportCoverage,
+        recentDurationsMs,
+      });
+    } catch (err) {
+      console.error("orchestrator timeseries error:", err);
+      res.status(500).json({ error: err instanceof Error ? err.message : "timeseries failed" });
     }
   });
 

@@ -68,7 +68,17 @@
     "dailyReport": "主控日报",
     "dailyReportSubtitle": "當日決策、派發與檔案鎖變更彙總",
     "dailyReportEmpty": "尚未生成日報；先執行一次 Tick。",
-    "copyMarkdown": "複製 Markdown"
+    "copyMarkdown": "複製 Markdown",
+    "chartsTitle": "歷史圖表",
+    "chartsSubtitle": "30 天趨勢、段落覆蓋、日報覆蓋率與近 50 次耗時",
+    "dailyTicks": "每日 Tick 數",
+    "dailyTicksSubtitle": "總計 / 成功 / 失敗",
+    "sectionCoverage": "段落覆蓋",
+    "sectionCoverageSubtitle": "近 N 次執行中各段落非空比例",
+    "dailyReportCoverage": "日報覆蓋率",
+    "dailyReportCoverageSubtitle": "有日報的天數 vs 有執行記錄的天數",
+    "recentDurations": "近 50 次耗時",
+    "recentDurationsSubtitle": "最近 50 次執行的耗時分布"
   },
   "fileLocks": {
     "title": "檔案鎖",

@@ -177,7 +177,17 @@
     "dailyReport": "主控日报",
     "dailyReportSubtitle": "当日决策、派发与文件锁变更汇总",
     "dailyReportEmpty": "尚未生成日报；先运行一次 Tick。",
-    "copyMarkdown": "复制 Markdown"
+    "copyMarkdown": "复制 Markdown",
+    "chartsTitle": "历史图表",
+    "chartsSubtitle": "30 天趋势、段落覆盖、日报覆盖率与近 50 次耗时",
+    "dailyTicks": "每日 Tick 数",
+    "dailyTicksSubtitle": "总计 / 成功 / 失败",
+    "sectionCoverage": "段落覆盖",
+    "sectionCoverageSubtitle": "近 N 次运行中各段落非空比例",
+    "dailyReportCoverage": "日报覆盖率",
+    "dailyReportCoverageSubtitle": "有日报的天数 vs 有运行的天数",
+    "recentDurations": "近 50 次耗时",
+    "recentDurationsSubtitle": "最近 50 次运行的耗时分布"
   },
   "fileLocks": {
     "title": "文件锁",

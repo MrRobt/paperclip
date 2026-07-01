@@ -30,6 +30,10 @@ import { queryKeys } from "../lib/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MarkdownView } from "../components/MarkdownView";
 import { orchestratorReportsApi, type OrchestratorDailyReport } from "../api/orchestratorReports";
+import { DailyTicksChart } from "../components/charts/DailyTicksChart";
+import { SectionCoverageChart } from "../components/charts/SectionCoverageChart";
+import { DailyReportCoverageCard } from "../components/charts/DailyReportCoverageCard";
+import { RecentDurationsChart } from "../components/charts/RecentDurationsChart";
 
 const STATUS_TONES: Record<string, string> = {
   not_started: "bg-slate-100 text-slate-700 border-slate-200",
@@ -44,6 +48,58 @@ const STATUS_TONES: Record<string, string> = {
 
 function statusTone(status: string): string {
   return STATUS_TONES[status] ?? "bg-slate-100 text-slate-700 border-slate-200";
+}
+
+// Phase 30 — historical charts section
+function TimeseriesChartsSection({ companyId }: { companyId: string }) {
+  const { t } = useTranslation();
+  const ts = useQuery({
+    queryKey: ["orchestrator-timeseries", companyId],
+    queryFn: () => orchestratorApi.getRunsTimeseries(companyId),
+    enabled: !!companyId,
+    refetchInterval: 60_000,
+  });
+
+  const data = ts.data;
+  const loading = ts.isLoading;
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold">{t("orchestrator.chartsTitle")}</h2>
+      <p className="text-sm text-muted-foreground">{t("orchestrator.chartsSubtitle")}</p>
+      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {loading ? (
+          <div className="col-span-2 rounded-lg border bg-card p-8 flex items-center justify-center">
+            <PageSkeleton variant="dashboard" />
+          </div>
+        ) : (
+          <>
+            <DailyTicksChart
+              data={data?.dailyTicks ?? []}
+              title={t("orchestrator.dailyTicks")}
+              subtitle={t("orchestrator.dailyTicksSubtitle")}
+            />
+            <SectionCoverageChart
+              data={data?.sectionCoverage ?? {}}
+              title={t("orchestrator.sectionCoverage")}
+              subtitle={t("orchestrator.sectionCoverageSubtitle")}
+            />
+            <DailyReportCoverageCard
+              daysWithReport={data?.dailyReportCoverage.daysWithReport ?? 0}
+              daysTotal={data?.dailyReportCoverage.daysTotal ?? 0}
+              title={t("orchestrator.dailyReportCoverage")}
+              subtitle={t("orchestrator.dailyReportCoverageSubtitle")}
+            />
+            <RecentDurationsChart
+              durationsMs={data?.recentDurationsMs ?? []}
+              title={t("orchestrator.recentDurations")}
+              subtitle={t("orchestrator.recentDurationsSubtitle")}
+            />
+          </>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export function OrchestratorControlPlanePage() {
@@ -145,6 +201,9 @@ export function OrchestratorControlPlanePage() {
       ) : tickOutput ? (
         <TickOutputView out={tickOutput} />
       ) : null}
+
+      {/* Phase 30 — historical charts */}
+      <TimeseriesChartsSection companyId={selectedCompanyId!} />
 
       <section>
         <h2 className="text-lg font-semibold">{t("orchestrator.recentRuns")}</h2>

@@ -85,6 +85,13 @@ export interface OrchestratorRun {
   errorMessage: string | null;
 }
 
+export interface OrchestratorRunsTimeseries {
+  dailyTicks: Array<{ date: string; total: number; successful: number; failed: number }>;
+  sectionCoverage: Record<string, number>;
+  dailyReportCoverage: { daysWithReport: number; daysTotal: number };
+  recentDurationsMs: number[];
+}
+
 export interface FileLockRow {
   id: string;
   companyId: string;
@@ -128,6 +135,13 @@ export const orchestratorApi = {
 
   async listRuns(companyId: string): Promise<OrchestratorRun[]> {
     return api.get<OrchestratorRun[]>(`/api/orchestrator/runs?companyId=${encodeURIComponent(companyId)}`);
+  },
+
+  async getRunsTimeseries(companyId: string, window?: "7d" | "30d" | "90d"): Promise<OrchestratorRunsTimeseries> {
+    const w = window ?? "30d";
+    return api.get<OrchestratorRunsTimeseries>(
+      `/api/orchestrator/${encodeURIComponent(companyId)}/runs/timeseries?window=${w}`,
+    );
   },
 
   async listFileLocks(filter?: { taskId?: string; filePath?: string }): Promise<FileLockRow[]> {
