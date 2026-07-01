@@ -21,6 +21,40 @@ async function git(repo: string, args: string[]): Promise<string> {
   return stdout.trim();
 }
 
+/**
+ * Merge the PR coordinates into the task's `verification_result` JSONB so
+ * downstream services (ci-watcher, merge) can find them without re-deriving
+ * from `gh`. Preserves any prior keys (e.g. `hardPassed`, `failureDigest`,
+ * `evidenceId`) so verification history is not lost.
+ */
+async function persistPrMetadata(
+  db: Db,
+  taskId: string,
+  metadata: { prUrl: string; prNumber: number; branchName: string },
+): Promise<void> {
+  const rows = await db.select({ verificationResult: tasks.verificationResult }).from(tasks).where(eq(tasks.id, taskId)).limit(1);
+  const existing = parseBlob(rows[0]?.verificationResult);
+  await db
+    .update(tasks)
+    .set({
+      verificationResult: JSON.stringify({ ...existing, ...metadata, prRecordedAt: new Date().toISOString() }),
+      updatedAt: new Date(),
+    })
+    .where(eq(tasks.id, taskId));
+}
+
+function parseBlob(raw: string | null | undefined): Record<string, unknown> {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
 export function legionGitService(db: Db) {
   const taskBranches = new Map<string, string>();
 
@@ -89,7 +123,15 @@ export function legionGitService(db: Db) {
         const output = await execFileAsync("gh", ["pr", "create", "--repo", config.repositoryPath, "--base", options.baseBranch, "--head", branchName, "--title", options.title, "--body", body], { maxBuffer: 1024 * 1024 });
         const prUrl = output.stdout.trim().split(/\s+/)[0] ?? "";
         const number = Number(prUrl.match(/\/(\d+)$/)?.[1] ?? 0);
-        return prUrl ? { prUrl, prNumber: number } : null;
+        if (!prUrl || !number) return null;
+        // Phase 9: record PR coordinates on the task so ci-watcher and
+        // merge services can find them without re-deriving from `gh`.
+        await persistPrMetadata(db, taskId, {
+          prUrl,
+          prNumber: number,
+          branchName,
+        });
+        return { prUrl, prNumber: number };
       } catch {
         return null;
       }

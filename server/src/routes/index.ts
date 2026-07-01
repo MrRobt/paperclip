@@ -21,3 +21,5 @@ export { accessRoutes } from "./access.js";
 export { instanceSettingsRoutes } from "./instance-settings.js";
 export { instanceDatabaseBackupRoutes } from "./instance-database-backups.js";
 export { cloudUpstreamRoutes } from "./cloud-upstreams.js";
+export { selfSolvingRoutes } from "./self-solving.js";
+export { orchestratorRoutes } from "./orchestrator.js";

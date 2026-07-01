@@ -1,6 +1,6 @@
 import { and, eq, lt, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { agents, goals, tasks } from "@paperclipai/db";
+import { agents, goals, tasks, type TaskStatus } from "@paperclipai/db";
 
 export type Task = typeof tasks.$inferSelect;
 
@@ -11,6 +11,45 @@ export interface LegionHealth {
 }
 
 interface CountRow { count: number }
+
+/**
+ * Phase 8 retry context. When a task is being re-dispatched after a
+ * verification failure, the prior failure digest (from
+ * `tasks.verificationResult.failureDigest`) is prepended to the
+ * description so the next attempt's heartbeat context surfaces it.
+ * Without this, retries repeat the same mistakes — see
+ * doc/plans/2026-06-30-self-solving-agent-team.md §3.4 / §4 Phase 8.
+ */
+interface VerificationResultBlob {
+  hardPassed?: boolean;
+  failureDigest?: string;
+  evidenceId?: string;
+  verifiedAt?: string;
+}
+
+function parseVerificationResult(raw: string | null | undefined): VerificationResultBlob | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as VerificationResultBlob;
+    return typeof parsed === "object" && parsed !== null ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+const RETRY_HEADER_PREFIX = "[prior failure context]";
+// Escape regex metacharacters so `[` and `]` in the prefix match literally.
+const RETRY_HEADER_REGEX = /^\[prior failure context\][\s\S]*?\[end prior failure context\]\n*/i;
+
+function buildRetryDescription(task: Task): string {
+  const blob = parseVerificationResult(task.verificationResult);
+  const digest = blob?.failureDigest?.trim();
+  if (!digest) return task.description ?? "";
+  const header = `${RETRY_HEADER_PREFIX}\n${digest}\n[end prior failure context]\n\n`;
+  // Strip any prior retry header so the description doesn't accumulate.
+  const cleaned = (task.description ?? "").replace(RETRY_HEADER_REGEX, "");
+  return `${header}${cleaned}`;
+}
 
 function warn(type: string, details: string): void {
   console.warn(`[LEGION-WARN] ${new Date().toISOString()} ${type}: ${details}`);
@@ -49,10 +88,16 @@ export function legionMonitorService(db: Db) {
         const attempts = task.attempts ?? 0;
         const maxAttempts = task.maxAttempts ?? 3;
         if (attempts + 1 >= maxAttempts) {
-          await db.update(tasks).set({ status: "failed", attempts: attempts + 1, updatedAt: new Date() }).where(eq(tasks.id, task.id));
+          await db.update(tasks).set({ status: "failed" as TaskStatus, attempts: attempts + 1, updatedAt: new Date() }).where(eq(tasks.id, task.id));
           maxAttemptsReached.push(task.id);
         } else {
-          await db.update(tasks).set({ status: "todo", assigneeAgentId: null, attempts: attempts + 1, updatedAt: new Date() }).where(eq(tasks.id, task.id));
+          await db.update(tasks).set({
+            status: "not_started" as TaskStatus,
+            assigneeAgentId: null,
+            attempts: attempts + 1,
+            description: buildRetryDescription(task),
+            updatedAt: new Date(),
+          }).where(eq(tasks.id, task.id));
           reScheduled.push(task.id);
         }
       }
@@ -67,7 +112,13 @@ export function legionMonitorService(db: Db) {
         const attempts = task.attempts ?? 0;
         const maxAttempts = task.maxAttempts ?? 3;
         if (attempts < maxAttempts) {
-          await db.update(tasks).set({ status: "todo", assigneeAgentId: null, attempts: attempts + 1, updatedAt: new Date() }).where(eq(tasks.id, task.id));
+          await db.update(tasks).set({
+            status: "not_started" as TaskStatus,
+            assigneeAgentId: null,
+            attempts: attempts + 1,
+            description: buildRetryDescription(task),
+            updatedAt: new Date(),
+          }).where(eq(tasks.id, task.id));
           retried.push(task.id);
         } else {
           maxAttemptsReached.push(task.id);
@@ -83,9 +134,9 @@ export function legionMonitorService(db: Db) {
         countWhere(db, goals, eq(goals.status, "completed")),
         countWhere(db, goals, eq(goals.status, "failed")),
         countWhere(db, tasks),
-        countWhere(db, tasks, eq(tasks.status, "todo")),
+        countWhere(db, tasks, eq(tasks.status, "not_started" as TaskStatus)),
         countWhere(db, tasks, eq(tasks.status, "in_progress")),
-        countWhere(db, tasks, eq(tasks.status, "done")),
+        countWhere(db, tasks, eq(tasks.status, "actual_passed" as TaskStatus)),
         countWhere(db, tasks, eq(tasks.status, "failed")),
         db.select().from(tasks).where(eq(tasks.status, "in_progress")),
       ]);

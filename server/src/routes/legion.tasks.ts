@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { desc, eq } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { agents, goals, tasks } from "@paperclipai/db";
+import { agents, goals, handoffs as handoffsTable, tasks, type TaskStatus, type TaskVerificationSummary } from "@paperclipai/db";
 import { assertCompanyAccess } from "./authz.js";
 import { handoffService } from "../services/handoff-service.js";
 import { callLlm } from "../services/llm-client.js";
+import { buildVerifySummaryPrompt, verifyTask } from "../services/verification-runner.js";
+import { goalProgressService } from "../services/goal-progress.js";
+import { legionMergeService } from "../services/legion-merge.js";
 
 const TERMINAL_STATUSES = new Set(["done", "failed", "blocked"]);
 
@@ -24,6 +27,8 @@ async function getTaskAndGoal(db: Db, taskId: string): Promise<{ task: TaskRow; 
 export function legionTaskRoutes(db: Db): Router {
   const router = Router();
   const handoffs = handoffService(db);
+  const goalProgress = goalProgressService(db);
+  const merge = legionMergeService(db);
 
   router.get("/legion/tasks", async (req, res) => {
     try {
@@ -75,7 +80,7 @@ export function legionTaskRoutes(db: Db): Router {
       const updated = await db
         .update(tasks)
         .set({
-          status,
+          status: status as TaskStatus,
           updatedAt: new Date(),
           completedAt: status === "done" ? new Date() : null,
         })
@@ -114,36 +119,112 @@ export function legionTaskRoutes(db: Db): Router {
       }
       assertCompanyAccess(req, row.goal.companyId);
 
-      const taskHandoffs = await handoffs.getTaskHandoffs(row.task.id);
-      const verification = await callLlm([
-        {
-          role: "system",
-          content: "You verify whether a task satisfies its acceptance criteria. Return concise JSON with passed:boolean, summary:string, issues:string[].",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            task: row.task,
-            verificationCriteria: row.task.verificationCriteria,
-            handoffs: taskHandoffs,
-          }),
-        },
-      ]);
+      if (!row.task.verificationSpec) {
+        res.status(422).json({
+          error:
+            "task has no structured verification_spec; refusing to verify on LLM self-judgment alone. Add a verification_spec via PATCH /tasks/:id or PATCH /api/legion/tasks/:id.",
+        });
+        return;
+      }
 
-      const updated = await db
-        .update(tasks)
-        .set({
-          verificationResult: verification.content,
-          updatedAt: new Date(),
-        })
-        .where(eq(tasks.id, row.task.id))
-        .returning()
-        .then((rows) => rows[0] ?? null);
+      const body = (req.body ?? {}) as {
+        worktreeCwd?: string;
+        notes?: string;
+        skipLlmSummary?: boolean;
+      };
 
-      res.json({ task: updated, verification });
+      // 1. Hard verification — exit codes / probe results are the source of truth.
+      const runner = await verifyTask(db, row.task.id, {
+        worktreeCwd: typeof body.worktreeCwd === "string" ? body.worktreeCwd : undefined,
+        notes: typeof body.notes === "string" ? body.notes : undefined,
+      });
+
+      // 2. Optional LLM summary — interpret only, NEVER override hard result.
+      let llmSummary: TaskVerificationSummary | null = null;
+      if (!body.skipLlmSummary) {
+        const { system, user } = buildVerifySummaryPrompt(runner.evidence);
+        try {
+          const llm = await callLlm([
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ]);
+          const parsed = parseLlmSummary(llm.content);
+          // Hard guarantee: LLM can never flip a fail into a pass.
+          llmSummary = {
+            passed: runner.passed,
+            summary: parsed?.summary ?? llm.content,
+            issues: runner.passed ? [] : parsed?.issues ?? [llm.content],
+          };
+        } catch (llmErr) {
+          console.warn(`LLM summarize failed for task ${row.task.id}; using runner result only:`, llmErr);
+          llmSummary = {
+            passed: runner.passed,
+            summary: runner.passed ? "Hard verification passed; LLM summary unavailable." : "Hard verification failed; LLM summary unavailable.",
+            issues: runner.passed
+              ? []
+              : runner.evidence.checks
+                  .filter((c) => !c.passed)
+                  .map((c) => `[${c.kind}${c.command ? `: ${c.command}` : c.path ? `: ${c.path}` : c.url ? `: ${c.url}` : ""}] ${c.stderrTail || `exit ${c.exitCode}`}`),
+          };
+        }
+      } else {
+        llmSummary = {
+          passed: runner.passed,
+          summary: runner.passed ? "Hard verification passed; LLM summary skipped." : "Hard verification failed; LLM summary skipped.",
+          issues: [],
+        };
+      }
+
+      // Phase 9: if hard verification passed, flip the task to `done`
+      // and update dependent handoffs to `consumed`. Then attempt the
+      // auto-merge (Phase 9 closes the PR loop) and advance the parent
+      // goal's status machine. The route never blocks on these — they
+      // are best-effort post-success hooks whose failures are logged.
+      if (runner.passed) {
+        try {
+          await db
+            .update(tasks)
+            .set({ status: "actual_passed" as TaskStatus, completedAt: new Date(), updatedAt: new Date() })
+            .where(eq(tasks.id, row.task.id));
+          // Mark any handoffs this task produced as `consumed` (this is
+          // what the task DAG gate checks for downstream consumers).
+          const producedHandoffs = await handoffs.getTaskHandoffs(row.task.id);
+          for (const h of producedHandoffs) {
+            if (h.status === "ready") {
+              await db
+                .update(handoffsTable)
+                .set({ status: "consumed", consumedAt: new Date() })
+                .where(eq(handoffsTable.id, h.id));
+            }
+          }
+          const mergeResult = await merge.attemptMerge(row.task.id);
+          if (mergeResult.outcome === "merged") {
+            console.info(`[legion] merged task ${row.task.id} via PR ${mergeResult.prUrl}`);
+          } else if (mergeResult.outcome === "blocked") {
+            console.warn(`[legion] task ${row.task.id} verified but merge blocked: ${mergeResult.reason}`);
+          }
+          await goalProgress.tickGoal(row.goal.id);
+        } catch (postErr) {
+          console.warn(`[legion] post-verify hook failed for ${row.task.id}:`, postErr);
+        }
+      } else {
+        // Mark verification_failed so monitor/checkRetriableFailures can
+        // route the next retry.
+        await db
+          .update(tasks)
+          .set({ status: "failed" as TaskStatus, updatedAt: new Date() })
+          .where(eq(tasks.id, row.task.id));
+      }
+
+      res.json({
+        passed: runner.passed,
+        evidence: runner.evidence,
+        llmSummary,
+        verificationId: runner.verificationId,
+      });
     } catch (err) {
       console.error("verify task error:", err);
-      res.status(500).json({ error: "failed to verify task" });
+      res.status(500).json({ error: err instanceof Error ? err.message : "failed to verify task" });
     }
   });
 
@@ -191,4 +272,27 @@ export function legionTaskRoutes(db: Db): Router {
   });
 
   return router;
+}
+
+/**
+ * Tolerant JSON parser for LLM summary responses. Accepts fenced JSON,
+ * bare JSON, and free-form fallback. Never throws — failure is encoded
+ * as `null` so the caller can still produce a usable summary from the
+ * raw text.
+ */
+function parseLlmSummary(content: string): { passed?: boolean; summary?: string; issues?: string[] } | null {
+  const trimmed = content.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  const candidate = fenced ? fenced[1]?.trim() : trimmed;
+  if (!candidate) return null;
+  try {
+    const obj = JSON.parse(candidate) as { passed?: unknown; summary?: unknown; issues?: unknown };
+    return {
+      passed: typeof obj.passed === "boolean" ? obj.passed : undefined,
+      summary: typeof obj.summary === "string" ? obj.summary : undefined,
+      issues: Array.isArray(obj.issues) ? obj.issues.filter((s): s is string => typeof s === "string") : undefined,
+    };
+  } catch {
+    return null;
+  }
 }

@@ -64,6 +64,7 @@ import { buildHostServices, flushPluginLogBuffer } from "./services/plugin-host-
 import { createPluginEventBus } from "./services/plugin-event-bus.js";
 import { setPluginEventBus } from "./services/activity-log.js";
 import { createPluginDevWatcher } from "./services/plugin-dev-watcher.js";
+import { startOrchestratorAutoTick } from "./services/orchestrator-auto-tick.js";
 import { createPluginHostServiceCleanup } from "./services/plugin-host-service-cleanup.js";
 import { pluginRegistryService } from "./services/plugin-registry.js";
 import { createHostClientHandlers } from "@paperclipai/plugin-sdk";
@@ -442,6 +443,18 @@ export async function createApp(
 
   jobCoordinator.start();
   scheduler.start();
+
+  // Phase 26: orchestrator auto-tick. Opt-in via env var so dev machines
+  // stay quiet by default. The handle exposes a stop() we wire into
+  // the shutdown chain.
+  const orchestratorAutoTick = startOrchestratorAutoTick(db);
+  if (orchestratorAutoTick) {
+    logger.info(
+      { intervalMs: orchestratorAutoTick.intervalMs },
+      "orchestrator auto-tick enabled (PAPERCLIP_ORCHESTRATOR_AUTO_TICK=1)",
+    );
+  }
+
   let feedbackExportShuttingDown = false;
   let feedbackExportTimer: ReturnType<typeof setInterval> | null = null;
   const disableFeedbackExportFlushes = () => {
@@ -502,6 +515,13 @@ export async function createApp(
     hostServiceCleanup.teardown();
   };
   app.locals.paperclipShutdown = shutdownAppServices;
+  if (orchestratorAutoTick) {
+    const previousShutdown = app.locals.paperclipShutdown;
+    app.locals.paperclipShutdown = () => {
+      orchestratorAutoTick.stop();
+      previousShutdown();
+    };
+  }
 
   process.once("exit", shutdownAppServices);
   process.once("beforeExit", () => {

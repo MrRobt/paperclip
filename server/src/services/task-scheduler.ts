@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { agents, tasks } from "@paperclipai/db";
+import { agents, handoffs, tasks, type TaskStatus } from "@paperclipai/db";
 
 export type Task = typeof tasks.$inferSelect;
 export type Agent = typeof agents.$inferSelect;
@@ -46,6 +46,7 @@ export function taskSchedulerService(db: Db): {
   tick(): Promise<DispatchResult>;
   findBestAgent(task: Task, agents: Agent[]): Promise<Agent | null>;
   areDependenciesMet(task: Task): Promise<boolean>;
+  areHandoffsReady(task: Task): Promise<{ ready: boolean; blocking: string[] }>;
 } {
   return {
     async tick(): Promise<DispatchResult> {
@@ -54,7 +55,7 @@ export function taskSchedulerService(db: Db): {
       const pendingTasks = await db
         .select()
         .from(tasks)
-        .where(eq(tasks.status, "todo"))
+        .where(eq(tasks.status, "not_started" as TaskStatus))
         .orderBy(desc(tasks.priority), asc(tasks.createdAt));
 
       const availableAgents = await db.select().from(agents);
@@ -64,6 +65,12 @@ export function taskSchedulerService(db: Db): {
           const dependenciesMet = await this.areDependenciesMet(task);
           if (!dependenciesMet) {
             result.skipped.push(`${task.id}: dependencies not met`);
+            continue;
+          }
+
+          const handoffGate = await this.areHandoffsReady(task);
+          if (!handoffGate.ready) {
+            result.skipped.push(`${task.id}: blocking on handoffs [${handoffGate.blocking.join(",")}]`);
             continue;
           }
 
@@ -77,10 +84,10 @@ export function taskSchedulerService(db: Db): {
             .update(tasks)
             .set({
               assigneeAgentId: bestAgent.id,
-              status: "in_progress",
+              status: "in_progress" as TaskStatus,
               updatedAt: new Date(),
             })
-            .where(and(eq(tasks.id, task.id), eq(tasks.status, "todo")))
+            .where(and(eq(tasks.id, task.id), eq(tasks.status, "not_started" as TaskStatus)))
             .returning({ id: tasks.id });
 
           if (updated[0]) {
@@ -134,7 +141,48 @@ export function taskSchedulerService(db: Db): {
         .where(inArray(tasks.id, dependencyIds));
 
       if (dependencyRows.length !== dependencyIds.length) return false;
-      return dependencyRows.every((dependency) => dependency.status === "done");
+      return dependencyRows.every((dependency) => dependency.status === "actual_passed" || dependency.status === "closed");
+    },
+
+    /**
+     * Phase 9: handoff gate. If any upstream task has produced a handoff
+     * that explicitly names THIS task as the consumer (via
+     * `handoffs.consumed_by`), the handoff must be `status='ready'` (i.e.
+     * the upstream task reached `done`) before this task can be
+     * dispatched. This prevents the bug from Phase 0–7 where two parallel
+     * tasks could start simultaneously and the consumer could begin work
+     * before the producer's artifact was on disk.
+     *
+     * Returns the list of handoff IDs that are still blocking, for
+     * diagnostic logging and so the UI can surface "waiting on X".
+     */
+    async areHandoffsReady(task: Task): Promise<{ ready: boolean; blocking: string[] }> {
+      const incomingHandoffs = await db
+        .select({ id: handoffs.id, status: handoffs.status })
+        .from(handoffs)
+        .where(and(eq(handoffs.consumedBy, task.id), eq(handoffs.status, "stale")));
+      // Stale handoffs mean an upstream task was re-dispatched and the
+      // previous artifact is no longer trustworthy. Block this consumer
+      // until the producer marks a fresh handoff `ready`.
+      const stale = incomingHandoffs.filter((h) => h.status === "stale");
+      const readyOrConsumed = await db
+        .select({ id: handoffs.id, status: handoffs.status })
+        .from(handoffs)
+        .where(eq(handoffs.consumedBy, task.id));
+      const blocking = [
+        ...stale.map((h) => `${h.id}:stale`),
+        ...readyOrConsumed
+          .filter((h) => h.status !== "ready" && h.status !== "consumed")
+          .map((h) => `${h.id}:${h.status}`),
+      ];
+      // If no handoffs target this task, fall back to: any handoff
+      // associated with the task that has status='stale' would still
+      // block. We treat "no handoffs" as ready (the producer may not have
+      // produced structured handoffs, in which case dependencies + DAG
+      // are the source of truth).
+      const total = readyOrConsumed.length + stale.length;
+      if (total === 0) return { ready: true, blocking: [] };
+      return { ready: blocking.length === 0, blocking };
     },
   };
 }
