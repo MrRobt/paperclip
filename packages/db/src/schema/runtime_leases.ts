@@ -40,7 +40,7 @@ export const runtimeLeases = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
     agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
-    taskId: uuid("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
+    taskId: text("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
     /** "local" = host process, "docker" = container, "k8s" = pod, "sandbox" = provider. */
     environment: text("environment").notNull(),
     /** Network port the agent is holding (nullable for headless tasks). */

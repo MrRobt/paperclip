@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS "runtime_leases" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"company_id" uuid NOT NULL,
 	"agent_id" uuid NOT NULL,
-	"task_id" uuid NOT NULL,
+	"task_id" text NOT NULL,
 	"environment" text NOT NULL,
 	"port" integer,
 	"pid" integer,

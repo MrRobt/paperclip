@@ -28,7 +28,7 @@ export const fileLocks = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
-    taskId: uuid("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
+    taskId: text("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
     agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
     filePath: text("file_path").notNull(),
     lockType: text("lock_type").$type<FileLockType>().notNull().default("exclusive"),

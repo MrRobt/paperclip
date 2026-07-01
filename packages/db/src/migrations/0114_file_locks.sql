@@ -24,7 +24,7 @@
 CREATE TABLE IF NOT EXISTS "file_locks" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"company_id" uuid NOT NULL,
-	"task_id" uuid NOT NULL,
+	"task_id" text NOT NULL,
 	"agent_id" uuid NOT NULL,
 	"file_path" text NOT NULL,
 	"lock_type" text NOT NULL DEFAULT 'exclusive',
