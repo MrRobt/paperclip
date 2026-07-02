@@ -18,6 +18,8 @@ export interface AcquireRequest {
   taskId: string;
   agentId: string;
   files: string[];
+  /** Optional companyId; if absent we resolve from the task row. */
+  companyId?: string;
   /** Exclusive by default; pass "shared" for read-only consumers. */
   lockType?: "exclusive" | "shared";
   /** Custom expiry in hours; default 24h. */
@@ -25,6 +27,8 @@ export interface AcquireRequest {
 }
 
 export interface AcquireResult {
+  /** True when neither request.companyId nor tasks.id matched req.taskId. */
+  taskNotFound?: boolean;
   acquired: string[];
   conflicts: string[];
   expiresAt: Date;
@@ -68,12 +72,16 @@ export function fileLockService(db: Db) {
       const lockType = req.lockType ?? "exclusive";
       const expiry = new Date(Date.now() + (req.expiryHours ?? DEFAULT_EXPIRY_HOURS) * 60 * 60_000);
 
-      const companyId = await resolveCompanyIdForTask(db, req.taskId);
+      // Resolve company: prefer explicit companyId; fall back to task lookup.
+      // If neither yields a company, signal taskNotFound so the route can
+      // return 400 instead of pretending the requested files are conflicts.
+      const companyId = req.companyId ?? (await resolveCompanyIdForTask(db, req.taskId));
       if (!companyId) {
         return {
           acquired: [],
-          conflicts: req.files,
+          conflicts: [],
           expiresAt: expiry,
+          taskNotFound: true,
         };
       }
 

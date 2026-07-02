@@ -218,7 +218,7 @@ export function orchestratorRoutes(db: Db): Router {
 
   router.post("/file-locks/acquire", async (req, res) => {
     try {
-      const body = req.body as { taskId: string; agentId: string; files: string[]; lockType?: "exclusive" | "shared"; expiryHours?: number };
+      const body = req.body as { taskId: string; agentId: string; files: string[]; companyId?: string; lockType?: "exclusive" | "shared"; expiryHours?: number };
       if (!body.taskId || !body.agentId || !Array.isArray(body.files)) {
         res.status(400).json({ error: "taskId, agentId, files[] required" });
         return;
@@ -227,9 +227,14 @@ export function orchestratorRoutes(db: Db): Router {
         taskId: body.taskId,
         agentId: body.agentId,
         files: body.files,
+        companyId: body.companyId,
         lockType: body.lockType,
         expiryHours: body.expiryHours,
       });
+      if (result.taskNotFound) {
+        res.status(400).json({ error: "task not found and no companyId provided" });
+        return;
+      }
       if (result.conflicts.length > 0) {
         res.status(409).json({ ok: false, acquired: result.acquired, conflicts: result.conflicts, expiresAt: result.expiresAt });
         return;
