@@ -293,7 +293,8 @@ export function orchestratorService(db: Db) {
       const runRow = await db
         .insert(orchestratorRuns)
         .values({
-          id: runId,
+          // id: omit — column is uuid with gen_random_uuid() default; passing
+          // a non-uuid string (e.g. "orch_run_…") fails with invalid uuid syntax.
           companyId: input.companyId,
           orchestratorAgentId: input.orchestratorAgentId,
           startedAt,

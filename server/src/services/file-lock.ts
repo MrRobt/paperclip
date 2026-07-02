@@ -169,15 +169,18 @@ export function fileLockService(db: Db) {
      * Sweep expired leases. Called from the orchestrator tick.
      */
     async sweepExpired(): Promise<{ swept: number }> {
-      const now = new Date();
+      // postgres-js doesn't auto-coerce Date; bind the ISO string explicitly.
+      // (Drizzle's lt(..., new Date()) throws ERR_INVALID_ARG_TYPE.)
+      const nowIso = new Date().toISOString();
       const expired = await db
         .select({ id: fileLocks.id })
         .from(fileLocks)
-        .where(and(isNull(fileLocks.releasedAt), sql`${fileLocks.expiresAt} < ${now}`));
+        .where(and(isNull(fileLocks.releasedAt), sql`${fileLocks.expiresAt} < ${nowIso}`));
       if (expired.length === 0) return { swept: 0 };
+      const releasedAt = new Date(nowIso);
       await db
         .update(fileLocks)
-        .set({ releasedAt: now, releaseReason: "expired", updatedAt: now })
+        .set({ releasedAt, releaseReason: "expired", updatedAt: releasedAt })
         .where(inArray(fileLocks.id, expired.map((e) => e.id)));
       return { swept: expired.length };
     },
