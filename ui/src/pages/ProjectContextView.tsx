@@ -11,13 +11,15 @@
 
 import { useTranslation } from "@/i18n";
 import { FileSearch } from "lucide-react";
+import { useState } from "react";
 import { useCompany } from "../context/CompanyContext";
 import { orchestratorApi, type ProjectContextEntry } from "../api/orchestrator";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { EmptyState } from "../components/EmptyState";
 import { MarkdownView } from "../components/MarkdownView";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "../lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function ProjectContextViewPage() {
   const { t } = useTranslation();
@@ -61,14 +63,83 @@ export function ProjectContextViewPage() {
 }
 
 function ProjectContextView({ ctx }: { ctx: ProjectContextEntry }) {
+  const { selectedCompanyId } = useCompany();
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [nextPriority, setNextPriority] = useState(ctx.nextPriority ?? "");
+  const [completedJson, setCompletedJson] = useState(JSON.stringify(ctx.completedFeatures ?? [], null, 2));
+  const [error, setError] = useState<string | null>(null);
+
+  const save = useMutation({
+    mutationFn: () => {
+      let completedFeatures: unknown = ctx.completedFeatures;
+      try {
+        if (completedJson.trim()) completedFeatures = JSON.parse(completedJson);
+      } catch {
+        throw new Error("completedFeatures must be valid JSON");
+      }
+      return orchestratorApi.putProjectContext({
+        companyId: ctx.companyId,
+        nextPriority: nextPriority || undefined,
+        completedFeatures,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["project-context", selectedCompanyId] });
+      setEditing(false);
+      setError(null);
+    },
+    onError: (e) => setError(e instanceof Error ? e.message : "save failed"),
+  });
+
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">{ctx.companyId}</h1>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Last updated {new Date(ctx.updatedAt).toLocaleString()}
-        </p>
+      <header className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{ctx.companyId}</h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Last updated {new Date(ctx.updatedAt).toLocaleString()}
+          </p>
+        </div>
+        {!editing && (
+          <Button onClick={() => { setNextPriority(ctx.nextPriority ?? ""); setCompletedJson(JSON.stringify(ctx.completedFeatures ?? [], null, 2)); setEditing(true); }}>
+            Edit
+          </Button>
+        )}
       </header>
+
+      {editing && (
+        <div className="rounded-lg border bg-card p-4 space-y-3">
+          <h3 className="text-sm font-semibold">Edit project context</h3>
+          <div>
+            <label className="text-sm font-medium">Next priority</label>
+            <input
+              value={nextPriority}
+              onChange={(e) => setNextPriority(e.target.value)}
+              className="mt-1 w-full rounded border bg-background px-3 py-2 text-sm"
+              placeholder="e.g. Build /file-locks UI"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Completed features (JSON array)</label>
+            <textarea
+              value={completedJson}
+              onChange={(e) => setCompletedJson(e.target.value)}
+              className="mt-1 w-full rounded border bg-background px-3 py-2 text-xs font-mono"
+              rows={6}
+            />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <div className="flex gap-2">
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+              {save.isPending ? "Saving…" : "Save"}
+            </Button>
+            <Button variant="outline" onClick={() => { setEditing(false); setError(null); }} disabled={save.isPending}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card title="Current focus">
