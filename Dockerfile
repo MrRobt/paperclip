@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.20
 FROM node:lts-trixie-slim AS base
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -47,6 +46,61 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
+# Temp workaround (DEMO): patch cursor-cloud out of source so the build
+# produces a clean dist AND the tsx-loaded source at runtime is clean.
+# (tsx prefers .ts over .js, so patching dist alone is insufficient.)
+# Remove this block once @paperclipai/adapter-cursor-cloud's @cursor+sdk
+# ajv ESM init is fixed upstream.
+RUN python3 <<'PYEOF'
+import sys
+def patch(p):
+    lines = open(p).read().split('\n')
+    n = len(lines)
+    to_comment = set()
+    # 1) cursor-cloud import blocks (single or multi-line)
+    i = 0
+    while i < n:
+        line = lines[i]
+        if 'from "@paperclipai/adapter-cursor-cloud' in line and ';' in line:
+            if line.lstrip().startswith('import '):
+                to_comment.add(i)
+                i += 1
+                continue
+            # multi-line: walk back to the opening "import {" line
+            j = i
+            while j > 0 and not lines[j].lstrip().startswith('import {'):
+                j -= 1
+            for k in range(j, i + 1):
+                to_comment.add(k)
+            i += 1
+        else:
+            i += 1
+    # 2) const cursorCloudAdapter / cursorCloudCLIAdapter block
+    i = 0
+    while i < n:
+        ls = lines[i].lstrip()
+        if ls.startswith('const cursorCloudAdapter') or ls.startswith('const cursorCloudCLIAdapter'):
+            j = i
+            while j < n and not lines[j].startswith('};'):
+                j += 1
+            for k in range(i, j + 1):
+                to_comment.add(k)
+            i = j + 1
+        else:
+            i += 1
+    # 3) array entry
+    for idx, line in enumerate(lines):
+        if line.strip() in ('cursorCloudAdapter,', 'cursorCloudCLIAdapter,'):
+            to_comment.add(idx)
+    for idx in sorted(to_comment):
+        if not lines[idx].lstrip().startswith('//'):
+            lines[idx] = '// DEMO ' + lines[idx]
+    open(p, 'w').write('\n'.join(lines))
+    print(f'patched {p}: {len(to_comment)} lines')
+
+for p in ['/app/server/src/adapters/registry.ts', '/app/cli/src/adapters/registry.ts']:
+    patch(p)
+PYEOF
 RUN pnpm --filter @paperclipai/ui build
 RUN pnpm --filter @paperclipai/plugin-sdk build
 RUN pnpm --filter @paperclipai/server build
@@ -57,6 +111,13 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 WORKDIR /app
 COPY --chown=node:node --from=build /app /app
+# Temp workaround (DEMO): remove cursor-cloud adapter until upstream
+# @paperclipai/adapter-cursor-cloud's @cursor+sdk ajv ESM init is fixed.
+# The build stage already patches the source so the compiled dist is clean.
+# We only need to remove the package files (so a stray require() can't find it).
+RUN rm -rf /app/packages/adapters/cursor-cloud \
+  && rm -rf /app/node_modules/.pnpm/@cursor+sdk* \
+  && find /app -path '*/node_modules/@cursor*' -prune -exec rm -rf {} + || true
 RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest opencode-ai \
   && apt-get update \
   && apt-get install -y --no-install-recommends openssh-client jq \
