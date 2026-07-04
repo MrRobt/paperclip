@@ -12,7 +12,7 @@
     "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/plugins/sandbox-providers/opensandbox"
   },
-  "type": "commonjs",
+  "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
