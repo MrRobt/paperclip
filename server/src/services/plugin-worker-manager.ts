@@ -18,10 +18,12 @@
  * @see PLUGIN_SPEC.md §13 — Host-Worker Protocol
  */
 
-import { fork, type ChildProcess } from "node:child_process";
+import { fork, spawn, type ChildProcess } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { createInterface, type Interface as ReadlineInterface } from "node:readline";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import path from "node:path";
 import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
 import {
   JSONRPC_VERSION,
@@ -721,19 +723,51 @@ export function createPluginWorkerHandle(
     const workerEnv: Record<string, string> = {
       ...options.env,
       PATH: process.env.PATH ?? "",
-      NODE_PATH: process.env.NODE_PATH ?? "",
+      NODE_PATH: [
+        process.env.NODE_PATH ?? "",
+        // plugin-sdk live in the root workspace (server-side import-only).
+        // sandbox-providers are excluded from the workspace, but the
+        // resolved plugin-sdk dist is reachable via this absolute NODE_PATH.
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../../plugins/sdk",
+        ),
+      ].filter(Boolean).join(path.delimiter),
       PAPERCLIP_PLUGIN_ID: pluginId,
       NODE_ENV: process.env.NODE_ENV ?? "production",
       TZ: process.env.TZ ?? "UTC",
     };
 
-    const child = fork(options.entrypointPath, [], {
-      stdio: ["pipe", "pipe", "pipe", "ipc"],
-      execArgv: options.execArgv ?? [],
-      env: workerEnv,
-      // Don't let the child keep the parent alive
-      detached: false,
-    });
+    // Spawn the worker via `node --import tsx` rather than fork() so we
+    // can hand the ESM loader a path it understands on Windows.
+    //
+    // Reason: `child_process.fork(modulePath)` invokes the child with
+    // `node <modulePath>` and on Windows the bare `D:\…` raw path trips
+    // the default ESM loader's protocol check
+    // (ERR_UNSUPPORTED_ESM_URL_SCHEME on 'd:'). `pathToFileURL` alone
+    // doesn't help — the spawned child still ends up parsing package.json
+    // paths that surface as raw `D:\` strings. Going through tsx's
+    // loader sidesteps both the protocol check and the symlink resolution
+    // that drops the `file://` scheme.
+    const tsxLoader = pathToFileURL(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "../../../cli/node_modules/tsx/dist/cli.mjs",
+      ),
+    ).href;
+    const child = spawn(
+      process.execPath,
+      [
+        `--import=${tsxLoader}`,
+        options.entrypointPath,
+      ],
+      {
+        stdio: ["pipe", "pipe", "pipe", "ipc"],
+        env: workerEnv,
+        // Don't let the child keep the parent alive
+        detached: false,
+      },
+    ) as unknown as ReturnType<typeof fork>;
 
     return child;
   }

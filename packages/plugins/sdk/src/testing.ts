@@ -1925,6 +1925,7 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
             permissions: { canCreateAgents: Boolean(declaration.permissions?.canCreateAgents) },
             lastHeartbeatAt: null,
             metadata: managedAgentMetadata(agentKey),
+            sandboxConfig: null,
             createdAt: now,
             updatedAt: now,
           };
@@ -1942,7 +1943,7 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
           ) ?? null;
           if (!agent) {
             const now = new Date();
-            agent = {
+            const created: Agent = {
               id: randomUUID(),
               companyId: cid,
               name: declaration.displayName,
@@ -1963,10 +1964,12 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
               permissions: { canCreateAgents: Boolean(declaration.permissions?.canCreateAgents) },
               lastHeartbeatAt: null,
               metadata: managedAgentMetadata(agentKey),
+              sandboxConfig: null,
               createdAt: now,
               updatedAt: now,
             };
-            agents.set(agent.id, agent);
+            agents.set(created.id, created);
+            agent = created;
           }
           const resolved = managedResolution(agentKey, cid, agent, "resolved");
           if (!resolved.agent) return resolved;

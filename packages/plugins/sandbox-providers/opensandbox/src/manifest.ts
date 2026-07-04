@@ -23,7 +23,7 @@ const manifest: PaperclipPluginManifestV1 = {
     "Provisions disposable sandboxes via the OpenSandbox control plane. Each agent gets an isolated environment, removing cross-agent interference and enabling reproducible runs.",
   author: "Paperclip",
   categories: ["automation"],
-  capabilities: ["environment.drivers.register", "tools.register"],
+  capabilities: ["environment.drivers.register"],
   entrypoints: {
     worker: "./dist/worker.js",
   },
