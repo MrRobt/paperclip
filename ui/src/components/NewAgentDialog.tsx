@@ -10,6 +10,8 @@ import { queryKeys } from "@/lib/queryKeys";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -230,6 +232,12 @@ export function NewAgentDialog() {
           mode === "invite" || mode === "prompt" ? "sm:max-w-2xl" : "sm:max-w-md",
         )}
       >
+        {/* Visually hidden title + description for screen readers — the visible
+            header is a minimal breadcrumb, but Radix still expects both nodes. */}
+        <DialogTitle className="sr-only">Add a new agent</DialogTitle>
+        <DialogDescription className="sr-only">
+          Hire a new agent into this company.
+        </DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <span className="text-sm text-muted-foreground">Add a new agent</span>

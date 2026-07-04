@@ -49,17 +49,60 @@ export function ProjectContextViewPage() {
   }
 
   if (!query.data) {
-    return (
-      <div className="p-6">
-        <EmptyState
-          icon={FileSearch}
-          message={t("projectContext.emptyTitle")}
-        />
-      </div>
-    );
+    return <ProjectContextEmpty companyId={selectedCompanyId} />;
   }
 
   return <ProjectContextView ctx={query.data} />;
+}
+
+function ProjectContextEmpty({ companyId }: { companyId: string }) {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  const seed = useMutation({
+    mutationFn: () =>
+      orchestratorApi.putProjectContext({
+        companyId,
+        nextPriority: "",
+        completedFeatures: [],
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["project-context", companyId] });
+    },
+  });
+
+  return (
+    <div className="p-6 space-y-4">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("projectContext.pageTitle", { defaultValue: "Project Memory" })}
+        </h1>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t("projectContext.subtitle", {
+            defaultValue:
+              "Long-term strategic memory shared by every agent in this company.",
+          })}
+        </p>
+      </header>
+      <EmptyState
+        icon={FileSearch}
+        message={t("projectContext.emptyTitle")}
+      />
+      <div className="flex gap-2">
+        <Button onClick={() => seed.mutate()} disabled={seed.isPending}>
+          {seed.isPending
+            ? t("projectContext.seeding", { defaultValue: "Creating…" })
+            : t("projectContext.seedCta", { defaultValue: "建立项目记忆" })}
+        </Button>
+        {seed.isError && (
+          <p className="self-center text-xs text-destructive">
+            {seed.error instanceof Error
+              ? seed.error.message
+              : "Failed to create project memory"}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ProjectContextView({ ctx }: { ctx: ProjectContextEntry }) {

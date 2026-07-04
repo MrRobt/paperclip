@@ -82,11 +82,12 @@ function boardRoutes() {
       <Route path="dashboard/live" element={<DashboardLive />} />
       <Route path="team-health" element={<TeamHealth />} />
       <Route path="delivery-control-plane" element={<DeliveryControlPlanePage />} />
+      {/* Prefix-aliased global pages — the canonical URL is the bare
+          `/orchestrator` etc. route mounted in the outer <Routes>, but these
+          also resolve when reached via `/VERA/orchestrator` for muscle memory. */}
       <Route path="orchestrator" element={<OrchestratorControlPlanePage />} />
       <Route path="file-locks" element={<FileLocksViewPage />} />
       <Route path="project-context" element={<ProjectContextViewPage />} />
-      <Route path="legion/tasks" element={<LegionTasksPage />} />
-      <Route path="legion/goals/:goalId/decompose" element={<LegionGoalDecomposePage />} />
       <Route path="onboarding" element={<OnboardingRoutePage />} />
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
@@ -324,6 +325,19 @@ export function App() {
             <Route path="adapters" element={<AdapterManager />} />
           </Route>
           <Route path="companies" element={<UnprefixedBoardRedirect />} />
+          {/* Global (company-prefix-less) routes — these have stable URLs across
+              all companies because the surface itself is shared. They are wrapped
+              in <Layout /> so the sidebar still renders, but they do NOT require
+              a `:companyPrefix` parameter. */}
+          <Route path="orchestrator" element={<Layout />}>
+            <Route index element={<OrchestratorControlPlanePage />} />
+          </Route>
+          <Route path="file-locks" element={<Layout />}>
+            <Route index element={<FileLocksViewPage />} />
+          </Route>
+          <Route path="project-context" element={<Layout />}>
+            <Route index element={<ProjectContextViewPage />} />
+          </Route>
           <Route path="issues" element={<UnprefixedBoardRedirect />} />
           <Route path="issues/:issueId" element={<UnprefixedBoardRedirect />} />
           <Route path="routines" element={<UnprefixedBoardRedirect />} />

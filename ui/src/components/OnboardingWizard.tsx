@@ -312,8 +312,27 @@ export function OnboardingWizard() {
   }
 
   function handleClose() {
-    reset();
-    closeOnboarding();
+    // If the wizard was abandoned after a company was already created
+    // (step 1 Next ran POST /api/companies) but before an agent was hired,
+    // the company would otherwise linger as an orphan — visible in the
+    // workspace switcher and reachable via its prefix. Clean it up so
+    // closing the wizard fully undoes the user's progress up to step 1.
+    const orphanedCompanyId = createdCompanyId;
+    const agentHired = Boolean(createdAgentId);
+    void (async () => {
+      if (orphanedCompanyId && !agentHired) {
+        try {
+          await companiesApi.remove(orphanedCompanyId);
+          queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+        } catch (err) {
+          // Best-effort cleanup. Surface as a non-blocking warning so the
+          // user can still manually archive the orphan from settings.
+          console.warn("Failed to remove orphaned onboarding company", err);
+        }
+      }
+      reset();
+      closeOnboarding();
+    })();
   }
 
   function buildAdapterConfig(): Record<string, unknown> {

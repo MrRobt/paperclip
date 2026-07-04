@@ -11,6 +11,30 @@ import {
   runChildProcess,
 } from "../utils.js";
 
+// Windows/POSIX builtins like `echo`, `dir`, `cd` are not standalone
+// executables — spawn() fails with ENOENT. When the bare command can't be
+// resolved, transparently re-run through the platform shell so users can
+// paste familiar shell commands without remembering to prefix `cmd /c`.
+function isMissingExecutable(err: unknown): boolean {
+  return Boolean(err && typeof err === "object" && (err as { code?: string }).code === "ENOENT");
+}
+
+function shellWrappedCommand(
+  command: string,
+  args: string[],
+): { command: string; args: string[] } {
+  if (process.platform === "win32") {
+    // /d skips AutoRun; /s preserves quotes verbatim; /c runs and exits.
+    const quoted = args.map((a) => (/\s/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a)).join(" ");
+    const combined = quoted ? `${command} ${quoted}` : command;
+    return { command: "cmd.exe", args: ["/d", "/s", "/c", combined] };
+  }
+  const combined = [command, ...args]
+    .map((a) => (/[\s"'\\$`]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a))
+    .join(" ");
+  return { command: "/bin/sh", args: ["-c", combined] };
+}
+
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
   const { runId, agent, config, onLog, onMeta } = ctx;
   const command = asString(config.command, "");
@@ -44,13 +68,28 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     });
   }
 
-  const proc = await runChildProcess(runId, command, args, {
-    cwd,
-    env,
-    timeoutSec,
-    graceSec,
-    onLog,
-  });
+  let proc: Awaited<ReturnType<typeof runChildProcess>>;
+  try {
+    proc = await runChildProcess(runId, command, args, {
+      cwd,
+      env,
+      timeoutSec,
+      graceSec,
+      onLog,
+    });
+  } catch (err) {
+    if (!isMissingExecutable(err)) throw err;
+    // Bare command not on PATH — try once more through the platform shell
+    // so builtins (`echo`, `dir`, ...) and PATH-less scripts still work.
+    const wrapped = shellWrappedCommand(command, args);
+    proc = await runChildProcess(runId, wrapped.command, wrapped.args, {
+      cwd,
+      env,
+      timeoutSec,
+      graceSec,
+      onLog,
+    });
+  }
 
   if (proc.timedOut) {
     return {

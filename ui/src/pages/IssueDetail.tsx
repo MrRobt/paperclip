@@ -925,6 +925,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
 
   return (
     <div className="space-y-3">
+      <StandaloneCommentComposer onAdd={onAdd} />
       {hasOlderComments ? (
         <div className="flex justify-center">
           <Button
@@ -4195,6 +4196,58 @@ export function IssueDetail() {
         </SheetContent>
       </Sheet>
       <ScrollToBottom />
+    </div>
+  );
+}
+
+/**
+ * Plain comment composer that posts via `addComment` (POST /api/issues/:id/comments).
+ * Mounted at the top of the Chat tab so operators have a discoverable way to
+ * leave a comment without going through the AI chat composer (which uses
+ * `useAui().thread().append` and is for talking to the assigned agent).
+ */
+function StandaloneCommentComposer({
+  onAdd,
+}: {
+  onAdd: (body: string) => Promise<void>;
+}) {
+  const [body, setBody] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async () => {
+    const trimmed = body.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    try {
+      await onAdd(trimmed);
+      setBody("");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  return (
+    <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">添加评论</span>
+        <span>提交后存入 issue_comments（不触发 AI 聊天）</span>
+      </div>
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        onKeyDown={(e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            void submit();
+          }
+        }}
+        rows={3}
+        placeholder="写一条评论…（⌘/Ctrl+Enter 提交）"
+        className="w-full resize-y rounded border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+      />
+      <div className="flex justify-end">
+        <Button size="sm" onClick={() => void submit()} disabled={submitting || !body.trim()}>
+          {submitting ? "提交中…" : "提交评论"}
+        </Button>
+      </div>
     </div>
   );
 }

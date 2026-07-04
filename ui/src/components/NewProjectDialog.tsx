@@ -12,6 +12,8 @@ import { queryKeys } from "../lib/queryKeys";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -215,6 +217,13 @@ export function NewProjectDialog() {
         className={cn("p-0 gap-0", expanded ? "sm:max-w-2xl" : "sm:max-w-lg")}
         onKeyDown={handleKeyDown}
       >
+        {/* Visually hidden title + description for screen readers. The visible
+            header has a custom company badge + "New project" composition; we
+            suppress Radix's a11y warning while keeping the form unlabeled. */}
+        <DialogTitle className="sr-only">New project</DialogTitle>
+        <DialogDescription className="sr-only">
+          Create a new project in {selectedCompany?.name ?? "this company"}.
+        </DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
