@@ -17,6 +17,7 @@
 
 import type { Db } from "@paperclipai/db";
 import type {
+  AgentSandboxConfig,
   Environment,
   EnvironmentLease,
   EnvironmentLeasePolicy,
@@ -112,6 +113,55 @@ export interface EnvironmentRealizationResult {
 export interface EnvironmentReleaseResult {
   released: EnvironmentRuntimeLeaseRecord[];
   errors: Array<{ leaseId: string; error: unknown }>;
+}
+
+/**
+ * Apply the per-agent sandbox config (iter3 Layer C1/C2) as an overlay on
+ * top of the resolved environment. Returns the environment with merged
+ * sandbox-provider config so the existing plugin-driver path acquires a
+ * sandbox with the agent's preferred image/ttl/envVars.
+ *
+ * Returns the environment unchanged when:
+ *   - The agent has no sandbox config
+ *   - The agent's sandbox is disabled
+ *   - The resolved environment isn't a plugin-backed host (driver !==
+ *     "plugin"). In that case sandbox overlay requires the operator to
+ *     attach a plugin sandbox-provider env to the agent, which is the
+ *     intended multi-tenant boundary.
+ */
+function applyAgentSandboxOverlay(
+  environment: Environment,
+  agentSandboxConfig: AgentSandboxConfig | null | undefined,
+): Environment {
+  if (!agentSandboxConfig || agentSandboxConfig.enabled === false) {
+    return environment;
+  }
+  // Only override environments whose driver is the plugin-backed sandbox
+  // host — overlaying onto SSH/local environments would be misleading.
+  if (environment.driver !== "plugin") {
+    return environment;
+  }
+  const baseConfig = (environment.config ?? {}) as Record<string, unknown>;
+  const merged: Record<string, unknown> = {
+    ...baseConfig,
+    provider: "opensandbox",
+  };
+  if (agentSandboxConfig.image) {
+    merged.image = agentSandboxConfig.image;
+  }
+  if (typeof agentSandboxConfig.ttlSeconds === "number") {
+    merged.ttlSeconds = agentSandboxConfig.ttlSeconds;
+  }
+  if (agentSandboxConfig.envVars) {
+    merged.envVars = {
+      ...((baseConfig.envVars as Record<string, string> | undefined) ?? {}),
+      ...agentSandboxConfig.envVars,
+    };
+  }
+  if (agentSandboxConfig.autoCleanup !== undefined) {
+    merged.autoCleanup = agentSandboxConfig.autoCleanup;
+  }
+  return { ...environment, config: merged };
 }
 
 function firstNonEmptyLine(text: string | null | undefined): string | null {
@@ -267,6 +317,11 @@ export function environmentRunOrchestrator(
     heartbeatRunId: string;
     agentId: string;
     persistedExecutionWorkspace: Pick<ExecutionWorkspace, "id" | "mode"> | null;
+    /** Per-agent sandbox overlay (Layer C1/C2 of iter3). When enabled with
+     *  provider === "opensandbox" and the resolved environment already uses a
+     *  plugin-driver host, the agent's image/ttl/envVars preference overrides
+     *  the environment's defaults before the lease is acquired. */
+    agentSandboxConfig?: AgentSandboxConfig | null;
   }): Promise<EnvironmentAcquisitionResult> {
     // Step 1: Resolve environment
     const environment = await resolveEnvironment({
@@ -275,10 +330,13 @@ export function environmentRunOrchestrator(
       defaultEnvironmentId: input.defaultEnvironmentId,
     });
 
-    // Step 2: Acquire lease
+    // Step 2: Apply agent sandbox overlay (iter3 Layer C2)
+    const sandboxedEnvironment = applyAgentSandboxOverlay(environment, input.agentSandboxConfig);
+
+    // Step 3: Acquire lease
     const leaseRecord = await acquireLease({
       companyId: input.companyId,
-      environment,
+      environment: sandboxedEnvironment,
       issueId: input.issueId,
       heartbeatRunId: input.heartbeatRunId,
       persistedExecutionWorkspace: input.persistedExecutionWorkspace,

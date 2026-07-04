@@ -7773,6 +7773,10 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       heartbeatRunId: run.id,
       agentId: agent.id,
       persistedExecutionWorkspace,
+      // iter3 Layer C1/C2: pass per-agent sandbox overlay through to the
+      // environment orchestrator. When enabled and the env driver is the
+      // plugin sandbox host, this triggers a per-run disposable opensandbox.
+      agentSandboxConfig: agent.sandboxConfig ?? null,
     });
     const selectedEnvironment = acquiredEnvironment.environment;
     let activeEnvironmentLease = {
