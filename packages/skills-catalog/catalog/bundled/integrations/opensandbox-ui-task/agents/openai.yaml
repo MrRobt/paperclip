@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenSandbox UI Task"
+  short_description: "Run UI tests and browser checks through OpenSandbox"
+  default_prompt: "Use OpenSandbox to create an isolated sandbox, execute commands, and run browser-based UI checks."

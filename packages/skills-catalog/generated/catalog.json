@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@paperclipai/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-06-30T17:19:04.590Z",
+  "generatedAt": "2026-07-04T09:10:04.915Z",
   "skills": [
     {
       "id": "paperclipai:bundled:docs:doc-maintenance",
@@ -37,6 +37,215 @@
         }
       ],
       "contentHash": "sha256:2e02299210fd17c1fe1867b4ee8c144a11b6fe1fe481f83b8268cfbaaf10f9aa"
+    },
+    {
+      "id": "paperclipai:bundled:integrations:opensandbox-host-bootstrap",
+      "key": "paperclipai/bundled/integrations/opensandbox-host-bootstrap",
+      "kind": "bundled",
+      "category": "integrations",
+      "slug": "opensandbox-host-bootstrap",
+      "name": "opensandbox-host-bootstrap",
+      "description": "Prepare or repair a remote Linux host for OpenSandbox usage. Use when the user provides server credentials or asks Codex/Claude to install, start, verify, or troubleshoot an OpenSandbox server on a remote machine before running sandboxed tasks, UI tests, project acceptance checks, or agent workloads.",
+      "path": "catalog/bundled/integrations/opensandbox-host-bootstrap",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "assets",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "devops",
+        "engineer",
+        "qa"
+      ],
+      "requires": [],
+      "tags": [
+        "opensandbox",
+        "sandbox",
+        "integration",
+        "bootstrap"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 2009,
+          "sha256": "92228c63201611b235678058a726e4961c8ed6d5197679f31aa0ec2e90d15d38"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "kind": "other",
+          "sizeBytes": 227,
+          "sha256": "f7dd38007a24f18689d10fea8a643fbf147d51a48b35e56fe6b1eef6b0bae2ba"
+        },
+        {
+          "path": "references/bootstrap-checklist.md",
+          "kind": "reference",
+          "sizeBytes": 747,
+          "sha256": "c29491476d607c8503a080a0837acf76c11f142b2b1e4aa59141f24dd48c9b5f"
+        }
+      ],
+      "contentHash": "sha256:43c2f79e83888426a7227c92e1e6dfe34942d2259edffb7ab31003a74c0a2d1c"
+    },
+    {
+      "id": "paperclipai:bundled:integrations:opensandbox-project-acceptance",
+      "key": "paperclipai/bundled/integrations/opensandbox-project-acceptance",
+      "kind": "bundled",
+      "category": "integrations",
+      "slug": "opensandbox-project-acceptance",
+      "name": "opensandbox-project-acceptance",
+      "description": "Run project-level acceptance checks inside OpenSandbox. Use when the user wants to validate a backend, frontend, full-stack app, service startup, test-environment configuration, smoke APIs, logs, screenshots, or acceptance evidence in a disposable sandbox before merging or deploying.",
+      "path": "catalog/bundled/integrations/opensandbox-project-acceptance",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "assets",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "devops",
+        "engineer",
+        "qa",
+        "pm"
+      ],
+      "requires": [],
+      "tags": [
+        "opensandbox",
+        "sandbox",
+        "integration",
+        "acceptance"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 2342,
+          "sha256": "158e6e3bd99cda9d16b00a02f4a1a79d8d16b1963a467f6a21d2c0e575f16b3e"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "kind": "other",
+          "sizeBytes": 246,
+          "sha256": "8c01a108e3fcb34aff235b0c584bb5fced15f65a4660bc59d2a9f057604f251e"
+        },
+        {
+          "path": "references/project-acceptance-flow.md",
+          "kind": "reference",
+          "sizeBytes": 912,
+          "sha256": "c093a12f7faecd792b3f6cb8f2731533b3b54f79b95846a1798315331c897ee6"
+        }
+      ],
+      "contentHash": "sha256:ce7319b7476cf0888349e41f943d762f97058540e7c39410b6b3969d5c728979"
+    },
+    {
+      "id": "paperclipai:bundled:integrations:opensandbox-task-runner",
+      "key": "paperclipai/bundled/integrations/opensandbox-task-runner",
+      "kind": "bundled",
+      "category": "integrations",
+      "slug": "opensandbox-task-runner",
+      "name": "opensandbox-task-runner",
+      "description": "Run isolated non-UI tasks inside OpenSandbox sandboxes. Use when the user wants disposable command execution, scripts, builds, tests, file transformations, artifact collection, log capture, or safe task execution without using the local host environment.",
+      "path": "catalog/bundled/integrations/opensandbox-task-runner",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "assets",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "devops",
+        "engineer",
+        "qa"
+      ],
+      "requires": [],
+      "tags": [
+        "opensandbox",
+        "sandbox",
+        "integration",
+        "task-runner"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 2152,
+          "sha256": "c29238f353a8169255d322ebe00713ea874dc34ad1a16a44e8d6d54d9f9bf7b1"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "kind": "other",
+          "sizeBytes": 248,
+          "sha256": "8aa1f2a3a875fcb58be3845719c7d823f52ef33da3cb696bfca568489841ab48"
+        },
+        {
+          "path": "references/task-evidence.md",
+          "kind": "reference",
+          "sizeBytes": 715,
+          "sha256": "72d63b7a2139d92830557bdd0e44dd95330577d8efba1e08bfce09358e76a0bb"
+        }
+      ],
+      "contentHash": "sha256:30ca73eea24475d95308d7d06570d64a90d96189ed5731a9040e6c69856a910e"
+    },
+    {
+      "id": "paperclipai:bundled:integrations:opensandbox-ui-task",
+      "key": "paperclipai/bundled/integrations/opensandbox-ui-task",
+      "kind": "bundled",
+      "category": "integrations",
+      "slug": "opensandbox-ui-task",
+      "name": "opensandbox-ui-task",
+      "description": "Run browser-based UI checks inside OpenSandbox sandboxes with Playwright, screenshots, traces, and page interaction evidence. Use when the user asks to open a web page, validate UI flows, run Playwright, capture screenshots, verify selectors, test login/navigation, use sandbox or OpenSandbox, or collect browser artifacts from a disposable sandbox.",
+      "path": "catalog/bundled/integrations/opensandbox-ui-task",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "scripts_executables",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "devops",
+        "engineer",
+        "qa",
+        "designer"
+      ],
+      "requires": [],
+      "tags": [
+        "opensandbox",
+        "sandbox",
+        "integration",
+        "playwright",
+        "ui-task"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 3569,
+          "sha256": "ae3148732ac8ea1dfe108e48344b6dab4ccf7446b7d83e65d5fd286d8e52b1d4"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "kind": "other",
+          "sizeBytes": 242,
+          "sha256": "1d41e4f36d2360a6a788fd55a7b83fb1836e7d756e1a2377940270dc57a0c7b5"
+        },
+        {
+          "path": "references/dyq-sandbox-fullstack.md",
+          "kind": "reference",
+          "sizeBytes": 1850,
+          "sha256": "849d3a24c7e4f0d537e576c440c6ccac857e0c5a84d5d10186e06419e59f2663"
+        },
+        {
+          "path": "references/opensandbox-workflow.md",
+          "kind": "reference",
+          "sizeBytes": 1468,
+          "sha256": "b2cee0c7387828e593f157bde8c4520b5e79a87d89e023dd6952935672970e76"
+        },
+        {
+          "path": "references/playwright-recipes.md",
+          "kind": "reference",
+          "sizeBytes": 1184,
+          "sha256": "7e3cc9dcb468b910e1d8b72fda16f6a650608bddd7db050e0c285f41ca68ffa0"
+        },
+        {
+          "path": "scripts/playwright-smoke-template.mjs",
+          "kind": "script",
+          "sizeBytes": 580,
+          "sha256": "17c9948bd459b9570bef28bed5ace3941c28d07929821e1a0a21786e588e117f"
+        }
+      ],
+      "contentHash": "sha256:83d0291659c78a688e9365627c2fb88c0adb2bdd18437cfcbb1a52473cc2fa8f"
     },
     {
       "id": "paperclipai:bundled:paperclip-operations:issue-triage",

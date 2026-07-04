@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenSandbox Project Acceptance"
+  short_description: "Validate app services inside sandboxes"
+  default_prompt: "Use $opensandbox-project-acceptance to run a project in OpenSandbox and capture acceptance evidence."

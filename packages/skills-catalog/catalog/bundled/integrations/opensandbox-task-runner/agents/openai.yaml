@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenSandbox Task Runner"
+  short_description: "Run isolated commands and collect artifacts"
+  default_prompt: "Use $opensandbox-task-runner to run a command in a disposable OpenSandbox sandbox and collect artifacts."

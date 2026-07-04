@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenSandbox Host Bootstrap"
+  short_description: "Prepare remote hosts for OpenSandbox"
+  default_prompt: "Use $opensandbox-host-bootstrap to prepare a remote host and verify OpenSandbox health."
