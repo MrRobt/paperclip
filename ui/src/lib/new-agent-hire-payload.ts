@@ -36,5 +36,12 @@ export function buildNewAgentHirePayload(input: {
       cheapModelEnabled: configValues.cheapModelEnabled,
     }),
     budgetMonthlyCents: 0,
+    // Layer C1: per-agent sandbox config. Defaults to enabled with the
+    // opensandbox provider so every new agent gets an isolated environment
+    // automatically (see iter3/DESIGN.md).
+    sandboxConfig: {
+      enabled: true,
+      provider: "opensandbox" as const,
+    },
   };
 }

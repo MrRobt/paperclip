@@ -41,4 +41,17 @@ describe("buildNewAgentHirePayload", () => {
       defaultEnvironmentId: null,
     });
   });
+
+  it("includes a default opensandbox sandbox config (Layer C1)", () => {
+    const result = buildNewAgentHirePayload({
+      name: "Sandbox Agent",
+      effectiveRole: "engineer",
+      configValues: { ...defaultCreateValues, adapterType: "process" },
+      adapterConfig: {},
+    });
+    expect(result.sandboxConfig).toEqual({
+      enabled: true,
+      provider: "opensandbox",
+    });
+  });
 });

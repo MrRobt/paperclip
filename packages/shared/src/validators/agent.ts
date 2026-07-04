@@ -63,6 +63,19 @@ export const agentRuntimeConfigSchema = z.object({
   }).strict().optional(),
 }).catchall(z.unknown());
 
+export const agentSandboxConfigSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    provider: z.literal("opensandbox").default("opensandbox"),
+    image: z.string().min(1).optional(),
+    ttlSeconds: z.number().int().positive().optional(),
+    envVars: z.record(z.string(), z.string()).optional(),
+    autoCleanup: z.boolean().default(true),
+  })
+  .strict();
+
+export type AgentSandboxConfig = z.infer<typeof agentSandboxConfigSchema>;
+
 export const createAgentSchema = z.object({
   name: z.string().min(1),
   role: z.enum(AGENT_ROLES).optional().default("general"),
@@ -79,6 +92,7 @@ export const createAgentSchema = z.object({
   budgetMonthlyCents: z.number().int().nonnegative().optional().default(0),
   permissions: agentPermissionsSchema.optional(),
   metadata: z.record(z.string(), z.unknown()).optional().nullable(),
+  sandboxConfig: agentSandboxConfigSchema.optional(),
 });
 
 export type CreateAgent = z.infer<typeof createAgentSchema>;
