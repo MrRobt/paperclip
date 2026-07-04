@@ -101,12 +101,6 @@ export interface Agent {
   permissions: AgentPermissions;
   lastHeartbeatAt: Date | null;
   metadata: Record<string, unknown> | null;
-  /**
-   * Per-agent sandbox config (Layer C1 of iter3/DESIGN.md). When
-   * present and `enabled: true`, the agent runtime acquires a fresh
-   * disposable sandbox (currently opensandbox) for each run.
-   */
-  sandboxConfig: AgentSandboxConfig | null;
   createdAt: Date;
   updatedAt: Date;
 }

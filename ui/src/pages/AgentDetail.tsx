@@ -1837,6 +1837,12 @@ function ConfigurationTab({
           </div>
         </div>
       </div>
+
+      <SandboxConfigSection
+        agent={agent}
+        queryClient={queryClient}
+        pushToast={pushToast}
+      />
     </div>
   );
 }
@@ -4433,6 +4439,90 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---- Sandbox Config Section (Layer C1 of iter3) ---- */
+
+function SandboxConfigSection({
+  agent,
+  queryClient,
+  pushToast,
+}: {
+  agent: AgentDetailRecord;
+  queryClient: ReturnType<typeof useQueryClient>;
+  pushToast: ReturnType<typeof useToastActions>["pushToast"];
+}) {
+  const current = agent.sandboxConfig;
+  const enabled = current?.enabled !== false; // default enabled when null
+  const provider = current?.provider ?? "opensandbox";
+  const image = current?.image ?? "(plugin default)";
+  const ttl = current?.ttlSeconds ?? null;
+
+  const toggle = useMutation({
+    mutationFn: async (next: { enabled: boolean }) => {
+      return agentsApi.update(agent.id, {
+        sandboxConfig: {
+          enabled: next.enabled,
+          provider: "opensandbox" as const,
+          ...(current?.image ? { image: current.image } : {}),
+          ...(current?.ttlSeconds ? { ttlSeconds: current.ttlSeconds } : {}),
+          ...(current?.envVars ? { envVars: current.envVars } : {}),
+          autoCleanup: current?.autoCleanup ?? true,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agent", agent.id] });
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+      pushToast({
+        title: "Sandbox updated",
+        body: `Sandbox ${enabled ? "enabled" : "disabled"} for this agent.`,
+        tone: "info",
+      });
+    },
+    onError: (err: Error) => {
+      pushToast({
+        title: "Failed to update sandbox",
+        body: err.message,
+        tone: "error",
+      });
+    },
+  });
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border/60 bg-card p-4">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold">Sandbox</h3>
+          <p className="text-xs text-muted-foreground">
+            Each run acquires a disposable sandbox via the{" "}
+            <span className="font-mono">{provider}</span> provider, so agent runs
+            don&apos;t share a filesystem, processes, or network with each other.
+          </p>
+        </div>
+        <ToggleSwitch
+          checked={enabled}
+          onCheckedChange={() => toggle.mutate({ enabled: !enabled })}
+          disabled={toggle.isPending}
+          aria-label="Enable sandbox"
+        />
+      </header>
+      <dl className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
+        <div>
+          <dt className="text-muted-foreground">Provider</dt>
+          <dd className="font-mono">{provider}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Image</dt>
+          <dd className="font-mono">{image}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">TTL (s)</dt>
+          <dd className="font-mono">{ttl ?? "(plugin default)"}</dd>
+        </div>
+      </dl>
     </div>
   );
 }
