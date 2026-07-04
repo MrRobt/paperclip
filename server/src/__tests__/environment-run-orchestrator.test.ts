@@ -51,7 +51,9 @@ vi.mock("../services/activity-log.js", () => ({
 import {
   environmentRunOrchestrator,
   EnvironmentRunError,
+  applyAgentSandboxOverlay,
 } from "../services/environment-run-orchestrator.ts";
+import type { AgentSandboxConfig } from "@paperclipai/shared";
 import type { Environment, EnvironmentLease, ExecutionWorkspace } from "@paperclipai/shared";
 import type { RealizedExecutionWorkspace } from "../services/workspace-runtime.ts";
 import type { EnvironmentRuntimeService } from "../services/environment-runtime.ts";
@@ -546,5 +548,62 @@ describe("environmentRunOrchestrator — realizeForRun", () => {
     );
 
     expect(mockResolveEnvironmentExecutionTarget).not.toHaveBeenCalled();
+  });
+});
+
+describe("applyAgentSandboxOverlay (iter3 Layer C2)", () => {
+  it("returns env unchanged when agentSandboxConfig is null", () => {
+    const env = makeEnvironment("plugin");
+    expect(applyAgentSandboxOverlay(env, null)).toBe(env);
+  });
+
+  it("returns env unchanged when sandbox is disabled", () => {
+    const env = makeEnvironment("plugin");
+    expect(
+      applyAgentSandboxOverlay(env, { enabled: false, provider: "opensandbox" }),
+    ).toBe(env);
+  });
+
+  it("returns env unchanged when env driver is not 'plugin'", () => {
+    const env = makeEnvironment("local");
+    const cfg: AgentSandboxConfig = { enabled: true, provider: "opensandbox", image: "alpine" };
+    expect(applyAgentSandboxOverlay(env, cfg)).toBe(env);
+  });
+
+  it("overlays image + ttl + envVars onto plugin env", () => {
+    const env = makeEnvironment("plugin");
+    env.config = { provider: "opensandbox", image: "default", ttlSeconds: 600 };
+    const cfg: AgentSandboxConfig = {
+      enabled: true,
+      provider: "opensandbox",
+      image: "mcr.microsoft.com/playwright:test",
+      ttlSeconds: 120,
+      envVars: { NODE_ENV: "test", FOO: "bar" },
+    };
+    const out = applyAgentSandboxOverlay(env, cfg);
+    expect(out).not.toBe(env); // new object returned
+    expect(out.config).toMatchObject({
+      provider: "opensandbox",
+      image: "mcr.microsoft.com/playwright:test",
+      ttlSeconds: 120,
+      envVars: { NODE_ENV: "test", FOO: "bar" },
+    });
+    // Original env untouched (immutability)
+    expect(env.config).toMatchObject({ image: "default", ttlSeconds: 600 });
+  });
+
+  it("merges envVars with existing instead of replacing", () => {
+    const env = makeEnvironment("plugin");
+    env.config = { envVars: { KEEP: "yes", REPLACE: "old" } };
+    const cfg: AgentSandboxConfig = {
+      enabled: true,
+      provider: "opensandbox",
+      envVars: { REPLACE: "new" },
+    };
+    const out = applyAgentSandboxOverlay(env, cfg);
+    expect((out.config as { envVars: Record<string, string> }).envVars).toEqual({
+      KEEP: "yes",
+      REPLACE: "new",
+    });
   });
 });

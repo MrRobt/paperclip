@@ -115,6 +115,10 @@ export interface EnvironmentReleaseResult {
   errors: Array<{ leaseId: string; error: unknown }>;
 }
 
+export {
+  applyAgentSandboxOverlay,
+};
+
 /**
  * Apply the per-agent sandbox config (iter3 Layer C1/C2) as an overlay on
  * top of the resolved environment. Returns the environment with merged

@@ -1,10 +1,11 @@
 # Per-Agent Sandbox Environment — 设计方案
 
-> Status: **PR-1 + PR-2 + PR-3 全部合并并 push** (commits 6aac48d + 4829641 + 406697e + cf976d7 on `dev`)
+> Status: **Layer A + B1 + C1 + C2 (单元测试) 全部 push** (commits 6aac48d + 4829641 + 406697e + cf976d7 + 2bd5d4d on `dev`)
 > Owner: paperclip
 > 目标：让公司内每个 agent 拥有独立的 disposable 沙箱环境，避免 agent 之间互相影响
-> 实施进度：PR-1 (bundled skills) ✅ · PR-2 (plugin) ✅ · PR-3 (agent schema + UI) ✅
-> 遗留：Layer C2 (run hooks 接 plugin) + C3 (UI 完整) — 单独 iter4
+> 实施进度：PR-1 (bundled skills) ✅ · PR-2 (plugin) ✅ · PR-3 (agent schema + UI) ✅ · Layer C2 orchestrator hook ✅
+> 待端到端：plugin install + heartbeat run 真实开沙箱 — 受 paperclip plugin-sdk Windows spawn bug 阻塞 (需要 paperclip 主体先修)
+> 单元测试：5 个 applyAgentSandboxOverlay 覆盖全过（iter3 commit 后续补充）
 
 ---
 
