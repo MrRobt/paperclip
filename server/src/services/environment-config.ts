@@ -97,7 +97,7 @@ const pluginEnvironmentConfigSchema = z.object({
     "Environment driver key must start with a lowercase alphanumeric and contain only lowercase letters, digits, dots, hyphens, or underscores",
   ),
   driverConfig: z.record(z.unknown()).optional().default({}),
-}).strict();
+}).passthrough();
 
 export type ParsedEnvironmentConfig =
   | { driver: "local"; config: LocalEnvironmentConfig }

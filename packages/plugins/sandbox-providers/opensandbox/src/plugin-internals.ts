@@ -11,7 +11,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-export const MCP_SERVER_PATH = path.resolve(here, "../../vendor/mcp-server/index.mjs");
+// MCP server lives at <pkg>/vendor/mcp-server/index.mjs, one level up
+// from both src/ and dist/ — single `..` resolves it from either.
+export const MCP_SERVER_PATH = path.resolve(here, "../vendor/mcp-server/index.mjs");
 
 export interface DriverConfig {
   baseUrl: string;

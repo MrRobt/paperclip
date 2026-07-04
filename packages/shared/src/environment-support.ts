@@ -38,6 +38,7 @@ const REMOTE_MANAGED_ADAPTERS = new Set<AgentAdapterType>([
   "gemini_local",
   "opencode_local",
   "pi_local",
+  "process",
 ]);
 
 export function adapterSupportsRemoteManagedEnvironments(adapterType: string): boolean {
@@ -46,8 +47,8 @@ export function adapterSupportsRemoteManagedEnvironments(adapterType: string): b
 
 export function supportedEnvironmentDriversForAdapter(adapterType: string): EnvironmentDriver[] {
   return adapterSupportsRemoteManagedEnvironments(adapterType)
-    ? ["local", "ssh", "sandbox"]
-    : ["local"];
+    ? ["local", "ssh", "sandbox", "plugin"]
+    : ["local", "plugin"];
 }
 
 export function supportedSandboxProvidersForAdapter(
