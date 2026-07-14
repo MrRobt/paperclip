@@ -4,7 +4,7 @@ import { constants as fsConstants, promises as fs, type Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { sanitizeRemoteExecutionEnv } from "./remote-execution-env.js";
-import { buildSshSpawnTarget, type SshRemoteExecutionSpec } from "./ssh.js";
+import { buildSshSpawnTarget, runSshCommand, shellQuote, type SshRemoteExecutionSpec } from "./ssh.js";
 import { redactCommandText } from "./command-redaction.js";
 import type {
   AdapterSkillEntry,
@@ -80,6 +80,8 @@ export const MAX_CAPTURE_BYTES = 4 * 1024 * 1024;
 export const MAX_EXCERPT_BYTES = 32 * 1024;
 const TERMINAL_RESULT_SCAN_OVERLAP_CHARS = 64 * 1024;
 const DEFAULT_PAPERCLIP_INSTANCE_ID = "default";
+/** Budget for the pre-flight `command -v` probe against a remote SSH host. */
+const REMOTE_COMMAND_PROBE_TIMEOUT_MS = 15_000;
 const PATH_SEGMENT_RE = /^[a-zA-Z0-9_-]+$/;
 const SENSITIVE_ENV_KEY = /(key|token|secret|password|passwd|authorization|cookie)/i;
 const REDACTED_LOG_VALUE = "***REDACTED***";
@@ -2060,8 +2062,32 @@ export async function ensureCommandResolvable(
 ) {
   if (options.remoteExecution) {
     const resolvedSsh = await resolveCommandPath("ssh", process.cwd(), env);
-    if (resolvedSsh) return;
-    throw new Error('Command not found in PATH: "ssh"');
+    if (!resolvedSsh) {
+      throw new Error('Command not found in PATH: "ssh"');
+    }
+    // Probe the binary on the *remote* host. We used to return as soon as the local
+    // ssh client was found, so a worker box without the agent CLI installed still
+    // reported "Command is executable" — a green check for a target that could not
+    // run the agent at all. Sandbox targets already run a real `command -v`; this
+    // brings SSH to the same honesty.
+    try {
+      await runSshCommand(options.remoteExecution, `command -v ${shellQuote(command)}`, {
+        timeoutMs: REMOTE_COMMAND_PROBE_TIMEOUT_MS,
+      });
+      return;
+    } catch (error) {
+      const exitCode = (error as { code?: unknown } | null)?.code;
+      // ssh reserves 255 for its own connection/auth failures, and a non-numeric code
+      // means we never got a remote shell (timeout, spawn error). Those are transport
+      // problems — surface them as-is instead of blaming the CLI.
+      if (exitCode === 255 || typeof exitCode !== "number") {
+        throw error;
+      }
+      const stderr = String((error as { stderr?: unknown } | null)?.stderr ?? "").trim();
+      throw new Error(
+        `Command "${command}" is not installed or not on PATH on the remote host.${stderr ? ` ${stderr}` : ""}`,
+      );
+    }
   }
   const resolved = await resolveCommandPath(command, cwd, env);
   if (resolved) return;

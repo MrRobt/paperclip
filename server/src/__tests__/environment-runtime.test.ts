@@ -404,6 +404,122 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     expect(released[0]?.lease.status).toBe("released");
   });
 
+  /** Starts a second heartbeat run for the same agent, so two runs overlap on one environment. */
+  async function seedConcurrentRun(companyId: string) {
+    const [agent] = await db.select().from(agents).where(eq(agents.companyId, companyId));
+    const secondRunId = randomUUID();
+    await db.insert(heartbeatRuns).values({
+      id: secondRunId,
+      companyId,
+      agentId: agent.id,
+      invocationSource: "manual",
+      status: "running",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return secondRunId;
+  }
+
+  it("refuses a second concurrent run on a sandbox environment that reuses one box", async () => {
+    // reuseLease keys the provider lease by environment id (`sandbox://fake/<environmentId>`),
+    // so both runs would be handed the *same* sandbox — and prepareSandboxManagedRuntime wipes
+    // and re-uploads that single working tree on every run. Agent concurrency is capped per
+    // agent (20 by default), never per environment, so nothing else stops the overlap.
+    const { companyId, environment, runId } = await seedEnvironment({
+      driver: "sandbox",
+      name: "Shared Sandbox",
+      config: { provider: "fake", image: "ubuntu:24.04", reuseLease: true },
+    });
+
+    const first = await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: runId,
+      persistedExecutionWorkspace: null,
+    });
+    expect(first.lease.status).toBe("active");
+
+    const secondRunId = await seedConcurrentRun(companyId);
+
+    await expect(
+      runtime.acquireRunLease({
+        companyId,
+        environment,
+        issueId: null,
+        heartbeatRunId: secondRunId,
+        persistedExecutionWorkspace: null,
+      }),
+    ).rejects.toThrow(/currently using it/);
+
+    // Sequential reuse — the whole point of reuseLease — still works once the box is free.
+    await runtime.releaseRunLeases(runId);
+    const second = await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: secondRunId,
+      persistedExecutionWorkspace: null,
+    });
+    expect(second.lease.status).toBe("active");
+    expect(second.lease.providerLeaseId).toBe(`sandbox://fake/${environment.id}`);
+  });
+
+  it("still runs sandbox leases concurrently when every run gets its own box", async () => {
+    const { companyId, environment, runId } = await seedEnvironment({
+      driver: "sandbox",
+      name: "Per-run Sandbox",
+      config: { provider: "fake", image: "ubuntu:24.04", reuseLease: false },
+    });
+
+    const first = await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: runId,
+      persistedExecutionWorkspace: null,
+    });
+    const secondRunId = await seedConcurrentRun(companyId);
+    const second = await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: secondRunId,
+      persistedExecutionWorkspace: null,
+    });
+
+    expect(first.lease.status).toBe("active");
+    expect(second.lease.status).toBe("active");
+    expect(second.lease.providerLeaseId).not.toBe(first.lease.providerLeaseId);
+  });
+
+  it("does not let an ad-hoc probe be blocked by a live run's reusable sandbox", async () => {
+    const { companyId, environment, runId } = await seedEnvironment({
+      driver: "sandbox",
+      name: "Shared Sandbox",
+      config: { provider: "fake", image: "ubuntu:24.04", reuseLease: true },
+    });
+
+    await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: runId,
+      persistedExecutionWorkspace: null,
+    });
+
+    // Operator-initiated `Test` probes pass heartbeatRunId === null. They never publish a
+    // reusable lease, so they must not be gated by one either.
+    const probe = await runtime.acquireRunLease({
+      companyId,
+      environment,
+      issueId: null,
+      heartbeatRunId: null,
+      persistedExecutionWorkspace: null,
+    });
+    expect(probe.lease.status).toBe("active");
+  });
+
   it("uses plugin-backed sandbox config for execute and release", async () => {
     const pluginId = randomUUID();
     const { companyId, environment: baseEnvironment, runId } = await seedEnvironment();

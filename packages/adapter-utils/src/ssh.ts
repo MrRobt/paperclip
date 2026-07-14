@@ -359,11 +359,16 @@ async function withTempFile(
   };
 }
 
-async function createSshAuthArgs(
-  config: Pick<SshConnectionConfig, "privateKey" | "knownHosts" | "strictHostKeyChecking">,
-): Promise<{ args: string[]; cleanup: () => Promise<void> }> {
-  const tempFiles: Array<() => Promise<void>> = [];
-  const sshArgs = [
+/**
+ * Base `ssh -o ...` options shared by every Paperclip SSH invocation.
+ *
+ * Exported so the LogLevel choice is covered by tests: it is load-bearing for
+ * error reporting, not cosmetic.
+ */
+export function buildSshBaseOptionArgs(
+  config: Pick<SshConnectionConfig, "strictHostKeyChecking">,
+): string[] {
+  const args = [
     "-o",
     "BatchMode=yes",
     "-o",
@@ -372,14 +377,29 @@ async function createSshAuthArgs(
     `StrictHostKeyChecking=${config.strictHostKeyChecking ? "yes" : "no"}`,
   ];
 
-  if (config.strictHostKeyChecking) {
-    if (config.knownHosts) {
-      const knownHosts = await withTempFile("paperclip-ssh-known-hosts-", config.knownHosts, 0o600);
-      tempFiles.push(knownHosts.cleanup);
-      sshArgs.push("-o", `UserKnownHostsFile=${knownHosts.path}`);
-    }
-  } else {
-    sshArgs.push("-o", "UserKnownHostsFile=/dev/null");
+  if (!config.strictHostKeyChecking) {
+    args.push("-o", "UserKnownHostsFile=/dev/null");
+    // `UserKnownHostsFile=/dev/null` makes ssh re-learn the host key on every
+    // connection, so it writes "Warning: Permanently added '<host>' (...) to the
+    // list of known hosts." to stderr on *every* call. That guaranteed noise was
+    // surfacing as the adapter's failure detail and hiding the real cause (CLI
+    // errors, probe hints). LogLevel=ERROR still reports genuine ssh errors.
+    args.push("-o", "LogLevel=ERROR");
+  }
+
+  return args;
+}
+
+async function createSshAuthArgs(
+  config: Pick<SshConnectionConfig, "privateKey" | "knownHosts" | "strictHostKeyChecking">,
+): Promise<{ args: string[]; cleanup: () => Promise<void> }> {
+  const tempFiles: Array<() => Promise<void>> = [];
+  const sshArgs = buildSshBaseOptionArgs(config);
+
+  if (config.strictHostKeyChecking && config.knownHosts) {
+    const knownHosts = await withTempFile("paperclip-ssh-known-hosts-", config.knownHosts, 0o600);
+    tempFiles.push(knownHosts.cleanup);
+    sshArgs.push("-o", `UserKnownHostsFile=${knownHosts.path}`);
   }
 
   if (config.privateKey) {

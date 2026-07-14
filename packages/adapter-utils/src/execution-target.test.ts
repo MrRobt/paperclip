@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as ssh from "./ssh.js";
 import * as serverUtils from "./server-utils.js";
 import {
+  adapterExecutionTargetSupportsManagedConfig,
   adapterExecutionTargetUsesManagedHome,
   ensureAdapterExecutionTargetRuntimeCommandInstalled,
   resolveAdapterExecutionTargetCwd,
@@ -399,5 +400,50 @@ describe("resolveAdapterExecutionTargetCwd", () => {
     expect(resolveAdapterExecutionTargetCwd(null, "", "/Users/host/repo/server")).toBe(
       "/Users/host/repo/server",
     );
+  });
+});
+
+describe("adapterExecutionTargetSupportsManagedConfig", () => {
+  const sshTarget = {
+    kind: "remote",
+    transport: "ssh",
+    remoteCwd: "/srv/paperclip/workspace",
+    spec: {
+      host: "ssh.example.test",
+      port: 22,
+      username: "ssh-user",
+      remoteCwd: "/srv/paperclip/workspace",
+      remoteWorkspacePath: "/srv/paperclip/workspace",
+      privateKey: null,
+      knownHosts: null,
+      strictHostKeyChecking: true,
+    },
+  } as const;
+
+  const sandboxTarget = {
+    kind: "remote",
+    transport: "sandbox",
+    providerKey: "acme-sandbox",
+    remoteCwd: "/workspace",
+  } as const;
+
+  it("lets SSH targets receive a Paperclip-managed CLI config seed", () => {
+    expect(adapterExecutionTargetSupportsManagedConfig(sshTarget)).toBe(true);
+  });
+
+  it("lets sandbox targets receive a Paperclip-managed CLI config seed", () => {
+    expect(adapterExecutionTargetSupportsManagedConfig(sandboxTarget)).toBe(true);
+  });
+
+  it("stays disabled for local targets", () => {
+    expect(adapterExecutionTargetSupportsManagedConfig(null)).toBe(false);
+    expect(adapterExecutionTargetSupportsManagedConfig({ kind: "local" })).toBe(false);
+  });
+
+  it("does not imply a managed HOME override on SSH boxes", () => {
+    // SSH hosts have a real user home we must not clobber. Seeding a run-scoped
+    // config dir is safe; taking over $HOME is not.
+    expect(adapterExecutionTargetSupportsManagedConfig(sshTarget)).toBe(true);
+    expect(adapterExecutionTargetUsesManagedHome(sshTarget)).toBe(false);
   });
 });

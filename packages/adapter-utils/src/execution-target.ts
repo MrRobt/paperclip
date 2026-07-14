@@ -163,6 +163,22 @@ export function adapterExecutionTargetUsesManagedHome(
   return target?.kind === "remote" && target.transport === "sandbox";
 }
 
+/**
+ * Remote targets that can receive a Paperclip-managed CLI config/credential seed.
+ *
+ * Deliberately broader than {@link adapterExecutionTargetUsesManagedHome}: an SSH
+ * host has a real user `$HOME` we must not clobber, but it can still be handed a
+ * run-scoped config directory. Without this, SSH agents never receive the operator's
+ * CLI credentials and every worker box has to be provisioned by hand — while sandbox
+ * targets get them automatically.
+ */
+export function adapterExecutionTargetSupportsManagedConfig(
+  target: AdapterExecutionTarget | null | undefined,
+): boolean {
+  if (target?.kind !== "remote") return false;
+  return target.transport === "sandbox" || target.transport === "ssh";
+}
+
 export function adapterExecutionTargetRemoteCwd(
   target: AdapterExecutionTarget | null | undefined,
   localCwd: string,
