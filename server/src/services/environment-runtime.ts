@@ -17,6 +17,7 @@ import type {
 } from "@paperclipai/plugin-sdk";
 import { ensureSshWorkspaceReady } from "@paperclipai/adapter-utils/ssh";
 import { environmentService } from "./environments.js";
+import { withEnvironmentLeaseLock } from "./environment-lease-lock.js";
 import {
   parseEnvironmentDriverConfig,
   resolveEnvironmentDriverConfigForRuntime,
@@ -1103,6 +1104,46 @@ export function environmentRuntimeService(
     return driver;
   }
 
+  /**
+   * A sandbox environment with `reuseLease` on is backed by exactly ONE sandbox: providers key
+   * the provider lease by environment id (`<provider>://<environmentId>`), so every run on that
+   * environment lands in the same working tree. `prepareSandboxManagedRuntime` then wipes and
+   * re-uploads that tree on each run, so a second concurrent run destroys the first one's
+   * workspace and upload scratch files mid-flight.
+   *
+   * Agent concurrency is capped per *agent* (AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20), never per
+   * environment, so nothing else prevents this. Refuse rather than corrupt: operators who want
+   * parallel runs set `reuseLease: false`, which makes providers key the lease by run id and
+   * hand out a fresh sandbox per run.
+   */
+  async function assertReusableSandboxEnvironmentIsFree(input: {
+    environment: Environment;
+    heartbeatRunId: string | null;
+  }) {
+    if (input.environment.driver !== "sandbox") return;
+    // Ad-hoc probes never publish a reusable lease, and must not be blocked by one either.
+    if (input.heartbeatRunId === null) return;
+
+    const parsed = parseEnvironmentDriverConfig(input.environment);
+    if (parsed.driver !== "sandbox" || !parsed.config.reuseLease) return;
+
+    const activeLeases = await environmentsSvc.listLeases(input.environment.id, { status: "active" });
+    const holder = activeLeases.find(
+      (lease) =>
+        lease.leasePolicy === "reuse_by_environment" &&
+        lease.heartbeatRunId !== null &&
+        lease.heartbeatRunId !== input.heartbeatRunId,
+    );
+    if (!holder) return;
+
+    throw new Error(
+      `Environment "${input.environment.name}" is configured to reuse a single sandbox ` +
+        `(reuseLease), and heartbeat run ${holder.heartbeatRunId} is currently using it. ` +
+        `Running both at once would share one working tree and overwrite each other. Wait for ` +
+        `that run to finish, or set reuseLease=false so every run gets its own sandbox.`,
+    );
+  }
+
   return {
     getDriver,
 
@@ -1122,13 +1163,22 @@ export function environmentRuntimeService(
         persistedExecutionWorkspace: input.persistedExecutionWorkspace,
       });
       const driver = requireDriver(input.environment);
-      const lease = await driver.acquireRunLease({
-        companyId: input.companyId,
-        environment: input.environment,
-        issueId: input.issueId,
-        heartbeatRunId: input.heartbeatRunId,
-        executionWorkspaceId: leaseContext.executionWorkspaceId,
-        executionWorkspaceMode: leaseContext.executionWorkspaceMode,
+      // Serialize per environment: the "is this sandbox busy?" check and the lease row that
+      // answers it are separated by a provider round-trip, so without the lock two runs could
+      // both observe a free environment and both be handed the same sandbox.
+      const lease = await withEnvironmentLeaseLock(input.environment.id, async () => {
+        await assertReusableSandboxEnvironmentIsFree({
+          environment: input.environment,
+          heartbeatRunId: input.heartbeatRunId,
+        });
+        return await driver.acquireRunLease({
+          companyId: input.companyId,
+          environment: input.environment,
+          issueId: input.issueId,
+          heartbeatRunId: input.heartbeatRunId,
+          executionWorkspaceId: leaseContext.executionWorkspaceId,
+          executionWorkspaceMode: leaseContext.executionWorkspaceMode,
+        });
       });
 
       return {
