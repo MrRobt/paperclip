@@ -11,6 +11,12 @@ export const environments = pgTable(
     description: text("description"),
     driver: text("driver").notNull().default("local"),
     status: text("status").notNull().default("active"),
+    /**
+     * Environments sharing a pool key are interchangeable workers. An agent pointed at any
+     * member runs on whichever member is least loaded, which is what lets a fleet of boxes
+     * absorb work instead of every run piling onto one hard-bound machine.
+     */
+    poolKey: text("pool_key"),
     config: jsonb("config").$type<Record<string, unknown>>().notNull().default({}),
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -18,6 +24,7 @@ export const environments = pgTable(
   },
   (table) => ({
     companyStatusIdx: index("environments_company_status_idx").on(table.companyId, table.status),
+    companyPoolIdx: index("environments_company_pool_idx").on(table.companyId, table.poolKey),
     companyDriverIdx: uniqueIndex("environments_company_driver_idx")
       .on(table.companyId, table.driver)
       .where(sql`${table.driver} = 'local'`),

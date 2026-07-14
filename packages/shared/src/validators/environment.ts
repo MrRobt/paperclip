@@ -11,11 +11,20 @@ export const environmentStatusSchema = z.enum(ENVIRONMENT_STATUSES);
 export const environmentLeaseStatusSchema = z.enum(ENVIRONMENT_LEASE_STATUSES);
 export const environmentLeaseCleanupStatusSchema = z.enum(ENVIRONMENT_LEASE_CLEANUP_STATUSES);
 
+/** Interchangeable workers share this. Kept short and boring so it reads well in a URL or log. */
+export const environmentPoolKeySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z0-9][a-z0-9._-]*$/, "Pool key must be lowercase alphanumeric with . _ or -");
+
 const environmentFields = {
   name: z.string().min(1),
   description: z.string().optional().nullable(),
   driver: environmentDriverSchema,
   status: environmentStatusSchema.optional().default("active"),
+  poolKey: environmentPoolKeySchema.optional().nullable(),
   config: z.record(z.string(), z.unknown()).optional().default({}),
   metadata: z.record(z.string(), z.unknown()).optional().nullable(),
 };
@@ -28,6 +37,7 @@ export const updateEnvironmentSchema = z.object({
   description: z.string().optional().nullable(),
   driver: environmentDriverSchema.optional(),
   status: environmentStatusSchema.optional(),
+  poolKey: environmentPoolKeySchema.optional().nullable(),
   config: z.record(z.string(), z.unknown()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional().nullable(),
 }).strict();

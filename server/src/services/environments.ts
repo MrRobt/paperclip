@@ -41,6 +41,7 @@ function toEnvironment(row: EnvironmentRow): Environment {
     description: row.description ?? null,
     driver: readEnum(row.driver, ENVIRONMENT_DRIVERS, "environment driver") ?? "local",
     status: readEnum(row.status, ENVIRONMENT_STATUSES, "environment status") ?? "active",
+    poolKey: row.poolKey ?? null,
     config: cloneRecord(row.config, {}) ?? {},
     metadata: cloneRecord(row.metadata),
     createdAt: row.createdAt,
@@ -101,6 +102,36 @@ export function environmentService(db: Db) {
       return row ? toEnvironment(row) : null;
     },
 
+    /** Every active, interchangeable member of a worker pool, oldest first for a stable order. */
+    listActivePoolMembers: async (companyId: string, poolKey: string): Promise<Environment[]> => {
+      const rows = await db
+        .select()
+        .from(environments)
+        .where(
+          and(
+            eq(environments.companyId, companyId),
+            eq(environments.poolKey, poolKey),
+            eq(environments.status, "active"),
+          ),
+        )
+        .orderBy(environments.createdAt);
+      return rows.map(toEnvironment);
+    },
+
+    /** How many runs are currently holding this environment. Drives least-loaded pool selection. */
+    countActiveLeases: async (environmentId: string): Promise<number> => {
+      const [row] = await db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(environmentLeases)
+        .where(
+          and(
+            eq(environmentLeases.environmentId, environmentId),
+            eq(environmentLeases.status, "active"),
+          ),
+        );
+      return Number(row?.total ?? 0);
+    },
+
     getLeaseById: async (id: string): Promise<EnvironmentLease | null> => {
       const row = await db
         .select()
@@ -157,6 +188,7 @@ export function environmentService(db: Db) {
           description: input.description ?? null,
           driver: input.driver,
           status: input.status ?? "active",
+          poolKey: input.poolKey ?? null,
           config: input.config ?? {},
           metadata: input.metadata ?? null,
           createdAt: now,
@@ -178,6 +210,7 @@ export function environmentService(db: Db) {
       if (patch.description !== undefined) values.description = patch.description ?? null;
       if (patch.driver !== undefined) values.driver = patch.driver;
       if (patch.status !== undefined) values.status = patch.status;
+      if (patch.poolKey !== undefined) values.poolKey = patch.poolKey ?? null;
       if (patch.config !== undefined) values.config = patch.config;
       if (patch.metadata !== undefined) values.metadata = patch.metadata ?? null;
 

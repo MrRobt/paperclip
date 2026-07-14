@@ -61,6 +61,11 @@ export interface Environment {
   description: string | null;
   driver: EnvironmentDriver;
   status: EnvironmentStatus;
+  /**
+   * Environments sharing a pool key are interchangeable workers. An agent pointed at any
+   * member runs on whichever member currently holds the fewest leases.
+   */
+  poolKey: string | null;
   config: Record<string, unknown>;
   metadata: Record<string, unknown> | null;
   createdAt: Date;
