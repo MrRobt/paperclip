@@ -445,6 +445,8 @@ export function environmentRoutes(
         description: req.body.description ?? null,
         driver: req.body.driver,
         status: "active" as const,
+        // An unsaved probe target belongs to no pool: there is nothing to balance it against.
+        poolKey: null,
         config: normalizedConfig,
         metadata: req.body.metadata ?? null,
         createdAt: new Date(),

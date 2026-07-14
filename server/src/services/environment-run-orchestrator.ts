@@ -195,7 +195,41 @@ export function environmentRunOrchestrator(
       });
     }
 
-    return environment;
+    return await resolvePoolMember(environment);
+  }
+
+  /**
+   * Spread a run across a pool of interchangeable workers.
+   *
+   * `agents.default_environment_id` is a single FK, so an agent is hard-bound to one box: a
+   * ten-worker fleet needs ten agents, each nailed to a machine, and nothing balances them.
+   * Environments that share a pool key are declared interchangeable, so once the resolution
+   * chain lands on any member the run goes to whichever member is carrying the fewest leases.
+   *
+   * Ties keep the environment the chain already picked, so a warm box stays warm rather than
+   * bouncing between machines on every heartbeat.
+   */
+  async function resolvePoolMember(selected: Environment): Promise<Environment> {
+    if (!selected.poolKey) return selected;
+
+    const members = await environmentsSvc.listActivePoolMembers(selected.companyId, selected.poolKey);
+    if (members.length <= 1) return selected;
+
+    const loads = await Promise.all(
+      members.map(async (member) => ({
+        member,
+        activeLeases: await environmentsSvc.countActiveLeases(member.id),
+      })),
+    );
+
+    loads.sort((left, right) => {
+      if (left.activeLeases !== right.activeLeases) return left.activeLeases - right.activeLeases;
+      if (left.member.id === selected.id) return -1;
+      if (right.member.id === selected.id) return 1;
+      return left.member.createdAt.getTime() - right.member.createdAt.getTime();
+    });
+
+    return loads[0]!.member;
   }
 
   /**
