@@ -2,10 +2,12 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import * as ssh from "./ssh.js";
 import {
   applyPaperclipWorkspaceEnv,
   appendWithByteCap,
+  ensureCommandResolvable,
   buildPersistentSkillSnapshot,
   buildRuntimeMountedSkillSnapshot,
   buildInvocationEnvForLogs,
@@ -1159,5 +1161,97 @@ describe("appendWithByteCap", () => {
     expect(output).not.toContain("\uFFFD");
     expect(Buffer.from(output, "utf8").toString("utf8")).toBe(output);
     expect(Buffer.byteLength(output, "utf8")).toBeLessThanOrEqual(7);
+  });
+});
+
+describe("ensureCommandResolvable (remote execution)", () => {
+  const cleanupDirs: string[] = [];
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    while (cleanupDirs.length > 0) {
+      const dir = cleanupDirs.pop();
+      if (!dir) continue;
+      await fs.rm(dir, { recursive: true, force: true }).catch(() => undefined);
+    }
+  });
+
+  /** PATH containing a stub `ssh` so the local-client check passes hermetically. */
+  async function pathWithStubSsh(): Promise<NodeJS.ProcessEnv> {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-stub-ssh-"));
+    cleanupDirs.push(dir);
+    const sshPath = path.join(dir, "ssh");
+    await fs.writeFile(sshPath, "#!/bin/sh\nexit 0\n", "utf8");
+    await fs.chmod(sshPath, 0o755);
+    return { PATH: dir };
+  }
+
+  const spec = {
+    host: "worker.example.test",
+    port: 22,
+    username: "agent",
+    remoteCwd: "/home/agent/workspace",
+    remoteWorkspacePath: "/home/agent/workspace",
+    privateKey: null,
+    knownHosts: null,
+    strictHostKeyChecking: false,
+  } as const;
+
+  it("probes the remote host instead of trusting the local ssh client", async () => {
+    // The old behaviour returned as soon as a *local* ssh binary was found, so a
+    // worker box missing the agent CLI still reported "Command is executable".
+    const runSshCommandSpy = vi.spyOn(ssh, "runSshCommand").mockResolvedValue({
+      stdout: "/usr/local/bin/claude\n",
+      stderr: "",
+    });
+
+    await ensureCommandResolvable("claude", "/tmp/local", await pathWithStubSsh(), {
+      remoteExecution: spec,
+    });
+
+    expect(runSshCommandSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ host: "worker.example.test" }),
+      "command -v 'claude'",
+      expect.any(Object),
+    );
+  });
+
+  it("fails honestly when the CLI is missing on the remote host", async () => {
+    vi.spyOn(ssh, "runSshCommand").mockRejectedValue(Object.assign(new Error("non-zero exit"), {
+      code: 1,
+      stdout: "",
+      stderr: "",
+    }));
+
+    await expect(
+      ensureCommandResolvable("claude", "/tmp/local", await pathWithStubSsh(), {
+        remoteExecution: spec,
+      }),
+    ).rejects.toThrow(/not installed or not on PATH on the remote host/);
+  });
+
+  it("surfaces transport failures instead of blaming the CLI", async () => {
+    // ssh exits 255 for connection/auth problems. Reporting that as "claude is not
+    // installed" would send operators chasing the wrong problem.
+    vi.spyOn(ssh, "runSshCommand").mockRejectedValue(Object.assign(new Error("Permission denied (publickey)."), {
+      code: 255,
+      stdout: "",
+      stderr: "Permission denied (publickey).",
+    }));
+
+    await expect(
+      ensureCommandResolvable("claude", "/tmp/local", await pathWithStubSsh(), {
+        remoteExecution: spec,
+      }),
+    ).rejects.toThrow(/Permission denied/);
+  });
+
+  it("still reports a missing local ssh client", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-no-ssh-"));
+    cleanupDirs.push(dir);
+
+    await expect(
+      ensureCommandResolvable("claude", "/tmp/local", { PATH: dir }, { remoteExecution: spec }),
+    ).rejects.toThrow(/Command not found in PATH: "ssh"/);
   });
 });
