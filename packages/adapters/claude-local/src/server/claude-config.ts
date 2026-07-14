@@ -102,11 +102,20 @@ export function resolveManagedClaudeConfigSeedDir(
     : path.resolve(instanceRoot, "claude-config-seed");
 }
 
+/**
+ * Materialize the operator's Claude config/credentials into a company-scoped seed
+ * directory that can be shipped to a remote execution target.
+ *
+ * Returns `null` when the host has nothing worth seeding. Callers must treat that as
+ * "leave the remote's own config alone" rather than pointing `CLAUDE_CONFIG_DIR` at an
+ * empty managed directory — on SSH the remote box may already hold a working
+ * `~/.claude`, and overriding it with an empty seed would break a working setup.
+ */
 export async function prepareClaudeConfigSeed(
   env: NodeJS.ProcessEnv,
   onLog: AdapterExecutionContext["onLog"],
   companyId?: string,
-): Promise<string> {
+): Promise<string | null> {
   const sourceDir = resolveSharedClaudeConfigDir(env);
   const targetRootDir = resolveManagedClaudeConfigSeedDir(env, companyId);
 
@@ -115,6 +124,14 @@ export async function prepareClaudeConfigSeed(
   }
 
   const copiedFiles = await collectSeedFiles(sourceDir);
+  if (copiedFiles.length === 0) {
+    await onLog(
+      "stdout",
+      `[paperclip] No local Claude config seed files were found in "${sourceDir}". Leaving the target's own Claude config in place.\n`,
+    );
+    return null;
+  }
+
   const snapshotKey = await buildSeedSnapshotKey(copiedFiles);
   const targetDir = await materializeSeedSnapshot({
     rootDir: targetRootDir,
@@ -122,17 +139,10 @@ export async function prepareClaudeConfigSeed(
     files: copiedFiles,
   });
 
-  if (copiedFiles.length > 0) {
-    await onLog(
-      "stdout",
-      `[paperclip] Prepared Claude config seed "${targetDir}" from "${sourceDir}" (${copiedFiles.map((file) => file.name).join(", ")}).\n`,
-    );
-  } else {
-    await onLog(
-      "stdout",
-      `[paperclip] No local Claude config seed files were found in "${sourceDir}". Remote Claude auth may still require login.\n`,
-    );
-  }
+  await onLog(
+    "stdout",
+    `[paperclip] Prepared Claude config seed "${targetDir}" from "${sourceDir}" (${copiedFiles.map((file) => file.name).join(", ")}).\n`,
+  );
 
   return targetDir;
 }

@@ -9,7 +9,7 @@ import {
   overrideAdapterExecutionTargetRemoteCwd,
   adapterExecutionTargetSessionIdentity,
   adapterExecutionTargetSessionMatches,
-  adapterExecutionTargetUsesManagedHome,
+  adapterExecutionTargetSupportsManagedConfig,
   adapterExecutionTargetUsesPaperclipBridge,
   describeAdapterExecutionTarget,
   ensureAdapterExecutionTargetCommandResolvable,
@@ -461,9 +461,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     instructionsContents: combinedInstructionsContents,
     onLog,
   });
+  // Ship the operator's Claude credentials to *any* managed remote target, not just
+  // sandboxes. SSH targets previously got skills but never a config seed, so every
+  // worker box had to be logged into by hand.
   const useManagedRemoteClaudeConfig =
     executionTargetIsRemote &&
-    adapterExecutionTargetUsesManagedHome(executionTarget) &&
+    adapterExecutionTargetSupportsManagedConfig(executionTarget) &&
     !hasExplicitClaudeConfigDir;
   const claudeConfigSeedDir = useManagedRemoteClaudeConfig
     ? await prepareClaudeConfigSeed(process.env, onLog, agent.companyId)
@@ -539,7 +542,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     ? preparedExecutionTargetRuntime?.assetDirs["config-seed"] ??
       path.posix.join(remoteClaudeRuntimeRoot, "config-seed")
     : null;
-  const remoteClaudeConfigDir = useManagedRemoteClaudeConfig && remoteClaudeRuntimeRoot
+  // No seed means the host had no credentials to hand over. Leave CLAUDE_CONFIG_DIR
+  // unset so the target keeps using its own ~/.claude instead of an empty managed dir.
+  const remoteClaudeConfigDir = useManagedRemoteClaudeConfig && remoteClaudeRuntimeRoot && remoteClaudeConfigSeedDir
     ? path.posix.join(remoteClaudeRuntimeRoot, "config")
     : null;
   if (remoteClaudeConfigDir && remoteClaudeConfigSeedDir) {

@@ -25,6 +25,29 @@ describe("prepareClaudeConfigSeed", () => {
     };
   }
 
+  /** Narrows the nullable seed result for cases that must produce a directory. */
+  function seededDir(value: string | null): string {
+    if (value === null) throw new Error("expected a Claude config seed directory, got null");
+    return value;
+  }
+
+  it("returns null when the shared config dir has nothing worth seeding", async () => {
+    // Guards a real regression path: on SSH the remote box may already hold a
+    // working ~/.claude. If the Paperclip host has no credentials to seed we
+    // must NOT point CLAUDE_CONFIG_DIR at an empty managed dir, or we would
+    // break a previously working setup. Returning null keeps the remote's own
+    // config in play.
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-empty-"));
+    cleanupDirs.push(root);
+    const sourceDir = path.join(root, "claude-source");
+    await fs.mkdir(sourceDir, { recursive: true });
+
+    const onLog = vi.fn(async () => {});
+    const env = createEnv(root, sourceDir);
+
+    await expect(prepareClaudeConfigSeed(env, onLog, "company-1")).resolves.toBeNull();
+  });
+
   it("reuses the same snapshot path when the seeded files are unchanged", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-seed-"));
     cleanupDirs.push(root);
@@ -35,8 +58,8 @@ describe("prepareClaudeConfigSeed", () => {
     const onLog = vi.fn(async () => {});
     const env = createEnv(root, sourceDir);
 
-    const first = await prepareClaudeConfigSeed(env, onLog, "company-1");
-    const second = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const first = seededDir(await prepareClaudeConfigSeed(env, onLog, "company-1"));
+    const second = seededDir(await prepareClaudeConfigSeed(env, onLog, "company-1"));
 
     expect(first).toBe(second);
     await expect(fs.readFile(path.join(first, "settings.json"), "utf8"))
@@ -52,10 +75,10 @@ describe("prepareClaudeConfigSeed", () => {
 
     const onLog = vi.fn(async () => {});
     const env = createEnv(root, sourceDir);
-    const first = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const first = seededDir(await prepareClaudeConfigSeed(env, onLog, "company-1"));
 
     await fs.writeFile(path.join(sourceDir, "settings.json"), JSON.stringify({ theme: "dark" }), "utf8");
-    const second = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const second = seededDir(await prepareClaudeConfigSeed(env, onLog, "company-1"));
 
     expect(second).not.toBe(first);
     await expect(fs.readFile(path.join(first, "settings.json"), "utf8"))
