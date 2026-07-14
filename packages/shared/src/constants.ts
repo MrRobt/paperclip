@@ -546,7 +546,16 @@ export type FinanceUnit = (typeof FINANCE_UNITS)[number];
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 
-export const BUDGET_METRICS = ["billed_cents"] as const;
+/**
+ * What a budget policy meters.
+ *
+ * - `billed_cents`: metered spend. Always 0 for `subscription_included` usage, so a
+ *   dollar budget cannot restrain an agent running on a Claude Max / relay subscription.
+ * - `total_tokens`: every token the provider reported (input + cached input + output).
+ *   This is what stays scarce under a subscription, so it is the metric that can actually
+ *   stop a runaway loop from burning the quota you already paid for.
+ */
+export const BUDGET_METRICS = ["billed_cents", "total_tokens"] as const;
 export type BudgetMetric = (typeof BUDGET_METRICS)[number];
 
 export const BUDGET_WINDOW_KINDS = ["calendar_month_utc", "lifetime"] as const;
