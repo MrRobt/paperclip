@@ -493,6 +493,35 @@ export interface IssueExecutionDecision {
   updatedAt: Date;
 }
 
+
+export type IssueDeliveryProcessState =
+  | "not_started"
+  | "running"
+  | "stale"
+  | "waiting_for_review"
+  | "blocked"
+  | "completed"
+  | "cancelled";
+
+export type IssueDeliveryOutputState = "no_output" | "activity_only" | "has_evidence";
+
+export type IssueDeliveryVerificationState =
+  | "unverified"
+  | "evidence_attached"
+  | "evidence_required"
+  | "verified";
+
+export interface IssueDeliveryState {
+  platformStatus: IssueStatus;
+  processState: IssueDeliveryProcessState;
+  outputState: IssueDeliveryOutputState;
+  verificationState: IssueDeliveryVerificationState;
+  hasCompletionEvidence: boolean;
+  evidenceWorkProductCount: number;
+  evidenceWorkProductIds: string[];
+  summary: string;
+}
+
 export interface Issue {
   id: string;
   companyId: string;
@@ -556,6 +585,7 @@ export interface Issue {
   goal?: Goal | null;
   currentExecutionWorkspace?: ExecutionWorkspace | null;
   workProducts?: IssueWorkProduct[];
+  deliveryState?: IssueDeliveryState;
   mentionedProjects?: Project[];
   myLastTouchAt?: Date | null;
   lastExternalCommentAt?: Date | null;

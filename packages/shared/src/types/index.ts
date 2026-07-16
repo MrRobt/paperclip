@@ -179,6 +179,10 @@ export type {
 export type {
   Issue,
   IssueWorkMode,
+  IssueDeliveryState,
+  IssueDeliveryProcessState,
+  IssueDeliveryOutputState,
+  IssueDeliveryVerificationState,
   IssueAssigneeAdapterOverrides,
   IssueBlockerAttention,
   IssueBlockerAttentionReason,

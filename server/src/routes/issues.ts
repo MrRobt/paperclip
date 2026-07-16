@@ -103,6 +103,11 @@ import { executionWorkspaceService as executionWorkspaceServiceDirect } from "..
 import { feedbackService } from "../services/feedback.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { readAcceptedPlanConfirmationTarget } from "../services/issues.js";
+import {
+  COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES,
+  deriveIssueDeliveryState,
+  isCompletionEvidenceWorkProduct,
+} from "../services/issue-delivery-state.js";
 import { environmentService } from "../services/environments.js";
 import { redactSensitiveText } from "../redaction.js";
 import {
@@ -120,6 +125,27 @@ import { parseIssueExecutionWorkspaceSettings } from "../services/execution-work
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
+
+type ChineseOperatorErrorPayload = {
+  error: string;
+  operation: string;
+  reason: string;
+  suggestion: string;
+  errorCode: number | string;
+  details?: unknown;
+};
+
+function chineseOperatorError(input: ChineseOperatorErrorPayload): ChineseOperatorErrorPayload {
+  return {
+    error: input.error,
+    operation: input.operation,
+    reason: input.reason,
+    suggestion: input.suggestion,
+    errorCode: input.errorCode,
+    ...(input.details === undefined ? {} : { details: input.details }),
+  };
+}
+
 const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
@@ -1685,31 +1711,25 @@ export function issueRoutes(
 
     const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.companyId, issue.id);
     if (activePauseHold) {
-      res.status(409).json({
+      res.status(409).json(chineseOperatorError({
         error: "Issue follow-up blocked by active subtree pause hold",
+        operation: "评论恢复意图未执行",
+        reason: "当前事项所在子树存在有效暂停保持。",
+        suggestion: "先解除子树暂停保持，或由主控确认后重新发起恢复。",
+        errorCode: 409,
         details: {
           issueId: issue.id,
           holdId: activePauseHold.holdId,
           rootIssueId: activePauseHold.rootIssueId,
           mode: activePauseHold.mode,
         },
-      });
+      }));
       return false;
     }
 
-    if (issue.status === "blocked") {
-      const readiness = await svc.getDependencyReadiness(issue.id);
-      if (readiness.unresolvedBlockerCount > 0) {
-        res.status(409).json({
-          error: "Issue follow-up blocked by unresolved blockers",
-          details: {
-            issueId: issue.id,
-            unresolvedBlockerIssueIds: readiness.unresolvedBlockerIssueIds,
-          },
-        });
-        return false;
-      }
-    }
+    // Unresolved blockers are evaluated by the concrete mutation route. Comment-only
+    // follow-ups may still be recorded as supplemental evidence while the strong
+    // blocker prevents resume/state transition semantics.
 
     if (req.actor.type !== "agent") return true;
 
@@ -2376,6 +2396,7 @@ export function issueRoutes(
       ? await executionWorkspacesSvc.getById(issue.executionWorkspaceId)
       : null;
     const workProducts = await workProductsSvc.listForIssue(issue.id);
+    const deliveryState = deriveIssueDeliveryState(issue, workProducts);
     res.json({
       ...issue,
       goalId: goal?.id ?? issue.goalId,
@@ -2395,6 +2416,7 @@ export function issueRoutes(
       mentionedProjects,
       currentExecutionWorkspace,
       workProducts,
+      deliveryState,
     });
   });
 
@@ -4128,9 +4150,42 @@ export function issueRoutes(
         ? (await svc.getDependencyReadiness(existing.id)).unresolvedBlockerCount > 0
         : false;
     if (resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers) {
-      res.status(409).json({ error: "Issue follow-up blocked by unresolved blockers" });
+      const readiness = await svc.getDependencyReadiness(existing.id);
+      res.status(409).json(chineseOperatorError({
+        error: "Issue follow-up blocked by unresolved blockers",
+        operation: "评论恢复意图未执行",
+        reason: "当前事项存在未解决的强阻塞。",
+        suggestion: "先处理阻塞项；如果只是补充证据或说明，请改用评论补充而不要请求恢复。",
+        errorCode: 409,
+        details: {
+          issueId: existing.id,
+          unresolvedBlockerIssueIds: readiness.unresolvedBlockerIssueIds,
+          blockerPolicy: "strong_blocker",
+        },
+      }));
       return;
     }
+
+    if (existing.status !== "done" && updateFields.status === "done") {
+      const workProducts = await workProductsSvc.listForIssue(existing.id);
+      const evidenceWorkProducts = workProducts.filter(isCompletionEvidenceWorkProduct);
+      if (evidenceWorkProducts.length === 0) {
+        res.status(409).json(chineseOperatorError({
+          error: "Issue completion requires evidence",
+          operation: "事项未标记完成",
+          reason: "当前事项没有可复验的交付证据。",
+          suggestion: "请先上传或关联提交、命令输出、日志、截图、接口响应、文档或其他 work product，再将事项标记为完成。",
+          errorCode: 409,
+          details: {
+            issueId: existing.id,
+            requiredEvidenceKinds: ["commit", "command", "log", "screenshot", "api_response", "artifact", "document"],
+            acceptedWorkProductTypes: Array.from(COMPLETION_EVIDENCE_WORK_PRODUCT_TYPES),
+          },
+        }));
+        return;
+      }
+    }
+
     let interruptedRunId: string | null = null;
     const closedExecutionWorkspace = await getClosedIssueExecutionWorkspace(existing);
     const isAgentWorkUpdate =
@@ -5794,10 +5849,10 @@ export function issueRoutes(
       isBlocked && effectiveMoveToTodoRequested
         ? (await svc.getDependencyReadiness(issue.id)).unresolvedBlockerCount > 0
         : false;
-    if (resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers) {
-      res.status(409).json({ error: "Issue follow-up blocked by unresolved blockers" });
-      return;
-    }
+    const resumeSuppressedByStrongBlocker = resumeRequested === true && isBlocked && hasUnresolvedFirstClassBlockers;
+    // Strong blockers must prevent state transitions/wakeups, but they should not swallow the
+    // operator or agent's supplemental comment. Persist the comment as the audit trail and
+    // mark the attempted resume as suppressed in activity metadata.
     let reopened = false;
     let reopenFromStatus: string | null = null;
     let interruptedRunId: string | null = null;
@@ -5915,6 +5970,13 @@ export function issueRoutes(
         identifier: currentIssue.identifier,
         issueTitle: currentIssue.title,
         ...(resumeRequested === true ? { resumeIntent: true, followUpRequested: true } : {}),
+        ...(resumeSuppressedByStrongBlocker
+          ? {
+              resumeSuppressed: true,
+              resumeSuppressedReason: "strong_blocker_unresolved",
+              blockerPolicy: "strong_blocker",
+            }
+          : {}),
         ...(reopened ? { reopened: true, reopenedFrom: reopenFromStatus, source: "comment" } : {}),
         ...(scheduledRetrySupersededByComment
           ? {
@@ -5952,7 +6014,7 @@ export function issueRoutes(
       trigger: "comment",
       actor,
       statusChanged: reopened || scheduledRetrySupersededByComment,
-      resumeRequested: resumeRequested === true,
+      resumeRequested: resumeRequested === true && !resumeSuppressedByStrongBlocker,
       reopened,
       blockedToTodoRecovery: reopened && reopenFromStatus === "blocked" && currentIssue.status === "todo",
     });
@@ -5963,7 +6025,7 @@ export function issueRoutes(
       const assigneeId = currentIssue.assigneeAgentId;
       const actorIsAgent = actor.actorType === "agent";
       const selfComment = actorIsAgent && actor.actorId === assigneeId;
-      const skipWake = selfComment || isClosed;
+      const skipWake = selfComment || isClosed || resumeSuppressedByStrongBlocker;
       if (assigneeId && (reopened || !skipWake)) {
         if (reopened) {
           wakeups.set(assigneeId, {
